@@ -106,7 +106,7 @@ impl TypedAsymmetricKeyPair {
     /// Returns the algorithm of the key pair.
     ///
     /// 返回密钥对的算法。
-    pub fn get_algorithm(&self) -> AsymmetricAlgorithm {
+    pub fn algorithm(&self) -> AsymmetricAlgorithm {
         self.algorithm
     }
 }

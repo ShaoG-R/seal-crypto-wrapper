@@ -1,6 +1,6 @@
 use crate::traits::XofAlgorithmTrait;
 use crate::error::{Error, Result};
-use crate::algorithms::{ShakeVariant, XofAlgorithm};
+use crate::algorithms::xof::{ShakeVariant, XofAlgorithm};
 use seal_crypto::prelude::{XofDerivation, XofReader};
 use seal_crypto::schemes::xof::shake::{Shake128, Shake256};
 

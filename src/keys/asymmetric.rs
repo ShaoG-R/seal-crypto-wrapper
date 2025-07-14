@@ -3,7 +3,7 @@ use seal_crypto::schemes::hash::{Sha256, Sha384, Sha512};
 use seal_crypto::prelude::{AsymmetricKeySet, Key, KeyGenerator};
 use seal_crypto::schemes::asymmetric::post_quantum::kyber::{Kyber1024, Kyber512, Kyber768};
 use crate::algorithms::{
-    AsymmetricAlgorithm, HashAlgorithmEnum, KyberSecurityLevel, RsaBits,
+    asymmetric::{AsymmetricAlgorithm, KyberSecurityLevel, RsaBits}, HashAlgorithmEnum
 };
 use crate::error::Error;
 use seal_crypto::zeroize;

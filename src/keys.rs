@@ -9,7 +9,7 @@ pub mod symmetric;
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithms::KdfKeyAlgorithm;
+    use crate::algorithms::kdf::key::KdfKeyAlgorithm;
     use crate::keys::symmetric::SymmetricKey;
     use crate::wrappers::kdf::passwd::{KdfPasswordWrapper, Pbkdf2Sha256Wrapper};
     use seal_crypto::secrecy::SecretBox;

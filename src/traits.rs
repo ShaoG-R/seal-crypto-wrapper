@@ -4,8 +4,7 @@
 
 use crate::error::Result;
 use crate::algorithms::{
-    AsymmetricAlgorithm, KdfKeyAlgorithm, KdfPasswordAlgorithm, SignatureAlgorithm,
-    SymmetricAlgorithm, XofAlgorithm,
+    asymmetric::AsymmetricAlgorithm, kdf::key::KdfKeyAlgorithm, kdf::passwd::KdfPasswordAlgorithm, signature::SignatureAlgorithm, symmetric::SymmetricAlgorithm, xof::XofAlgorithm
 };
 use crate::wrappers::xof::XofReaderWrapper;
 use crate::keys::asymmetric::TypedAsymmetricKeyPair;

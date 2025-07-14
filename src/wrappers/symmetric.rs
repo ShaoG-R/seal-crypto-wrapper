@@ -1,4 +1,4 @@
-use crate::algorithms::{AesKeySize, SymmetricAlgorithm};
+use crate::algorithms::symmetric::{AesKeySize, SymmetricAlgorithm};
 use crate::error::{Error, FormatError, Result};
 use crate::keys::symmetric::{SymmetricKey as UntypedSymmetricKey, TypedSymmetricKey};
 use crate::traits::SymmetricAlgorithmTrait;

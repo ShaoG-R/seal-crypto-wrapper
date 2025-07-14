@@ -1,4 +1,5 @@
-use crate::algorithms::{AesKeySize, KdfKeyAlgorithm, SymmetricAlgorithm};
+use crate::algorithms::symmetric::{AesKeySize, SymmetricAlgorithm};
+use crate::algorithms::kdf::key::KdfKeyAlgorithm;
 use crate::error::Error;
 use crate::wrappers::kdf::passwd::KdfPasswordWrapper;
 use seal_crypto::prelude::{Key, SymmetricKeyGenerator, SymmetricKeySet};

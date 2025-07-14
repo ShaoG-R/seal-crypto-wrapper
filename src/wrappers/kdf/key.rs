@@ -1,4 +1,5 @@
-use crate::algorithms::{HashAlgorithmEnum, KdfKeyAlgorithm};
+use crate::algorithms::kdf::key::KdfKeyAlgorithm;
+use crate::algorithms::HashAlgorithmEnum;
 use crate::error::{Error, Result};
 use seal_crypto::prelude::KeyBasedDerivation;
 use seal_crypto::schemes::kdf::hkdf::{HkdfSha256, HkdfSha384, HkdfSha512};

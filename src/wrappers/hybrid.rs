@@ -1,5 +1,5 @@
 use crate::algorithms::{
-    AsymmetricAlgorithm, SymmetricAlgorithm,
+    asymmetric::AsymmetricAlgorithm, symmetric::SymmetricAlgorithm,
 };
 use crate::error::Result;
 use seal_crypto::zeroize::Zeroizing;

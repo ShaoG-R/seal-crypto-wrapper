@@ -1,4 +1,4 @@
-use crate::algorithms::{DilithiumSecurityLevel, SignatureAlgorithm};
+use crate::algorithms::signature::{DilithiumSecurityLevel, SignatureAlgorithm};
 use crate::error::Error;
 use seal_crypto::prelude::{AsymmetricKeySet, Key, KeyGenerator};
 use seal_crypto::schemes::asymmetric::post_quantum::dilithium::{

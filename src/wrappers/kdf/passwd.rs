@@ -1,4 +1,5 @@
-use crate::algorithms::{HashAlgorithmEnum, KdfPasswordAlgorithm};
+use crate::algorithms::kdf::passwd::KdfPasswordAlgorithm;
+use crate::algorithms::HashAlgorithmEnum;
 use crate::error::{Error, Result};
 use seal_crypto::prelude::PasswordBasedDerivation;
 use seal_crypto::zeroize::Zeroizing;

@@ -1,4 +1,4 @@
-use crate::algorithms::{DilithiumSecurityLevel, SignatureAlgorithm};
+use crate::algorithms::signature::{DilithiumSecurityLevel, SignatureAlgorithm};
 use crate::error::{Error, FormatError, Result};
 use crate::keys::signature::{
     TypedSignatureKeyPair, TypedSignaturePrivateKey, TypedSignaturePublicKey,

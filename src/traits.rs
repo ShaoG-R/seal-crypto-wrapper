@@ -3,7 +3,10 @@
 //! 定义用于类型安全算法规范的核心 trait。
 
 use crate::error::Result;
-use crate::algorithms::{AsymmetricAlgorithmEnum, KdfKeyAlgorithmEnum, KdfPasswordAlgorithmEnum, SignatureAlgorithmEnum, SymmetricAlgorithmEnum, XofAlgorithmEnum};
+use crate::algorithms::{
+    AsymmetricAlgorithm, KdfKeyAlgorithmEnum, KdfPasswordAlgorithmEnum, SignatureAlgorithmEnum,
+    SymmetricAlgorithmEnum, XofAlgorithmEnum,
+};
 use crate::wrappers::xof::XofReaderWrapper;
 use crate::keys::asymmetric::TypedAsymmetricKeyPair;
 use seal_crypto::secrecy::SecretBox;
@@ -235,7 +238,7 @@ pub trait AsymmetricAlgorithmTrait: Send + Sync + 'static {
     /// Returns the algorithm enum.
     ///
     /// 返回算法枚举。
-    fn algorithm(&self) -> AsymmetricAlgorithmEnum;
+    fn algorithm(&self) -> AsymmetricAlgorithm;
 
     /// Encapsulates a key.
     ///
@@ -266,7 +269,7 @@ pub trait AsymmetricAlgorithmTrait: Send + Sync + 'static {
 
 impl_trait_for_box!(AsymmetricAlgorithmTrait {
     ref fn clone_box_asymmetric(&self,) -> Box<dyn AsymmetricAlgorithmTrait>;
-    ref fn algorithm(&self,) -> AsymmetricAlgorithmEnum;
+    ref fn algorithm(&self,) -> AsymmetricAlgorithm;
     ref fn encapsulate_key(&self, public_key: &TypedAsymmetricPublicKey) -> Result<(Zeroizing<Vec<u8>>, Vec<u8>)>;
     ref fn decapsulate_key(&self, private_key: &TypedAsymmetricPrivateKey, encapsulated_key: &Zeroizing<Vec<u8>>) -> Result<Zeroizing<Vec<u8>>>;
     ref fn generate_keypair(&self,) -> Result<TypedAsymmetricKeyPair>;
@@ -280,7 +283,7 @@ pub trait HybridAlgorithmTrait: AsymmetricAlgorithmTrait + SymmetricAlgorithmTra
 }
 
 impl AsymmetricAlgorithmTrait for Box<dyn HybridAlgorithmTrait> {
-    fn algorithm(&self) -> AsymmetricAlgorithmEnum {
+    fn algorithm(&self) -> AsymmetricAlgorithm {
         self.as_ref().asymmetric_algorithm().algorithm()
     }
     fn encapsulate_key(

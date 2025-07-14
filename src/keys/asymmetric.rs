@@ -1,28 +1,42 @@
 use seal_crypto::schemes::asymmetric::traditional::rsa::{Rsa2048, Rsa4096};
-use seal_crypto::schemes::hash::Sha256;
+use seal_crypto::schemes::hash::{Sha256, Sha384, Sha512};
 use seal_crypto::prelude::{AsymmetricKeySet, Key, KeyGenerator};
 use seal_crypto::schemes::asymmetric::post_quantum::kyber::{Kyber1024, Kyber512, Kyber768};
-use crate::algorithms::AsymmetricAlgorithmEnum;
+use crate::algorithms::{
+    AsymmetricAlgorithm, HashAlgorithmEnum, KyberSecurityLevel, RsaBits,
+};
 use crate::error::Error;
 use seal_crypto::zeroize;
 
 macro_rules! dispatch_asymmetric {
     ($algorithm:expr, $action:ident) => {
         match $algorithm {
-            AsymmetricAlgorithmEnum::Rsa2048Sha256 => {
-                $action!(Rsa2048<Sha256>, AsymmetricAlgorithmEnum::Rsa2048Sha256)
+            AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256) => {
+                $action!(Rsa2048<Sha256>, AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256))
             }
-            AsymmetricAlgorithmEnum::Rsa4096Sha256 => {
-                $action!(Rsa4096<Sha256>, AsymmetricAlgorithmEnum::Rsa4096Sha256)
+            AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384) => {
+                $action!(Rsa2048<Sha384>, AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384))
             }
-            AsymmetricAlgorithmEnum::Kyber512 => {
-                $action!(Kyber512, AsymmetricAlgorithmEnum::Kyber512)
+            AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512) => {
+                $action!(Rsa2048<Sha512>, AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512))
             }
-            AsymmetricAlgorithmEnum::Kyber768 => {
-                $action!(Kyber768, AsymmetricAlgorithmEnum::Kyber768)
+            AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256) => {
+                $action!(Rsa4096<Sha256>, AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256))
             }
-            AsymmetricAlgorithmEnum::Kyber1024 => {
-                $action!(Kyber1024, AsymmetricAlgorithmEnum::Kyber1024)
+            AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384) => {
+                $action!(Rsa4096<Sha384>, AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384))
+            }
+            AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512) => {
+                $action!(Rsa4096<Sha512>, AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512))
+            }
+            AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L512) => {
+                $action!(Kyber512, AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L512))
+            }
+            AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L768) => {
+                $action!(Kyber768, AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L768))
+            }
+            AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L1024) => {
+                $action!(Kyber1024, AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L1024))
             }
         }
     };
@@ -36,14 +50,14 @@ macro_rules! dispatch_asymmetric {
 pub struct TypedAsymmetricKeyPair {
     public_key: AsymmetricPublicKey,
     private_key: AsymmetricPrivateKey,
-    algorithm: AsymmetricAlgorithmEnum,
+    algorithm: AsymmetricAlgorithm,
 }
 
 impl TypedAsymmetricKeyPair {
     /// Generates a new key pair for the specified algorithm.
     ///
     /// 为指定的算法生成一个新的密钥对。
-    pub fn generate(algorithm: AsymmetricAlgorithmEnum) -> Result<Self, Error> {
+    pub fn generate(algorithm: AsymmetricAlgorithm) -> Result<Self, Error> {
         macro_rules! generate_keypair {
             ($key_type:ty, $alg_enum:expr) => {
                 <$key_type>::generate_keypair().map(|(pk, sk)| Self {
@@ -92,7 +106,7 @@ impl TypedAsymmetricKeyPair {
     /// Returns the algorithm of the key pair.
     ///
     /// 返回密钥对的算法。
-    pub fn get_algorithm(&self) -> AsymmetricAlgorithmEnum {
+    pub fn get_algorithm(&self) -> AsymmetricAlgorithm {
         self.algorithm
     }
 }
@@ -104,7 +118,7 @@ impl TypedAsymmetricKeyPair {
 #[derive(Clone, Debug)]
 pub struct TypedAsymmetricPublicKey {
     key: AsymmetricPublicKey,
-    algorithm: AsymmetricAlgorithmEnum,
+    algorithm: AsymmetricAlgorithm,
 }
 
 impl TypedAsymmetricPublicKey {
@@ -112,7 +126,7 @@ impl TypedAsymmetricPublicKey {
         self.key.as_bytes().to_vec()
     }
 
-    pub fn algorithm(&self) -> AsymmetricAlgorithmEnum {
+    pub fn algorithm(&self) -> AsymmetricAlgorithm {
         self.algorithm
     }
 }
@@ -124,7 +138,7 @@ impl TypedAsymmetricPublicKey {
 #[derive(Clone, Debug)]
 pub struct TypedAsymmetricPrivateKey {
     key: AsymmetricPrivateKey,
-    algorithm: AsymmetricAlgorithmEnum,
+    algorithm: AsymmetricAlgorithm,
 }
 
 impl TypedAsymmetricPrivateKey {
@@ -132,7 +146,7 @@ impl TypedAsymmetricPrivateKey {
         self.key.as_bytes().to_vec()
     }
 
-    pub fn algorithm(&self) -> AsymmetricAlgorithmEnum {
+    pub fn algorithm(&self) -> AsymmetricAlgorithm {
         self.algorithm
     }
 }
@@ -171,7 +185,7 @@ impl AsymmetricPrivateKey {
     /// 将原始密钥字节转换为类型化的私钥枚举。
     pub fn into_typed(
         self,
-        algorithm: AsymmetricAlgorithmEnum,
+        algorithm: AsymmetricAlgorithm,
     ) -> Result<TypedAsymmetricPrivateKey, Error> {
         macro_rules! into_typed_sk {
             ($key_type:ty, $alg_enum:expr) => {{
@@ -219,7 +233,7 @@ impl AsymmetricPublicKey {
 
     pub fn into_typed(
         self,
-        algorithm: AsymmetricAlgorithmEnum,
+        algorithm: AsymmetricAlgorithm,
     ) -> Result<TypedAsymmetricPublicKey, Error> {
         macro_rules! into_typed_pk {
             ($key_type:ty, $alg_enum:expr) => {{

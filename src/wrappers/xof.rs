@@ -1,6 +1,6 @@
 use crate::traits::XofAlgorithmTrait;
 use crate::error::{Error, Result};
-use crate::algorithms::XofAlgorithmEnum;
+use crate::algorithms::{ShakeVariant, XofAlgorithm};
 use seal_crypto::prelude::{XofDerivation, XofReader};
 use seal_crypto::schemes::xof::shake::{Shake128, Shake256};
 
@@ -33,8 +33,8 @@ impl XofAlgorithmTrait for Shake128Wrapper {
         Box::new(self.clone())
     }
 
-    fn algorithm(&self) -> XofAlgorithmEnum {
-        XofAlgorithmEnum::Shake128
+    fn algorithm(&self) -> XofAlgorithm {
+        XofAlgorithm::Shake(ShakeVariant::V128)
     }
 }
 
@@ -68,8 +68,8 @@ impl XofAlgorithmTrait for Shake256Wrapper {
         Box::new(self.clone())
     }
 
-    fn algorithm(&self) -> XofAlgorithmEnum {
-        XofAlgorithmEnum::Shake256
+    fn algorithm(&self) -> XofAlgorithm {
+        XofAlgorithm::Shake(ShakeVariant::V256)
     }
 }
 
@@ -97,7 +97,7 @@ impl XofAlgorithmTrait for XofWrapper {
         self.algorithm.clone_box()
     }
 
-    fn algorithm(&self) -> XofAlgorithmEnum {
+    fn algorithm(&self) -> XofAlgorithm {
         self.algorithm.algorithm()
     }
 }

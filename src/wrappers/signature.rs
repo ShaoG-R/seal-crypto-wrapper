@@ -1,4 +1,4 @@
-use crate::algorithms::SignatureAlgorithmEnum;
+use crate::algorithms::{DilithiumSecurityLevel, SignatureAlgorithm};
 use crate::error::{Error, FormatError, Result};
 use crate::keys::signature::{
     TypedSignatureKeyPair, TypedSignaturePrivateKey, TypedSignaturePublicKey,
@@ -12,7 +12,7 @@ use seal_crypto::schemes::asymmetric::traditional::ecc::{EcdsaP256, Ed25519};
 use std::ops::Deref;
 
 macro_rules! impl_signature_algorithm {
-    ($wrapper:ident, $algo:ty, $algo_enum:path) => {
+    ($wrapper:ident, $algo:ty, $algo_enum:expr) => {
         #[derive(Clone, Debug, Default)]
         pub struct $wrapper;
 
@@ -29,7 +29,7 @@ macro_rules! impl_signature_algorithm {
         }
 
         impl SignatureAlgorithmTrait for $wrapper {
-            fn algorithm(&self) -> SignatureAlgorithmEnum {
+            fn algorithm(&self) -> SignatureAlgorithm {
                 $algo_enum
             }
 
@@ -87,13 +87,19 @@ impl SignatureAlgorithmWrapper {
         Self { algorithm }
     }
 
-    pub fn from_enum(algorithm: SignatureAlgorithmEnum) -> Self {
+    pub fn from_enum(algorithm: SignatureAlgorithm) -> Self {
         let algorithm: Box<dyn SignatureAlgorithmTrait> = match algorithm {
-            SignatureAlgorithmEnum::Dilithium2 => Box::new(Dilithium2Wrapper::new()),
-            SignatureAlgorithmEnum::Dilithium3 => Box::new(Dilithium3Wrapper::new()),
-            SignatureAlgorithmEnum::Dilithium5 => Box::new(Dilithium5Wrapper::new()),
-            SignatureAlgorithmEnum::Ed25519 => Box::new(Ed25519Wrapper::new()),
-            SignatureAlgorithmEnum::EcdsaP256 => Box::new(EcdsaP256Wrapper::new()),
+            SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L2) => {
+                Box::new(Dilithium2Wrapper::new())
+            }
+            SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L3) => {
+                Box::new(Dilithium3Wrapper::new())
+            }
+            SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L5) => {
+                Box::new(Dilithium5Wrapper::new())
+            }
+            SignatureAlgorithm::Ed25519 => Box::new(Ed25519Wrapper::new()),
+            SignatureAlgorithm::EcdsaP256 => Box::new(EcdsaP256Wrapper::new()),
         };
         Self::new(algorithm)
     }
@@ -121,13 +127,13 @@ impl SignatureAlgorithmTrait for SignatureAlgorithmWrapper {
         self.algorithm.clone_box()
     }
 
-    fn algorithm(&self) -> SignatureAlgorithmEnum {
+    fn algorithm(&self) -> SignatureAlgorithm {
         self.algorithm.algorithm()
     }
 }
 
-impl From<SignatureAlgorithmEnum> for SignatureAlgorithmWrapper {
-    fn from(value: SignatureAlgorithmEnum) -> Self {
+impl From<SignatureAlgorithm> for SignatureAlgorithmWrapper {
+    fn from(value: SignatureAlgorithm) -> Self {
         Self::from_enum(value)
     }
 }
@@ -141,21 +147,21 @@ impl From<Box<dyn SignatureAlgorithmTrait>> for SignatureAlgorithmWrapper {
 impl_signature_algorithm!(
     Dilithium2Wrapper,
     Dilithium2,
-    SignatureAlgorithmEnum::Dilithium2
+    SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L2)
 );
 impl_signature_algorithm!(
     Dilithium3Wrapper,
     Dilithium3,
-    SignatureAlgorithmEnum::Dilithium3
+    SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L3)
 );
 impl_signature_algorithm!(
     Dilithium5Wrapper,
     Dilithium5,
-    SignatureAlgorithmEnum::Dilithium5
+    SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L5)
 );
-impl_signature_algorithm!(Ed25519Wrapper, Ed25519, SignatureAlgorithmEnum::Ed25519);
+impl_signature_algorithm!(Ed25519Wrapper, Ed25519, SignatureAlgorithm::Ed25519);
 impl_signature_algorithm!(
     EcdsaP256Wrapper,
     EcdsaP256,
-    SignatureAlgorithmEnum::EcdsaP256
+    SignatureAlgorithm::EcdsaP256
 );

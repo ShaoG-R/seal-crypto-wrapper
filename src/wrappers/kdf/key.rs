@@ -1,4 +1,4 @@
-use crate::algorithms::KdfKeyAlgorithmEnum;
+use crate::algorithms::{HashAlgorithmEnum, KdfKeyAlgorithm};
 use crate::error::{Error, Result};
 use seal_crypto::prelude::KeyBasedDerivation;
 use seal_crypto::schemes::kdf::hkdf::{HkdfSha256, HkdfSha384, HkdfSha512};
@@ -29,8 +29,8 @@ impl KdfKeyAlgorithmTrait for HkdfSha256Wrapper {
             .map_err(Error::from)
     }
 
-    fn algorithm(&self) -> KdfKeyAlgorithmEnum {
-        KdfKeyAlgorithmEnum::HkdfSha256
+    fn algorithm(&self) -> KdfKeyAlgorithm {
+        KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha256)
     }
 
     fn clone_box(&self) -> Box<dyn KdfKeyAlgorithmTrait> {
@@ -62,8 +62,8 @@ impl KdfKeyAlgorithmTrait for HkdfSha384Wrapper {
             .map_err(Error::from)
     }
 
-    fn algorithm(&self) -> KdfKeyAlgorithmEnum {
-        KdfKeyAlgorithmEnum::HkdfSha384
+    fn algorithm(&self) -> KdfKeyAlgorithm {
+        KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha384)
     }
 
     fn clone_box(&self) -> Box<dyn KdfKeyAlgorithmTrait> {
@@ -90,8 +90,8 @@ impl KdfKeyAlgorithmTrait for HkdfSha512Wrapper {
             .map_err(Error::from)
     }
 
-    fn algorithm(&self) -> KdfKeyAlgorithmEnum {
-        KdfKeyAlgorithmEnum::HkdfSha512
+    fn algorithm(&self) -> KdfKeyAlgorithm {
+        KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha512)
     }
 
     fn clone_box(&self) -> Box<dyn KdfKeyAlgorithmTrait> {
@@ -115,7 +115,7 @@ impl KdfKeyAlgorithmTrait for KdfKeyWrapper {
         self.algorithm.derive(ikm, salt, info, output_len)
     }
 
-    fn algorithm(&self) -> KdfKeyAlgorithmEnum {
+    fn algorithm(&self) -> KdfKeyAlgorithm {
         self.algorithm.algorithm()
     }
 

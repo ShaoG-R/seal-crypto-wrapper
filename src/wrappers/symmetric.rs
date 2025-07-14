@@ -1,4 +1,4 @@
-use crate::algorithms::SymmetricAlgorithmEnum;
+use crate::algorithms::{AesKeySize, SymmetricAlgorithm};
 use crate::error::{Error, FormatError, Result};
 use crate::keys::symmetric::{SymmetricKey as UntypedSymmetricKey, TypedSymmetricKey};
 use crate::traits::SymmetricAlgorithmTrait;
@@ -8,7 +8,7 @@ use seal_crypto::schemes::symmetric::chacha20_poly1305::{ChaCha20Poly1305, XChaC
 use std::ops::Deref;
 
 macro_rules! impl_symmetric_algorithm {
-    ($wrapper:ident, $algo:ty, $algo_enum:path) => {
+    ($wrapper:ident, $algo:ty, $algo_enum:expr) => {
         #[derive(Clone, Debug, Default)]
         pub struct $wrapper;
 
@@ -91,7 +91,7 @@ macro_rules! impl_symmetric_algorithm {
                 Box::new(self.clone())
             }
 
-            fn algorithm(&self) -> SymmetricAlgorithmEnum {
+            fn algorithm(&self) -> SymmetricAlgorithm {
                 $algo_enum
             }
 
@@ -146,12 +146,12 @@ impl SymmetricAlgorithmWrapper {
         Self { algorithm }
     }
 
-    pub fn from_enum(algorithm: SymmetricAlgorithmEnum) -> Self {
+    pub fn from_enum(algorithm: SymmetricAlgorithm) -> Self {
         let algorithm: Box<dyn SymmetricAlgorithmTrait> = match algorithm {
-            SymmetricAlgorithmEnum::Aes128Gcm => Box::new(Aes128GcmWrapper::new()),
-            SymmetricAlgorithmEnum::Aes256Gcm => Box::new(Aes256GcmWrapper::new()),
-            SymmetricAlgorithmEnum::ChaCha20Poly1305 => Box::new(ChaCha20Poly1305Wrapper::new()),
-            SymmetricAlgorithmEnum::XChaCha20Poly1305 => Box::new(XChaCha20Poly1305Wrapper::new()),
+            SymmetricAlgorithm::AesGcm(AesKeySize::K128) => Box::new(Aes128GcmWrapper::new()),
+            SymmetricAlgorithm::AesGcm(AesKeySize::K256) => Box::new(Aes256GcmWrapper::new()),
+            SymmetricAlgorithm::ChaCha20Poly1305 => Box::new(ChaCha20Poly1305Wrapper::new()),
+            SymmetricAlgorithm::XChaCha20Poly1305 => Box::new(XChaCha20Poly1305Wrapper::new()),
         };
         Self::new(algorithm)
     }
@@ -222,7 +222,7 @@ impl SymmetricAlgorithmTrait for SymmetricAlgorithmWrapper {
         self.algorithm.generate_untyped_key()
     }
 
-    fn algorithm(&self) -> SymmetricAlgorithmEnum {
+    fn algorithm(&self) -> SymmetricAlgorithm {
         self.algorithm.algorithm()
     }
 
@@ -243,8 +243,8 @@ impl SymmetricAlgorithmTrait for SymmetricAlgorithmWrapper {
     }
 }
 
-impl From<SymmetricAlgorithmEnum> for SymmetricAlgorithmWrapper {
-    fn from(algorithm: SymmetricAlgorithmEnum) -> Self {
+impl From<SymmetricAlgorithm> for SymmetricAlgorithmWrapper {
+    fn from(algorithm: SymmetricAlgorithm) -> Self {
         Self::from_enum(algorithm)
     }
 }
@@ -258,23 +258,23 @@ impl From<Box<dyn SymmetricAlgorithmTrait>> for SymmetricAlgorithmWrapper {
 impl_symmetric_algorithm!(
     Aes128GcmWrapper,
     Aes128Gcm,
-    SymmetricAlgorithmEnum::Aes128Gcm
+    SymmetricAlgorithm::AesGcm(AesKeySize::K128)
 );
 
 impl_symmetric_algorithm!(
     Aes256GcmWrapper,
     Aes256Gcm,
-    SymmetricAlgorithmEnum::Aes256Gcm
+    SymmetricAlgorithm::AesGcm(AesKeySize::K256)
 );
 
 impl_symmetric_algorithm!(
     ChaCha20Poly1305Wrapper,
     ChaCha20Poly1305,
-    SymmetricAlgorithmEnum::ChaCha20Poly1305
+    SymmetricAlgorithm::ChaCha20Poly1305
 );
 
 impl_symmetric_algorithm!(
     XChaCha20Poly1305Wrapper,
     XChaCha20Poly1305,
-    SymmetricAlgorithmEnum::XChaCha20Poly1305
+    SymmetricAlgorithm::XChaCha20Poly1305
 );

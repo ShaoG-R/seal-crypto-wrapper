@@ -1,4 +1,4 @@
-use crate::algorithms::KdfPasswordAlgorithmEnum;
+use crate::algorithms::{HashAlgorithmEnum, KdfPasswordAlgorithm};
 use crate::error::{Error, Result};
 use seal_crypto::prelude::PasswordBasedDerivation;
 use seal_crypto::zeroize::Zeroizing;
@@ -39,8 +39,8 @@ impl KdfPasswordAlgorithmTrait for Argon2Wrapper {
             .map_err(Error::from)
     }
 
-    fn algorithm(&self) -> KdfPasswordAlgorithmEnum {
-        KdfPasswordAlgorithmEnum::Argon2
+    fn algorithm(&self) -> KdfPasswordAlgorithm {
+        KdfPasswordAlgorithm::Argon2
     }
 
     fn clone_box(&self) -> Box<dyn KdfPasswordAlgorithmTrait> {
@@ -78,8 +78,8 @@ impl KdfPasswordAlgorithmTrait for Pbkdf2Sha256Wrapper {
             .map_err(Error::from)
     }
 
-    fn algorithm(&self) -> KdfPasswordAlgorithmEnum {
-        KdfPasswordAlgorithmEnum::Pbkdf2Sha256
+    fn algorithm(&self) -> KdfPasswordAlgorithm {
+        KdfPasswordAlgorithm::Pbkdf2(HashAlgorithmEnum::Sha256)
     }
 
     fn clone_box(&self) -> Box<dyn KdfPasswordAlgorithmTrait> {
@@ -117,8 +117,8 @@ impl KdfPasswordAlgorithmTrait for Pbkdf2Sha384Wrapper {
             .map_err(Error::from)
     }
 
-    fn algorithm(&self) -> KdfPasswordAlgorithmEnum {
-        KdfPasswordAlgorithmEnum::Pbkdf2Sha384
+    fn algorithm(&self) -> KdfPasswordAlgorithm {
+        KdfPasswordAlgorithm::Pbkdf2(HashAlgorithmEnum::Sha384)
     }
 
     fn clone_box(&self) -> Box<dyn KdfPasswordAlgorithmTrait> {
@@ -156,8 +156,8 @@ impl KdfPasswordAlgorithmTrait for Pbkdf2Sha512Wrapper {
             .map_err(Error::from)
     }
 
-    fn algorithm(&self) -> KdfPasswordAlgorithmEnum {
-        KdfPasswordAlgorithmEnum::Pbkdf2Sha512
+    fn algorithm(&self) -> KdfPasswordAlgorithm {
+        KdfPasswordAlgorithm::Pbkdf2(HashAlgorithmEnum::Sha512)
     }
 
     fn clone_box(&self) -> Box<dyn KdfPasswordAlgorithmTrait> {
@@ -186,7 +186,7 @@ impl KdfPasswordAlgorithmTrait for KdfPasswordWrapper {
         self.algorithm.derive(password, salt, output_len)
     }
 
-    fn algorithm(&self) -> KdfPasswordAlgorithmEnum {
+    fn algorithm(&self) -> KdfPasswordAlgorithm {
         self.algorithm.algorithm()
     }
 

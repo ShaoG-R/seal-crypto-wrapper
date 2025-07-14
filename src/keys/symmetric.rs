@@ -1,4 +1,4 @@
-use crate::algorithms::{KdfKeyAlgorithmEnum, SymmetricAlgorithmEnum};
+use crate::algorithms::{AesKeySize, KdfKeyAlgorithm, SymmetricAlgorithm};
 use crate::error::Error;
 use crate::wrappers::kdf::passwd::KdfPasswordWrapper;
 use seal_crypto::prelude::{Key, SymmetricKeyGenerator, SymmetricKeySet};
@@ -10,22 +10,22 @@ use seal_crypto::zeroize::Zeroizing;
 macro_rules! dispatch_symmetric {
     ($algorithm:expr, $action:ident) => {
         match $algorithm {
-            SymmetricAlgorithmEnum::Aes128Gcm => {
-                $action!(Aes128Gcm, SymmetricAlgorithmEnum::Aes128Gcm)
+            SymmetricAlgorithm::AesGcm(AesKeySize::K128) => {
+                $action!(Aes128Gcm, SymmetricAlgorithm::AesGcm(AesKeySize::K128))
             }
-            SymmetricAlgorithmEnum::Aes256Gcm => {
-                $action!(Aes256Gcm, SymmetricAlgorithmEnum::Aes256Gcm)
+            SymmetricAlgorithm::AesGcm(AesKeySize::K256) => {
+                $action!(Aes256Gcm, SymmetricAlgorithm::AesGcm(AesKeySize::K256))
             }
-            SymmetricAlgorithmEnum::XChaCha20Poly1305 => {
+            SymmetricAlgorithm::XChaCha20Poly1305 => {
                 $action!(
                     XChaCha20Poly1305,
-                    SymmetricAlgorithmEnum::XChaCha20Poly1305
+                    SymmetricAlgorithm::XChaCha20Poly1305
                 )
             }
-            SymmetricAlgorithmEnum::ChaCha20Poly1305 => {
+            SymmetricAlgorithm::ChaCha20Poly1305 => {
                 $action!(
                     ChaCha20Poly1305,
-                    SymmetricAlgorithmEnum::ChaCha20Poly1305
+                    SymmetricAlgorithm::ChaCha20Poly1305
                 )
             }
         }
@@ -39,11 +39,11 @@ macro_rules! dispatch_symmetric {
 #[derive(Clone, Debug)]
 pub struct TypedSymmetricKey {
     key: SymmetricKey,
-    algorithm: SymmetricAlgorithmEnum,
+    algorithm: SymmetricAlgorithm,
 }
 
 impl TypedSymmetricKey {
-    pub fn generate(algorithm: SymmetricAlgorithmEnum) -> Result<Self, Error> {
+    pub fn generate(algorithm: SymmetricAlgorithm) -> Result<Self, Error> {
         macro_rules! generate_key {
             ($key_type:ty, $alg_enum:expr) => {
                 <$key_type>::generate_key()
@@ -57,12 +57,12 @@ impl TypedSymmetricKey {
         dispatch_symmetric!(algorithm, generate_key)
     }
 
-    pub fn from_bytes(bytes: &[u8], algorithm: SymmetricAlgorithmEnum) -> Result<Self, Error> {
+    pub fn from_bytes(bytes: &[u8], algorithm: SymmetricAlgorithm) -> Result<Self, Error> {
         let key = SymmetricKey::new(bytes.to_vec());
         key.into_typed(algorithm)
     }
 
-    pub fn algorithm(&self) -> SymmetricAlgorithmEnum {
+    pub fn algorithm(&self) -> SymmetricAlgorithm {
         self.algorithm
     }
 
@@ -145,7 +145,7 @@ impl SymmetricKey {
     /// Converts the raw key bytes into a typed symmetric key enum.
     ///
     /// 将原始密钥字节转换为类型化的对称密钥枚举。
-    pub fn into_typed(self, algorithm: SymmetricAlgorithmEnum) -> Result<TypedSymmetricKey, Error> {
+    pub fn into_typed(self, algorithm: SymmetricAlgorithm) -> Result<TypedSymmetricKey, Error> {
         macro_rules! into_typed_key {
             ($key_type:ty, $alg_enum:expr) => {{
                 let key = <$key_type as SymmetricKeySet>::Key::from_bytes(self.as_bytes())?;
@@ -175,7 +175,7 @@ impl SymmetricKey {
     /// * `output_len` - The desired length of the derived key in bytes.
     pub fn derive_key(
         &self,
-        algorithm: KdfKeyAlgorithmEnum,
+        algorithm: KdfKeyAlgorithm,
         salt: Option<&[u8]>,
         info: Option<&[u8]>,
         output_len: usize,

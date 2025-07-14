@@ -1,4 +1,4 @@
-use crate::algorithms::SignatureAlgorithmEnum;
+use crate::algorithms::{DilithiumSecurityLevel, SignatureAlgorithm};
 use crate::error::Error;
 use seal_crypto::prelude::{AsymmetricKeySet, Key, KeyGenerator};
 use seal_crypto::schemes::asymmetric::post_quantum::dilithium::{
@@ -10,18 +10,18 @@ use seal_crypto::zeroize;
 macro_rules! dispatch_signature {
     ($algorithm:expr, $action:ident) => {
         match $algorithm {
-            SignatureAlgorithmEnum::Dilithium2 => {
-                $action!(Dilithium2, SignatureAlgorithmEnum::Dilithium2)
+            SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L2) => {
+                $action!(Dilithium2, SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L2))
             }
-            SignatureAlgorithmEnum::Dilithium3 => {
-                $action!(Dilithium3, SignatureAlgorithmEnum::Dilithium3)
+            SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L3) => {
+                $action!(Dilithium3, SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L3))
             }
-            SignatureAlgorithmEnum::Dilithium5 => {
-                $action!(Dilithium5, SignatureAlgorithmEnum::Dilithium5)
+            SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L5) => {
+                $action!(Dilithium5, SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L5))
             }
-            SignatureAlgorithmEnum::Ed25519 => $action!(Ed25519, SignatureAlgorithmEnum::Ed25519),
-            SignatureAlgorithmEnum::EcdsaP256 => {
-                $action!(EcdsaP256, SignatureAlgorithmEnum::EcdsaP256)
+            SignatureAlgorithm::Ed25519 => $action!(Ed25519, SignatureAlgorithm::Ed25519),
+            SignatureAlgorithm::EcdsaP256 => {
+                $action!(EcdsaP256, SignatureAlgorithm::EcdsaP256)
             }
         }
     };
@@ -35,14 +35,14 @@ macro_rules! dispatch_signature {
 pub struct TypedSignatureKeyPair {
     public_key: SignaturePublicKey,
     private_key: SignaturePrivateKey,
-    algorithm: SignatureAlgorithmEnum,
+    algorithm: SignatureAlgorithm,
 }
 
 impl TypedSignatureKeyPair {
     /// Generates a new key pair for the specified algorithm.
     ///
     /// 为指定的算法生成一个新的密钥对。
-    pub fn generate(algorithm: SignatureAlgorithmEnum) -> Result<Self, Error> {
+    pub fn generate(algorithm: SignatureAlgorithm) -> Result<Self, Error> {
         macro_rules! generate_keypair {
             ($key_type:ty, $alg_enum:expr) => {
                 <$key_type>::generate_keypair()
@@ -93,7 +93,7 @@ impl TypedSignatureKeyPair {
     /// Returns the algorithm of the key pair.
     ///
     /// 返回密钥对的算法。
-    pub fn get_algorithm(&self) -> SignatureAlgorithmEnum {
+    pub fn get_algorithm(&self) -> SignatureAlgorithm {
         self.algorithm
     }
 }
@@ -105,7 +105,7 @@ impl TypedSignatureKeyPair {
 #[derive(Clone, Debug)]
 pub struct TypedSignaturePublicKey {
     key: SignaturePublicKey,
-    algorithm: SignatureAlgorithmEnum,
+    algorithm: SignatureAlgorithm,
 }
 
 impl TypedSignaturePublicKey {
@@ -113,7 +113,7 @@ impl TypedSignaturePublicKey {
         self.key.as_bytes().to_vec()
     }
 
-    pub fn algorithm(&self) -> SignatureAlgorithmEnum {
+    pub fn algorithm(&self) -> SignatureAlgorithm {
         self.algorithm
     }
 }
@@ -125,7 +125,7 @@ impl TypedSignaturePublicKey {
 #[derive(Clone, Debug)]
 pub struct TypedSignaturePrivateKey {
     key: SignaturePrivateKey,
-    algorithm: SignatureAlgorithmEnum,
+    algorithm: SignatureAlgorithm,
 }
 
 impl TypedSignaturePrivateKey {
@@ -133,7 +133,7 @@ impl TypedSignaturePrivateKey {
         self.key.as_bytes().to_vec()
     }
 
-    pub fn algorithm(&self) -> SignatureAlgorithmEnum {
+    pub fn algorithm(&self) -> SignatureAlgorithm {
         self.algorithm
     }
 }
@@ -172,7 +172,7 @@ impl SignaturePublicKey {
     /// 将原始密钥字节转换为类型化的公钥结构体。
     pub fn into_typed(
         self,
-        algorithm: SignatureAlgorithmEnum,
+        algorithm: SignatureAlgorithm,
     ) -> Result<TypedSignaturePublicKey, Error> {
         macro_rules! into_typed_pk {
             ($key_type:ty, $alg_enum:expr) => {{
@@ -222,7 +222,7 @@ impl SignaturePrivateKey {
     /// 将原始密钥字节转换为类型化的私钥结构体。
     pub fn into_typed(
         self,
-        algorithm: SignatureAlgorithmEnum,
+        algorithm: SignatureAlgorithm,
     ) -> Result<TypedSignaturePrivateKey, Error> {
         macro_rules! into_typed_sk {
             ($key_type:ty, $alg_enum:expr) => {{

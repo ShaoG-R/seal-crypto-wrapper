@@ -9,7 +9,7 @@ pub mod symmetric;
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithms::KdfKeyAlgorithmEnum;
+    use crate::algorithms::KdfKeyAlgorithm;
     use crate::keys::symmetric::SymmetricKey;
     use crate::wrappers::kdf::passwd::{KdfPasswordWrapper, Pbkdf2Sha256Wrapper};
     use seal_crypto::secrecy::SecretBox;
@@ -51,15 +51,15 @@ mod tests {
         let info2 = b"signing_key";
 
         let derived_key1 = master_key
-            .derive_key(KdfKeyAlgorithmEnum::HkdfSha256, Some(salt), Some(info1), 32)
+            .derive_key(KdfKeyAlgorithm::build().hkdf_sha256(), Some(salt), Some(info1), 32)
             .unwrap();
         let derived_key2 = master_key
-            .derive_key(KdfKeyAlgorithmEnum::HkdfSha256, Some(salt), Some(info2), 32)
+            .derive_key(KdfKeyAlgorithm::build().hkdf_sha256(), Some(salt), Some(info2), 32)
             .unwrap();
 
         // 相同的主密钥和参数应该产生相同的派生密钥
         let derived_key1_again = master_key
-            .derive_key(KdfKeyAlgorithmEnum::HkdfSha256, Some(salt), Some(info1), 32)
+            .derive_key(KdfKeyAlgorithm::build().hkdf_sha256(), Some(salt), Some(info1), 32)
             .unwrap();
 
         // 不同的上下文信息应该产生不同的派生密钥
@@ -105,7 +105,7 @@ mod tests {
     #[test]
     fn test_key_derivation_output_length() {
         let master_key = SymmetricKey::new(vec![0u8; 32]);
-        let deriver = KdfKeyAlgorithmEnum::HkdfSha256;
+        let deriver = KdfKeyAlgorithm::build().hkdf_sha256();
         let salt = b"salt";
         let info = b"info";
 

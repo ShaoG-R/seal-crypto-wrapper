@@ -4,8 +4,8 @@
 
 use crate::error::Result;
 use crate::algorithms::{
-    AsymmetricAlgorithm, KdfKeyAlgorithmEnum, KdfPasswordAlgorithmEnum, SignatureAlgorithmEnum,
-    SymmetricAlgorithmEnum, XofAlgorithmEnum,
+    AsymmetricAlgorithm, KdfKeyAlgorithm, KdfPasswordAlgorithm, SignatureAlgorithm,
+    SymmetricAlgorithm, XofAlgorithm,
 };
 use crate::wrappers::xof::XofReaderWrapper;
 use crate::keys::asymmetric::TypedAsymmetricKeyPair;
@@ -194,7 +194,7 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static {
     fn generate_untyped_key(&self) -> Result<UntypedSymmetricKey>;
 
     /// Returns the algorithm enum.
-    fn algorithm(&self) -> SymmetricAlgorithmEnum;
+    fn algorithm(&self) -> SymmetricAlgorithm;
 
     /// Returns the key size in bytes.
     fn key_size(&self) -> usize;
@@ -221,7 +221,7 @@ impl_trait_for_box!(SymmetricAlgorithmTrait {
     ref fn decrypt_to_buffer(&self, key: &TypedSymmetricKey, nonce: &[u8], ciphertext: &[u8], output: &mut [u8], aad: Option<&[u8]>) -> Result<usize>;
     ref fn generate_typed_key(&self,) -> Result<TypedSymmetricKey>;
     ref fn generate_untyped_key(&self,) -> Result<UntypedSymmetricKey>;
-    ref fn algorithm(&self,) -> SymmetricAlgorithmEnum;
+    ref fn algorithm(&self,) -> SymmetricAlgorithm;
     ref fn key_size(&self,) -> usize;
     ref fn nonce_size(&self,) -> usize;
     ref fn tag_size(&self,) -> usize;
@@ -363,7 +363,7 @@ impl SymmetricAlgorithmTrait for Box<dyn HybridAlgorithmTrait> {
     fn generate_untyped_key(&self) -> Result<UntypedSymmetricKey> {
         self.as_ref().symmetric_algorithm().generate_untyped_key()
     }
-    fn algorithm(&self) -> SymmetricAlgorithmEnum {
+    fn algorithm(&self) -> SymmetricAlgorithm {
         self.as_ref().symmetric_algorithm().algorithm()
     }
     fn key_size(&self) -> usize {
@@ -410,7 +410,7 @@ pub trait KdfKeyAlgorithmTrait: Send + Sync + 'static {
         output_len: usize,
     ) -> Result<Zeroizing<Vec<u8>>>;
 
-    fn algorithm(&self) -> KdfKeyAlgorithmEnum;
+    fn algorithm(&self) -> KdfKeyAlgorithm;
 
     fn clone_box(&self) -> Box<dyn KdfKeyAlgorithmTrait>;
 }
@@ -418,10 +418,10 @@ pub trait KdfKeyAlgorithmTrait: Send + Sync + 'static {
 impl_trait_for_box!(KdfKeyAlgorithmTrait {
     ref fn clone_box(&self,) -> Box<dyn KdfKeyAlgorithmTrait>;
     ref fn derive(&self, ikm: &[u8], salt: Option<&[u8]>, info: Option<&[u8]>, output_len: usize) -> Result<Zeroizing<Vec<u8>>>;
-    ref fn algorithm(&self,) -> KdfKeyAlgorithmEnum;
+    ref fn algorithm(&self,) -> KdfKeyAlgorithm;
 }, clone_box);
 
-pub trait KdfPasswordAlgorithmTrait {
+pub trait KdfPasswordAlgorithmTrait: Send + Sync + 'static {
     fn derive(
         &self,
         password: &SecretBox<[u8]>,
@@ -429,7 +429,7 @@ pub trait KdfPasswordAlgorithmTrait {
         output_len: usize,
     ) -> Result<Zeroizing<Vec<u8>>>;
 
-    fn algorithm(&self) -> KdfPasswordAlgorithmEnum;
+    fn algorithm(&self) -> KdfPasswordAlgorithm;
 
     fn clone_box(&self) -> Box<dyn KdfPasswordAlgorithmTrait>;
 }
@@ -437,7 +437,7 @@ pub trait KdfPasswordAlgorithmTrait {
 impl_trait_for_box!(KdfPasswordAlgorithmTrait {
     ref fn clone_box(&self,) -> Box<dyn KdfPasswordAlgorithmTrait>;
     ref fn derive(&self, password: &SecretBox<[u8]>, salt: &[u8], output_len: usize) -> Result<Zeroizing<Vec<u8>>>;
-    ref fn algorithm(&self,) -> KdfPasswordAlgorithmEnum;
+    ref fn algorithm(&self,) -> KdfPasswordAlgorithm;
 }, clone_box);
 
 
@@ -450,12 +450,12 @@ pub trait XofAlgorithmTrait: Send + Sync + 'static {
         info: Option<&'a [u8]>,
     ) -> Result<XofReaderWrapper<'a>>;
     fn clone_box(&self) -> Box<dyn XofAlgorithmTrait>;
-    fn algorithm(&self) -> XofAlgorithmEnum;
+    fn algorithm(&self) -> XofAlgorithm;
 }
 
 impl_trait_for_box!(XofAlgorithmTrait {
     ref fn reader<'a>(&self, ikm: &'a [u8], salt: Option<&'a [u8]>, info: Option<&'a [u8]>) -> Result<XofReaderWrapper<'a>>;
-    ref fn algorithm(&self,) -> XofAlgorithmEnum;
+    ref fn algorithm(&self,) -> XofAlgorithm;
     ref fn clone_box(&self,) -> Box<dyn XofAlgorithmTrait>;
 }, clone_box);
 
@@ -469,7 +469,7 @@ pub trait SignatureAlgorithmTrait: Send + Sync + 'static {
     ) -> Result<()>;
     fn generate_keypair(&self) -> Result<TypedSignatureKeyPair>;
     fn clone_box(&self) -> Box<dyn SignatureAlgorithmTrait>;
-    fn algorithm(&self) -> SignatureAlgorithmEnum;
+    fn algorithm(&self) -> SignatureAlgorithm;
 }
 
 impl_trait_for_box!(SignatureAlgorithmTrait {
@@ -477,5 +477,5 @@ impl_trait_for_box!(SignatureAlgorithmTrait {
     ref fn verify(&self, message: &[u8], key: &TypedSignaturePublicKey, signature: Vec<u8>) -> Result<()>;
     ref fn generate_keypair(&self,) -> Result<TypedSignatureKeyPair>;
     ref fn clone_box(&self,) -> Box<dyn SignatureAlgorithmTrait>;
-    ref fn algorithm(&self,) -> SignatureAlgorithmEnum;
+    ref fn algorithm(&self,) -> SignatureAlgorithm;
 }, clone_box);

@@ -1,35 +1,64 @@
 
 use bincode::{Decode, Encode};
 
-/// Symmetric encryption algorithm enum.
 ///
 /// 对称加密算法枚举。
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode)]
 #[derive(serde::Serialize, serde::Deserialize)]
-pub enum SymmetricAlgorithmEnum {
-    Aes128Gcm,
-    Aes256Gcm,
+pub enum SymmetricAlgorithm {
+    AesGcm(AesKeySize),
     ChaCha20Poly1305,
     XChaCha20Poly1305,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode)]
+#[derive(serde::Serialize, serde::Deserialize)]
+pub enum AesKeySize {
+    K128,
+    K256,
+}
+
+impl SymmetricAlgorithm {
+    pub fn build() -> SymmetricAlgorithmBuilder {
+        SymmetricAlgorithmBuilder
+    }
+}
+
+pub struct SymmetricAlgorithmBuilder;
+
+impl SymmetricAlgorithmBuilder {
+    pub fn aes128_gcm(self) -> SymmetricAlgorithm {
+        SymmetricAlgorithm::AesGcm(AesKeySize::K128)
+    }
+    pub fn aes256_gcm(self) -> SymmetricAlgorithm {
+        SymmetricAlgorithm::AesGcm(AesKeySize::K256)
+    }
+    pub fn chacha20_poly1305(self) -> SymmetricAlgorithm {
+        SymmetricAlgorithm::ChaCha20Poly1305
+    }
+    pub fn xchacha20_poly1305(self) -> SymmetricAlgorithm {
+        SymmetricAlgorithm::XChaCha20Poly1305
+    }
+}
+
+
 use crate::wrappers::symmetric::SymmetricAlgorithmWrapper;
-impl SymmetricAlgorithmEnum {
+impl SymmetricAlgorithm {
     pub fn into_symmetric_wrapper(self) -> SymmetricAlgorithmWrapper {
         use crate::wrappers::symmetric::{
             Aes128GcmWrapper, Aes256GcmWrapper, ChaCha20Poly1305Wrapper, XChaCha20Poly1305Wrapper,
         };
         match self {
-            SymmetricAlgorithmEnum::Aes128Gcm => {
+            SymmetricAlgorithm::AesGcm(AesKeySize::K128) => {
                 SymmetricAlgorithmWrapper::new(Box::new(Aes128GcmWrapper::default()))
             }
-            SymmetricAlgorithmEnum::Aes256Gcm => {
+            SymmetricAlgorithm::AesGcm(AesKeySize::K256) => {
                 SymmetricAlgorithmWrapper::new(Box::new(Aes256GcmWrapper::default()))
             }
-            SymmetricAlgorithmEnum::ChaCha20Poly1305 => {
+            SymmetricAlgorithm::ChaCha20Poly1305 => {
                 SymmetricAlgorithmWrapper::new(Box::new(ChaCha20Poly1305Wrapper::default()))
             }
-            SymmetricAlgorithmEnum::XChaCha20Poly1305 => {
+            SymmetricAlgorithm::XChaCha20Poly1305 => {
                 SymmetricAlgorithmWrapper::new(Box::new(XChaCha20Poly1305Wrapper::default()))
             }
         }
@@ -155,128 +184,219 @@ impl AsymmetricAlgorithm {
 /// 数字签名算法枚举。
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode)]
 #[derive(serde::Serialize, serde::Deserialize)]
-pub enum SignatureAlgorithmEnum {
-    Dilithium2,
-    Dilithium3,
-    Dilithium5,
+pub enum SignatureAlgorithm {
+    Dilithium(DilithiumSecurityLevel),
     Ed25519,
     EcdsaP256,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode)]
+#[derive(serde::Serialize, serde::Deserialize)]
+pub enum DilithiumSecurityLevel {
+    L2,
+    L3,
+    L5,
+}
+
+impl SignatureAlgorithm {
+    pub fn build() -> SignatureAlgorithmBuilder {
+        SignatureAlgorithmBuilder
+    }
+}
+
+pub struct SignatureAlgorithmBuilder;
+
+impl SignatureAlgorithmBuilder {
+    pub fn dilithium2(self) -> SignatureAlgorithm {
+        SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L2)
+    }
+    pub fn dilithium3(self) -> SignatureAlgorithm {
+        SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L3)
+    }
+    pub fn dilithium5(self) -> SignatureAlgorithm {
+        SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L5)
+    }
+    pub fn ed25519(self) -> SignatureAlgorithm {
+        SignatureAlgorithm::Ed25519
+    }
+    pub fn ecdsa_p256(self) -> SignatureAlgorithm {
+        SignatureAlgorithm::EcdsaP256
+    }
+}
+
 use crate::wrappers::signature::SignatureAlgorithmWrapper;
 
-impl SignatureAlgorithmEnum {
+impl SignatureAlgorithm {
     pub fn into_signature_wrapper(self) -> SignatureAlgorithmWrapper {
         use crate::wrappers::signature::{
             Dilithium2Wrapper, Dilithium3Wrapper, Dilithium5Wrapper, EcdsaP256Wrapper,
             Ed25519Wrapper,
         };
         match self {
-            SignatureAlgorithmEnum::Dilithium2 => {
+            SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L2) => {
                 SignatureAlgorithmWrapper::new(Box::new(Dilithium2Wrapper::default()))
             }
-            SignatureAlgorithmEnum::Dilithium3 => {
+            SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L3) => {
                 SignatureAlgorithmWrapper::new(Box::new(Dilithium3Wrapper::default()))
             }
-            SignatureAlgorithmEnum::Dilithium5 => {
+            SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L5) => {
                 SignatureAlgorithmWrapper::new(Box::new(Dilithium5Wrapper::default()))
             }
-            SignatureAlgorithmEnum::Ed25519 => {
+            SignatureAlgorithm::Ed25519 => {
                 SignatureAlgorithmWrapper::new(Box::new(Ed25519Wrapper::default()))
             }
-            SignatureAlgorithmEnum::EcdsaP256 => {
+            SignatureAlgorithm::EcdsaP256 => {
                 SignatureAlgorithmWrapper::new(Box::new(EcdsaP256Wrapper::default()))
             }
         }
     }
 }
 
-/// Key Derivation Function (KDF) algorithm enum.
 ///
 /// 密钥派生函数 (KDF) 算法枚举。
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode)]
 #[derive(serde::Serialize, serde::Deserialize)]
-pub enum KdfKeyAlgorithmEnum {
-    HkdfSha256,
-    HkdfSha384,
-    HkdfSha512,
+pub enum KdfKeyAlgorithm {
+    Hkdf(HashAlgorithmEnum),
+}
+
+impl KdfKeyAlgorithm {
+    pub fn build() -> KdfKeyAlgorithmBuilder {
+        KdfKeyAlgorithmBuilder
+    }
+}
+
+pub struct KdfKeyAlgorithmBuilder;
+
+impl KdfKeyAlgorithmBuilder {
+    pub fn hkdf_sha256(self) -> KdfKeyAlgorithm {
+        KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha256)
+    }
+    pub fn hkdf_sha384(self) -> KdfKeyAlgorithm {
+        KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha384)
+    }
+    pub fn hkdf_sha512(self) -> KdfKeyAlgorithm {
+        KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha512)
+    }
 }
 
 use crate::wrappers::kdf::key::KdfKeyWrapper;
 
-impl KdfKeyAlgorithmEnum {
+impl KdfKeyAlgorithm {
     pub fn into_kdf_key_wrapper(self) -> KdfKeyWrapper {
         use crate::wrappers::kdf::key::{
             HkdfSha256Wrapper, HkdfSha384Wrapper, HkdfSha512Wrapper,
         };
         match self {
-            KdfKeyAlgorithmEnum::HkdfSha256 => {
+            KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha256) => {
                 KdfKeyWrapper::new(Box::new(HkdfSha256Wrapper::default()))
             }
-            KdfKeyAlgorithmEnum::HkdfSha384 => {
+            KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha384) => {
                 KdfKeyWrapper::new(Box::new(HkdfSha384Wrapper::default()))
             }
-            KdfKeyAlgorithmEnum::HkdfSha512 => {
+            KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha512) => {
                 KdfKeyWrapper::new(Box::new(HkdfSha512Wrapper::default()))
             }
         }
     }
 }
 
-/// Password-based KDF algorithm enum.
 ///
 /// 基于密码的 KDF 算法枚举。
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode)]
 #[derive(serde::Serialize, serde::Deserialize)]
-pub enum KdfPasswordAlgorithmEnum {
+pub enum KdfPasswordAlgorithm {
     Argon2,
-    Pbkdf2Sha256,
-    Pbkdf2Sha384,
-    Pbkdf2Sha512,
+    Pbkdf2(HashAlgorithmEnum),
+}
+
+impl KdfPasswordAlgorithm {
+    pub fn build() -> KdfPasswordAlgorithmBuilder {
+        KdfPasswordAlgorithmBuilder
+    }
+}
+
+pub struct KdfPasswordAlgorithmBuilder;
+
+impl KdfPasswordAlgorithmBuilder {
+    pub fn argon2(self) -> KdfPasswordAlgorithm {
+        KdfPasswordAlgorithm::Argon2
+    }
+    pub fn pbkdf2_sha256(self) -> KdfPasswordAlgorithm {
+        KdfPasswordAlgorithm::Pbkdf2(HashAlgorithmEnum::Sha256)
+    }
+    pub fn pbkdf2_sha384(self) -> KdfPasswordAlgorithm {
+        KdfPasswordAlgorithm::Pbkdf2(HashAlgorithmEnum::Sha384)
+    }
+    pub fn pbkdf2_sha512(self) -> KdfPasswordAlgorithm {
+        KdfPasswordAlgorithm::Pbkdf2(HashAlgorithmEnum::Sha512)
+    }
 }
 
 use crate::wrappers::kdf::passwd::KdfPasswordWrapper;
 
-impl KdfPasswordAlgorithmEnum {
+impl KdfPasswordAlgorithm {
     pub fn into_kdf_password_wrapper(self) -> KdfPasswordWrapper {
         use crate::wrappers::kdf::passwd::{
             Argon2Wrapper, Pbkdf2Sha256Wrapper, Pbkdf2Sha384Wrapper, Pbkdf2Sha512Wrapper,
         };
         match self {
-            KdfPasswordAlgorithmEnum::Argon2 => {
+            KdfPasswordAlgorithm::Argon2 => {
                 KdfPasswordWrapper::new(Box::new(Argon2Wrapper::default()))
             }
-            KdfPasswordAlgorithmEnum::Pbkdf2Sha256 => {
+            KdfPasswordAlgorithm::Pbkdf2(HashAlgorithmEnum::Sha256) => {
                 KdfPasswordWrapper::new(Box::new(Pbkdf2Sha256Wrapper::default()))
             }
-            KdfPasswordAlgorithmEnum::Pbkdf2Sha384 => {
+            KdfPasswordAlgorithm::Pbkdf2(HashAlgorithmEnum::Sha384) => {
                 KdfPasswordWrapper::new(Box::new(Pbkdf2Sha384Wrapper::default()))
             }
-            KdfPasswordAlgorithmEnum::Pbkdf2Sha512 => {
+            KdfPasswordAlgorithm::Pbkdf2(HashAlgorithmEnum::Sha512) => {
                 KdfPasswordWrapper::new(Box::new(Pbkdf2Sha512Wrapper::default()))
             }
         }
     }
 }
 
-/// Extendable-Output Function (XOF) algorithm enum.
 ///
 /// 可扩展输出函数 (XOF) 算法枚举。
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode)]
 #[derive(serde::Serialize, serde::Deserialize)]
-pub enum XofAlgorithmEnum {
-    Shake128,
-    Shake256,
+pub enum XofAlgorithm {
+    Shake(ShakeVariant),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode)]
+#[derive(serde::Serialize, serde::Deserialize)]
+pub enum ShakeVariant {
+    V128,
+    V256,
+}
+
+impl XofAlgorithm {
+    pub fn build() -> XofAlgorithmBuilder {
+        XofAlgorithmBuilder
+    }
+}
+
+pub struct XofAlgorithmBuilder;
+
+impl XofAlgorithmBuilder {
+    pub fn shake128(self) -> XofAlgorithm {
+        XofAlgorithm::Shake(ShakeVariant::V128)
+    }
+    pub fn shake256(self) -> XofAlgorithm {
+        XofAlgorithm::Shake(ShakeVariant::V256)
+    }
 }
 
 use crate::wrappers::xof::XofWrapper;
 
-impl XofAlgorithmEnum {
+impl XofAlgorithm {
     pub fn into_xof_wrapper(self) -> XofWrapper {
         use crate::wrappers::xof::{Shake128Wrapper, Shake256Wrapper};
         match self {
-            XofAlgorithmEnum::Shake128 => XofWrapper::new(Box::new(Shake128Wrapper::default())),
-            XofAlgorithmEnum::Shake256 => XofWrapper::new(Box::new(Shake256Wrapper::default())),
+            XofAlgorithm::Shake(ShakeVariant::V128) => XofWrapper::new(Box::new(Shake128Wrapper::default())),
+            XofAlgorithm::Shake(ShakeVariant::V256) => XofWrapper::new(Box::new(Shake256Wrapper::default())),
         }
     }
 }

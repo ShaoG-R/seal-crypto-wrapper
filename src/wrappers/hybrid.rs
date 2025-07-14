@@ -1,5 +1,5 @@
 use crate::algorithms::{
-    AsymmetricAlgorithm, SymmetricAlgorithmEnum,
+    AsymmetricAlgorithm, SymmetricAlgorithm,
 };
 use crate::error::Result;
 use seal_crypto::zeroize::Zeroizing;
@@ -76,7 +76,7 @@ impl AsymmetricAlgorithmTrait for HybridAlgorithmWrapper {
 }
 
 impl SymmetricAlgorithmTrait for HybridAlgorithmWrapper {
-    fn algorithm(&self) -> SymmetricAlgorithmEnum {
+    fn algorithm(&self) -> SymmetricAlgorithm {
         self.symmetric_algorithm.algorithm()
     }
 

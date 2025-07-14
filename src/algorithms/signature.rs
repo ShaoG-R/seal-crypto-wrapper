@@ -1,7 +1,8 @@
 use bincode::{Decode, Encode};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode)]
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode, serde::Serialize, serde::Deserialize,
+)]
 pub enum DilithiumSecurityLevel {
     L2,
     L3,
@@ -11,8 +12,9 @@ pub enum DilithiumSecurityLevel {
 /// Digital signature algorithm enum.
 ///
 /// 数字签名算法枚举。
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode)]
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode, serde::Serialize, serde::Deserialize,
+)]
 pub enum SignatureAlgorithm {
     Dilithium(DilithiumSecurityLevel),
     Ed25519,

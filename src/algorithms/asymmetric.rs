@@ -1,26 +1,28 @@
-use bincode::{Decode, Encode};
 use crate::algorithms::HashAlgorithmEnum;
-
+use bincode::{Decode, Encode};
 
 /// Asymmetric encryption algorithm enum.
 ///
 /// 非对称加密算法枚举。
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode)]
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode, serde::Serialize, serde::Deserialize,
+)]
 pub enum AsymmetricAlgorithm {
     Rsa(RsaBits, HashAlgorithmEnum),
     Kyber(KyberSecurityLevel),
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode)]
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode, serde::Serialize, serde::Deserialize,
+)]
 pub enum RsaBits {
     B2048,
     B4096,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode)]
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode, serde::Serialize, serde::Deserialize,
+)]
 pub enum KyberSecurityLevel {
     L512,
     L768,
@@ -31,11 +33,15 @@ pub struct AsymmetricAlgorithmBuilder;
 
 impl AsymmetricAlgorithmBuilder {
     pub fn rsa2048(self) -> RsaBuilder {
-        RsaBuilder { bits: RsaBits::B2048 }
+        RsaBuilder {
+            bits: RsaBits::B2048,
+        }
     }
 
     pub fn rsa4096(self) -> RsaBuilder {
-        RsaBuilder { bits: RsaBits::B4096 }
+        RsaBuilder {
+            bits: RsaBits::B4096,
+        }
     }
 
     pub fn kyber512(self) -> AsymmetricAlgorithm {
@@ -75,14 +81,13 @@ impl AsymmetricAlgorithm {
     }
 }
 
-
 use crate::wrappers::asymmetric::AsymmetricAlgorithmWrapper;
 impl AsymmetricAlgorithm {
     pub fn into_asymmetric_wrapper(self) -> AsymmetricAlgorithmWrapper {
         use crate::wrappers::asymmetric::{
-            Kyber1024Wrapper, Kyber512Wrapper, Kyber768Wrapper, 
-            Rsa2048Sha256Wrapper, Rsa2048Sha384Wrapper, Rsa2048Sha512Wrapper,
-            Rsa4096Sha256Wrapper, Rsa4096Sha384Wrapper, Rsa4096Sha512Wrapper,
+            Kyber512Wrapper, Kyber768Wrapper, Kyber1024Wrapper, Rsa2048Sha256Wrapper,
+            Rsa2048Sha384Wrapper, Rsa2048Sha512Wrapper, Rsa4096Sha256Wrapper, Rsa4096Sha384Wrapper,
+            Rsa4096Sha512Wrapper,
         };
         match self {
             AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256) => {

@@ -11,13 +11,22 @@ macro_rules! dispatch_signature {
     ($algorithm:expr, $action:ident) => {
         match $algorithm {
             SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L2) => {
-                $action!(Dilithium2, SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L2))
+                $action!(
+                    Dilithium2,
+                    SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L2)
+                )
             }
             SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L3) => {
-                $action!(Dilithium3, SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L3))
+                $action!(
+                    Dilithium3,
+                    SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L3)
+                )
             }
             SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L5) => {
-                $action!(Dilithium5, SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L5))
+                $action!(
+                    Dilithium5,
+                    SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L5)
+                )
             }
             SignatureAlgorithm::Ed25519 => $action!(Ed25519, SignatureAlgorithm::Ed25519),
             SignatureAlgorithm::EcdsaP256 => {
@@ -30,8 +39,7 @@ macro_rules! dispatch_signature {
 /// A struct wrapping a typed signature key pair.
 ///
 /// 包装了类型化签名密钥对的结构体。
-#[derive(serde::Serialize, serde::Deserialize)]
-#[derive(Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct TypedSignatureKeyPair {
     public_key: SignaturePublicKey,
     private_key: SignaturePrivateKey,
@@ -101,8 +109,7 @@ impl TypedSignatureKeyPair {
 /// A struct wrapping a typed signature public key.
 ///
 /// 包装了类型化签名公钥的结构体。
-#[derive(serde::Serialize, serde::Deserialize)]
-#[derive(Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct TypedSignaturePublicKey {
     key: SignaturePublicKey,
     algorithm: SignatureAlgorithm,
@@ -121,8 +128,7 @@ impl TypedSignaturePublicKey {
 /// A struct wrapping a typed signature private key.
 ///
 /// 包装了类型化签名私钥的结构体。
-#[derive(serde::Serialize, serde::Deserialize)]
-#[derive(Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct TypedSignaturePrivateKey {
     key: SignaturePrivateKey,
     algorithm: SignatureAlgorithm,
@@ -141,8 +147,7 @@ impl TypedSignaturePrivateKey {
 /// A byte wrapper for a signature public key.
 ///
 /// 签名公钥的字节包装器。
-#[derive(Debug, Clone)]
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct SignaturePublicKey(pub zeroize::Zeroizing<Vec<u8>>);
 
 impl SignaturePublicKey {
@@ -191,8 +196,7 @@ impl SignaturePublicKey {
 /// A byte wrapper for a signature private key.
 ///
 /// 签名私钥的字节包装器。
-#[derive(Debug, Clone)]
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct SignaturePrivateKey(pub zeroize::Zeroizing<Vec<u8>>);
 
 impl SignaturePrivateKey {

@@ -2,18 +2,43 @@
 //!
 //! 定义用于类型安全算法规范的核心 trait。
 
-use crate::error::Result;
-use crate::algorithms::{
-    asymmetric::AsymmetricAlgorithm, kdf::key::KdfKeyAlgorithm, kdf::passwd::KdfPasswordAlgorithm, signature::SignatureAlgorithm, symmetric::SymmetricAlgorithm, xof::XofAlgorithm
+#[cfg(feature = "asymmetric")]
+use {
+    crate::algorithms::asymmetric::AsymmetricAlgorithm,
+    crate::keys::asymmetric::{
+        TypedAsymmetricKeyPair, TypedAsymmetricPrivateKey, TypedAsymmetricPublicKey,
+    },
 };
-use crate::wrappers::xof::XofReaderWrapper;
-use crate::keys::asymmetric::TypedAsymmetricKeyPair;
-use seal_crypto::secrecy::SecretBox;
-use seal_crypto::zeroize::Zeroizing;
-use crate::keys::asymmetric::{TypedAsymmetricPrivateKey, TypedAsymmetricPublicKey};
-use crate::keys::signature::{TypedSignatureKeyPair, TypedSignaturePrivateKey, TypedSignaturePublicKey};
-use crate::keys::symmetric::{SymmetricKey as UntypedSymmetricKey, TypedSymmetricKey};
+#[cfg(feature = "kdf")]
+use {crate::algorithms::kdf::key::KdfKeyAlgorithm, crate::prelude::KdfPasswordAlgorithm};
+#[cfg(feature = "signature")]
+use {
+    crate::algorithms::signature::SignatureAlgorithm,
+    crate::keys::signature::{
+        TypedSignatureKeyPair, TypedSignaturePrivateKey, TypedSignaturePublicKey,
+    },
+};
+#[cfg(feature = "symmetric")]
+use {
+    crate::algorithms::symmetric::SymmetricAlgorithm,
+    crate::keys::symmetric::{SymmetricKey as UntypedSymmetricKey, TypedSymmetricKey},
+};
+#[cfg(feature = "xof")]
+use {crate::algorithms::xof::XofAlgorithm, crate::wrappers::xof::XofReaderWrapper};
+#[cfg(any(
+    feature = "symmetric",
+    feature = "asymmetric",
+    feature = "hybrid",
+    feature = "kdf",
+    feature = "xof",
+    feature = "signature"
+))]
+use {
+    crate::error::Result,
+    seal_crypto::{secrecy::SecretBox, zeroize::Zeroizing},
+};
 
+#[allow(unused_macros)]
 macro_rules! impl_trait_for_box {
     // Internal recursive rules for TT muncher
     (
@@ -151,6 +176,7 @@ macro_rules! impl_trait_for_box {
 ///
 /// 表示一个具体的对称加密算法。
 /// 这是一个对象安全的 trait，它擦除了具体的算法类型。
+#[cfg(feature = "symmetric")]
 pub trait SymmetricAlgorithmTrait: Send + Sync + 'static {
     /// Encrypts the given plaintext.
     fn encrypt(
@@ -213,6 +239,7 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static {
     fn clone_box_symmetric(&self) -> Box<dyn SymmetricAlgorithmTrait>;
 }
 
+#[cfg(feature = "symmetric")]
 impl_trait_for_box!(SymmetricAlgorithmTrait {
     ref fn encrypt(&self, key: &TypedSymmetricKey, nonce: &[u8], plaintext: &[u8], aad: Option<&[u8]>) -> Result<Vec<u8>>;
     ref fn encrypt_to_buffer(&self, key: &TypedSymmetricKey, nonce: &[u8], plaintext: &[u8], output: &mut [u8], aad: Option<&[u8]>) -> Result<usize>;
@@ -233,6 +260,7 @@ impl_trait_for_box!(SymmetricAlgorithmTrait {
 ///
 /// 用于提供特定非对称算法详细信息的 trait。
 /// 该 trait 的实现者是算法方案本身。
+#[cfg(feature = "asymmetric")]
 pub trait AsymmetricAlgorithmTrait: Send + Sync + 'static {
     /// Returns the algorithm enum.
     ///
@@ -266,6 +294,7 @@ pub trait AsymmetricAlgorithmTrait: Send + Sync + 'static {
     fn into_asymmetric_boxed(self) -> Box<dyn AsymmetricAlgorithmTrait>;
 }
 
+#[cfg(feature = "asymmetric")]
 impl_trait_for_box!(AsymmetricAlgorithmTrait {
     ref fn clone_box_asymmetric(&self,) -> Box<dyn AsymmetricAlgorithmTrait>;
     ref fn algorithm(&self,) -> AsymmetricAlgorithm;
@@ -275,12 +304,14 @@ impl_trait_for_box!(AsymmetricAlgorithmTrait {
     self fn into_asymmetric_boxed(self,) -> Box<dyn AsymmetricAlgorithmTrait>;
 }, clone_box_asymmetric);
 
+#[cfg(feature = "hybrid")]
 pub trait HybridAlgorithmTrait: AsymmetricAlgorithmTrait + SymmetricAlgorithmTrait {
     fn asymmetric_algorithm(&self) -> &dyn AsymmetricAlgorithmTrait;
     fn symmetric_algorithm(&self) -> &dyn SymmetricAlgorithmTrait;
     fn clone_box(&self) -> Box<dyn HybridAlgorithmTrait>;
 }
 
+#[cfg(feature = "hybrid")]
 impl AsymmetricAlgorithmTrait for Box<dyn HybridAlgorithmTrait> {
     fn algorithm(&self) -> AsymmetricAlgorithm {
         self.as_ref().asymmetric_algorithm().algorithm()
@@ -309,6 +340,7 @@ impl AsymmetricAlgorithmTrait for Box<dyn HybridAlgorithmTrait> {
     }
 }
 
+#[cfg(feature = "symmetric")]
 impl SymmetricAlgorithmTrait for Box<dyn HybridAlgorithmTrait> {
     fn encrypt(
         &self,
@@ -382,6 +414,7 @@ impl SymmetricAlgorithmTrait for Box<dyn HybridAlgorithmTrait> {
     }
 }
 
+#[cfg(feature = "hybrid")]
 impl HybridAlgorithmTrait for Box<dyn HybridAlgorithmTrait> {
     fn asymmetric_algorithm(&self) -> &dyn AsymmetricAlgorithmTrait {
         self.as_ref().asymmetric_algorithm()
@@ -394,12 +427,14 @@ impl HybridAlgorithmTrait for Box<dyn HybridAlgorithmTrait> {
     }
 }
 
+#[cfg(feature = "hybrid")]
 impl Clone for Box<dyn HybridAlgorithmTrait> {
     fn clone(&self) -> Self {
         HybridAlgorithmTrait::clone_box(self.as_ref())
     }
 }
 
+#[cfg(feature = "kdf")]
 pub trait KdfKeyAlgorithmTrait: Send + Sync + 'static {
     fn derive(
         &self,
@@ -414,12 +449,14 @@ pub trait KdfKeyAlgorithmTrait: Send + Sync + 'static {
     fn clone_box(&self) -> Box<dyn KdfKeyAlgorithmTrait>;
 }
 
+#[cfg(feature = "kdf")]
 impl_trait_for_box!(KdfKeyAlgorithmTrait {
     ref fn clone_box(&self,) -> Box<dyn KdfKeyAlgorithmTrait>;
     ref fn derive(&self, ikm: &[u8], salt: Option<&[u8]>, info: Option<&[u8]>, output_len: usize) -> Result<Zeroizing<Vec<u8>>>;
     ref fn algorithm(&self,) -> KdfKeyAlgorithm;
 }, clone_box);
 
+#[cfg(feature = "kdf")]
 pub trait KdfPasswordAlgorithmTrait: Send + Sync + 'static {
     fn derive(
         &self,
@@ -433,14 +470,14 @@ pub trait KdfPasswordAlgorithmTrait: Send + Sync + 'static {
     fn clone_box(&self) -> Box<dyn KdfPasswordAlgorithmTrait>;
 }
 
+#[cfg(feature = "kdf")]
 impl_trait_for_box!(KdfPasswordAlgorithmTrait {
     ref fn clone_box(&self,) -> Box<dyn KdfPasswordAlgorithmTrait>;
     ref fn derive(&self, password: &SecretBox<[u8]>, salt: &[u8], output_len: usize) -> Result<Zeroizing<Vec<u8>>>;
     ref fn algorithm(&self,) -> KdfPasswordAlgorithm;
 }, clone_box);
 
-
-
+#[cfg(feature = "xof")]
 pub trait XofAlgorithmTrait: Send + Sync + 'static {
     fn reader<'a>(
         &self,
@@ -452,12 +489,14 @@ pub trait XofAlgorithmTrait: Send + Sync + 'static {
     fn algorithm(&self) -> XofAlgorithm;
 }
 
+#[cfg(feature = "xof")]
 impl_trait_for_box!(XofAlgorithmTrait {
     ref fn reader<'a>(&self, ikm: &'a [u8], salt: Option<&'a [u8]>, info: Option<&'a [u8]>) -> Result<XofReaderWrapper<'a>>;
     ref fn algorithm(&self,) -> XofAlgorithm;
     ref fn clone_box(&self,) -> Box<dyn XofAlgorithmTrait>;
 }, clone_box);
 
+#[cfg(feature = "signature")]
 pub trait SignatureAlgorithmTrait: Send + Sync + 'static {
     fn sign(&self, message: &[u8], key: &TypedSignaturePrivateKey) -> Result<Vec<u8>>;
     fn verify(
@@ -471,6 +510,7 @@ pub trait SignatureAlgorithmTrait: Send + Sync + 'static {
     fn algorithm(&self) -> SignatureAlgorithm;
 }
 
+#[cfg(feature = "signature")]
 impl_trait_for_box!(SignatureAlgorithmTrait {
     ref fn sign(&self, message: &[u8], key: &TypedSignaturePrivateKey) -> Result<Vec<u8>>;
     ref fn verify(&self, message: &[u8], key: &TypedSignaturePublicKey, signature: Vec<u8>) -> Result<()>;

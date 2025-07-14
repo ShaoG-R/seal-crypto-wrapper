@@ -1,13 +1,11 @@
-use crate::algorithms::{
-    asymmetric::AsymmetricAlgorithm, symmetric::SymmetricAlgorithm,
-};
+use crate::algorithms::{asymmetric::AsymmetricAlgorithm, symmetric::SymmetricAlgorithm};
 use crate::error::Result;
-use seal_crypto::zeroize::Zeroizing;
-use crate::keys::asymmetric::{TypedAsymmetricKeyPair, TypedAsymmetricPrivateKey, TypedAsymmetricPublicKey};
-use crate::keys::symmetric::{SymmetricKey as UntypedSymmetricKey, TypedSymmetricKey};
-use crate::traits::{
-    AsymmetricAlgorithmTrait, HybridAlgorithmTrait as HybridAlgorithmTrait, SymmetricAlgorithmTrait,
+use crate::keys::asymmetric::{
+    TypedAsymmetricKeyPair, TypedAsymmetricPrivateKey, TypedAsymmetricPublicKey,
 };
+use crate::keys::symmetric::{SymmetricKey as UntypedSymmetricKey, TypedSymmetricKey};
+use crate::traits::{AsymmetricAlgorithmTrait, HybridAlgorithmTrait, SymmetricAlgorithmTrait};
+use seal_crypto::zeroize::Zeroizing;
 
 #[derive(Clone)]
 pub struct HybridAlgorithmWrapper {

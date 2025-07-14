@@ -1,42 +1,70 @@
-use seal_crypto::schemes::asymmetric::traditional::rsa::{Rsa2048, Rsa4096};
-use seal_crypto::schemes::hash::{Sha256, Sha384, Sha512};
-use seal_crypto::prelude::{AsymmetricKeySet, Key, KeyGenerator};
-use seal_crypto::schemes::asymmetric::post_quantum::kyber::{Kyber1024, Kyber512, Kyber768};
 use crate::algorithms::{
-    asymmetric::{AsymmetricAlgorithm, KyberSecurityLevel, RsaBits}, HashAlgorithmEnum
+    HashAlgorithmEnum,
+    asymmetric::{AsymmetricAlgorithm, KyberSecurityLevel, RsaBits},
 };
 use crate::error::Error;
+use seal_crypto::prelude::{AsymmetricKeySet, Key, KeyGenerator};
+use seal_crypto::schemes::asymmetric::post_quantum::kyber::{Kyber512, Kyber768, Kyber1024};
+use seal_crypto::schemes::asymmetric::traditional::rsa::{Rsa2048, Rsa4096};
+use seal_crypto::schemes::hash::{Sha256, Sha384, Sha512};
 use seal_crypto::zeroize;
 
 macro_rules! dispatch_asymmetric {
     ($algorithm:expr, $action:ident) => {
         match $algorithm {
             AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256) => {
-                $action!(Rsa2048<Sha256>, AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256))
+                $action!(
+                    Rsa2048<Sha256>,
+                    AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256)
+                )
             }
             AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384) => {
-                $action!(Rsa2048<Sha384>, AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384))
+                $action!(
+                    Rsa2048<Sha384>,
+                    AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384)
+                )
             }
             AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512) => {
-                $action!(Rsa2048<Sha512>, AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512))
+                $action!(
+                    Rsa2048<Sha512>,
+                    AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512)
+                )
             }
             AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256) => {
-                $action!(Rsa4096<Sha256>, AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256))
+                $action!(
+                    Rsa4096<Sha256>,
+                    AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256)
+                )
             }
             AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384) => {
-                $action!(Rsa4096<Sha384>, AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384))
+                $action!(
+                    Rsa4096<Sha384>,
+                    AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384)
+                )
             }
             AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512) => {
-                $action!(Rsa4096<Sha512>, AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512))
+                $action!(
+                    Rsa4096<Sha512>,
+                    AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512)
+                )
             }
             AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L512) => {
-                $action!(Kyber512, AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L512))
+                $action!(
+                    Kyber512,
+                    AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L512)
+                )
             }
             AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L768) => {
-                $action!(Kyber768, AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L768))
+                $action!(
+                    Kyber768,
+                    AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L768)
+                )
             }
             AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L1024) => {
-                $action!(Kyber1024, AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L1024))
+                $action!(
+                    Kyber1024,
+                    AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L1024)
+                )
             }
         }
     };
@@ -45,8 +73,7 @@ macro_rules! dispatch_asymmetric {
 /// An enum wrapping a typed asymmetric key pair.
 ///
 /// 包装了类型化非对称密钥对的枚举。
-#[derive(serde::Serialize, serde::Deserialize)]
-#[derive(Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct TypedAsymmetricKeyPair {
     public_key: AsymmetricPublicKey,
     private_key: AsymmetricPrivateKey,
@@ -60,11 +87,13 @@ impl TypedAsymmetricKeyPair {
     pub fn generate(algorithm: AsymmetricAlgorithm) -> Result<Self, Error> {
         macro_rules! generate_keypair {
             ($key_type:ty, $alg_enum:expr) => {
-                <$key_type>::generate_keypair().map(|(pk, sk)| Self {
-                    public_key: AsymmetricPublicKey::new(pk.to_bytes()),
-                    private_key: AsymmetricPrivateKey::new(sk.to_bytes()),
-                    algorithm: $alg_enum,
-                }).map_err(Error::from)
+                <$key_type>::generate_keypair()
+                    .map(|(pk, sk)| Self {
+                        public_key: AsymmetricPublicKey::new(pk.to_bytes()),
+                        private_key: AsymmetricPrivateKey::new(sk.to_bytes()),
+                        algorithm: $alg_enum,
+                    })
+                    .map_err(Error::from)
             };
         }
         dispatch_asymmetric!(algorithm, generate_keypair)
@@ -114,8 +143,7 @@ impl TypedAsymmetricKeyPair {
 /// An enum wrapping a typed asymmetric private key.
 ///
 /// 包装了类型化非对称私钥的枚举。
-#[derive(serde::Serialize, serde::Deserialize)]
-#[derive(Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct TypedAsymmetricPublicKey {
     key: AsymmetricPublicKey,
     algorithm: AsymmetricAlgorithm,
@@ -134,8 +162,7 @@ impl TypedAsymmetricPublicKey {
 /// An enum wrapping a typed asymmetric private key.
 ///
 /// 包装了类型化非对称私钥的枚举。
-#[derive(serde::Serialize, serde::Deserialize)]
-#[derive(Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct TypedAsymmetricPrivateKey {
     key: AsymmetricPrivateKey,
     algorithm: AsymmetricAlgorithm,
@@ -154,8 +181,7 @@ impl TypedAsymmetricPrivateKey {
 /// A byte wrapper for an asymmetric private key.
 ///
 /// 非对称私钥的字节包装器。
-#[derive(Debug, Clone)]
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct AsymmetricPrivateKey(pub zeroize::Zeroizing<Vec<u8>>);
 
 impl AsymmetricPrivateKey {
@@ -190,8 +216,7 @@ impl AsymmetricPrivateKey {
         macro_rules! into_typed_sk {
             ($key_type:ty, $alg_enum:expr) => {{
                 type KT = $key_type;
-                let sk =
-                    <KT as AsymmetricKeySet>::PrivateKey::from_bytes(self.as_bytes())?;
+                let sk = <KT as AsymmetricKeySet>::PrivateKey::from_bytes(self.as_bytes())?;
                 Ok(TypedAsymmetricPrivateKey {
                     key: AsymmetricPrivateKey::new(sk.to_bytes()),
                     algorithm: $alg_enum,
@@ -205,8 +230,7 @@ impl AsymmetricPrivateKey {
 /// A byte wrapper for an asymmetric public key.
 ///
 /// 非对称公钥的字节包装器。
-#[derive(Debug, Clone)]
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct AsymmetricPublicKey(pub zeroize::Zeroizing<Vec<u8>>);
 
 impl AsymmetricPublicKey {
@@ -238,8 +262,7 @@ impl AsymmetricPublicKey {
         macro_rules! into_typed_pk {
             ($key_type:ty, $alg_enum:expr) => {{
                 type KT = $key_type;
-                let pk =
-                    <KT as AsymmetricKeySet>::PublicKey::from_bytes(self.as_bytes())?;
+                let pk = <KT as AsymmetricKeySet>::PublicKey::from_bytes(self.as_bytes())?;
                 Ok(TypedAsymmetricPublicKey {
                     key: AsymmetricPublicKey::new(pk.to_bytes()),
                     algorithm: $alg_enum,

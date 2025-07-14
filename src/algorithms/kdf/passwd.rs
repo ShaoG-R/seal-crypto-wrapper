@@ -1,10 +1,11 @@
-use bincode::{Decode, Encode};
 use crate::algorithms::HashAlgorithmEnum;
+use bincode::{Decode, Encode};
 
 ///
 /// 基于密码的 KDF 算法枚举。
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode)]
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode, serde::Serialize, serde::Deserialize,
+)]
 pub enum KdfPasswordAlgorithm {
     Argon2,
     Pbkdf2(HashAlgorithmEnum),

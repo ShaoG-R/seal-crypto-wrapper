@@ -4,8 +4,18 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-seal-crypto = { path = "../seal-crypto", features = ["full"]}
+seal-crypto = { path = "../seal-crypto", default-features = false, features = ["std", "serde", "secrecy"]}
 bincode = "2.0.1"
 serde = "1.0.219"
 rand = "0.9.1"
 thiserror = "2.0.12"
+
+[features]
+default = []
+
+symmetric = ["seal-crypto/aes-gcm", "seal-crypto/chacha20-poly1305"]
+asymmetric = ["seal-crypto/rsa", "seal-crypto/kyber"]
+kdf = ["seal-crypto/kdf"]
+xof = ["seal-crypto/xof"]
+signature = ["seal-crypto/dilithium", "seal-crypto/ecc"]
+hybrid = ["symmetric", "asymmetric"]

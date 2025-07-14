@@ -1,5 +1,6 @@
 use crate::algorithms::{
-    asymmetric::{AsymmetricAlgorithm, KyberSecurityLevel, RsaBits}, HashAlgorithmEnum
+    HashAlgorithmEnum,
+    asymmetric::{AsymmetricAlgorithm, KyberSecurityLevel, RsaBits},
 };
 use crate::error::{Error, FormatError, Result};
 use crate::keys::asymmetric::{
@@ -7,7 +8,7 @@ use crate::keys::asymmetric::{
 };
 use crate::traits::AsymmetricAlgorithmTrait;
 use seal_crypto::prelude::{AsymmetricKeySet, Kem, Key};
-use seal_crypto::schemes::asymmetric::post_quantum::kyber::{Kyber1024, Kyber512, Kyber768};
+use seal_crypto::schemes::asymmetric::post_quantum::kyber::{Kyber512, Kyber768, Kyber1024};
 use seal_crypto::schemes::asymmetric::traditional::rsa::{Rsa2048, Rsa4096};
 use seal_crypto::schemes::hash::{Sha256, Sha384, Sha512};
 use seal_crypto::zeroize::Zeroizing;
@@ -56,8 +57,7 @@ macro_rules! impl_asymmetric_algorithm {
                     return Err(Error::FormatError(FormatError::InvalidKeyType));
                 }
                 type KT = $algo;
-                let sk =
-                    <KT as AsymmetricKeySet>::PrivateKey::from_bytes(&private_key.to_bytes())?;
+                let sk = <KT as AsymmetricKeySet>::PrivateKey::from_bytes(&private_key.to_bytes())?;
                 KT::decapsulate(&sk, encapsulated_key).map_err(Error::from)
             }
 
@@ -119,8 +119,12 @@ impl AsymmetricAlgorithmWrapper {
             AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512) => {
                 Box::new(Rsa4096Sha512Wrapper::new())
             }
-            AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L512) => Box::new(Kyber512Wrapper::new()),
-            AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L768) => Box::new(Kyber768Wrapper::new()),
+            AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L512) => {
+                Box::new(Kyber512Wrapper::new())
+            }
+            AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L768) => {
+                Box::new(Kyber768Wrapper::new())
+            }
             AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L1024) => {
                 Box::new(Kyber1024Wrapper::new())
             }

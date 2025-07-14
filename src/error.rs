@@ -1,8 +1,6 @@
 use rand::rand_core::OsError;
 use thiserror::Error;
 
-
-
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("Crypto error: {0}")]
@@ -16,7 +14,6 @@ pub enum Error {
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
-
 
 /// Errors related to data formatting and serialization.
 ///
@@ -83,4 +80,3 @@ impl From<bincode::error::DecodeError> for BincodeError {
         BincodeError::Dec(Box::from(err))
     }
 }
-

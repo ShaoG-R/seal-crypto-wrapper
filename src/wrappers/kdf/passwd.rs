@@ -1,14 +1,14 @@
-use crate::algorithms::kdf::passwd::KdfPasswordAlgorithm;
 use crate::algorithms::HashAlgorithmEnum;
+use crate::algorithms::kdf::passwd::KdfPasswordAlgorithm;
 use crate::error::{Error, Result};
+use crate::traits::KdfPasswordAlgorithmTrait;
 use seal_crypto::prelude::PasswordBasedDerivation;
-use seal_crypto::zeroize::Zeroizing;
 use seal_crypto::schemes::kdf::{
     argon2::Argon2,
     pbkdf2::{Pbkdf2Sha256, Pbkdf2Sha384, Pbkdf2Sha512},
 };
 use seal_crypto::secrecy::SecretBox;
-use crate::traits::KdfPasswordAlgorithmTrait;
+use seal_crypto::zeroize::Zeroizing;
 
 #[derive(Clone, Default)]
 pub struct Argon2Wrapper {
@@ -31,11 +31,7 @@ impl KdfPasswordAlgorithmTrait for Argon2Wrapper {
         output_len: usize,
     ) -> Result<Zeroizing<Vec<u8>>> {
         self.algorithm
-            .derive(
-                password,
-                salt,
-                output_len,
-            )
+            .derive(password, salt, output_len)
             .map(|dk| dk.0)
             .map_err(Error::from)
     }
@@ -70,11 +66,7 @@ impl KdfPasswordAlgorithmTrait for Pbkdf2Sha256Wrapper {
         output_len: usize,
     ) -> Result<Zeroizing<Vec<u8>>> {
         self.algorithm
-            .derive(
-                password,
-                salt,
-                output_len,
-            )
+            .derive(password, salt, output_len)
             .map(|dk| dk.0)
             .map_err(Error::from)
     }
@@ -109,11 +101,7 @@ impl KdfPasswordAlgorithmTrait for Pbkdf2Sha384Wrapper {
         output_len: usize,
     ) -> Result<Zeroizing<Vec<u8>>> {
         self.algorithm
-            .derive(
-                password,
-                salt,
-                output_len,
-            )
+            .derive(password, salt, output_len)
             .map(|dk| dk.0)
             .map_err(Error::from)
     }
@@ -148,11 +136,7 @@ impl KdfPasswordAlgorithmTrait for Pbkdf2Sha512Wrapper {
         output_len: usize,
     ) -> Result<Zeroizing<Vec<u8>>> {
         self.algorithm
-            .derive(
-                password,
-                salt,
-                output_len,
-            )
+            .derive(password, salt, output_len)
             .map(|dk| dk.0)
             .map_err(Error::from)
     }

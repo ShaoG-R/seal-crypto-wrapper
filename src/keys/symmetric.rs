@@ -1,5 +1,5 @@
-use crate::algorithms::symmetric::{AesKeySize, SymmetricAlgorithm};
 use crate::algorithms::kdf::key::KdfKeyAlgorithm;
+use crate::algorithms::symmetric::{AesKeySize, SymmetricAlgorithm};
 use crate::error::Error;
 use crate::wrappers::kdf::passwd::KdfPasswordWrapper;
 use seal_crypto::prelude::{Key, SymmetricKeyGenerator, SymmetricKeySet};
@@ -18,16 +18,10 @@ macro_rules! dispatch_symmetric {
                 $action!(Aes256Gcm, SymmetricAlgorithm::AesGcm(AesKeySize::K256))
             }
             SymmetricAlgorithm::XChaCha20Poly1305 => {
-                $action!(
-                    XChaCha20Poly1305,
-                    SymmetricAlgorithm::XChaCha20Poly1305
-                )
+                $action!(XChaCha20Poly1305, SymmetricAlgorithm::XChaCha20Poly1305)
             }
             SymmetricAlgorithm::ChaCha20Poly1305 => {
-                $action!(
-                    ChaCha20Poly1305,
-                    SymmetricAlgorithm::ChaCha20Poly1305
-                )
+                $action!(ChaCha20Poly1305, SymmetricAlgorithm::ChaCha20Poly1305)
             }
         }
     };
@@ -36,8 +30,7 @@ macro_rules! dispatch_symmetric {
 /// A struct wrapping a typed symmetric key.
 ///
 /// 包装了类型化对称密钥的结构体。
-#[derive(serde::Serialize, serde::Deserialize)]
-#[derive(Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct TypedSymmetricKey {
     key: SymmetricKey,
     algorithm: SymmetricAlgorithm,
@@ -95,8 +88,7 @@ impl AsRef<[u8]> for TypedSymmetricKey {
 ///
 /// 这个结构体存储原始密钥字节，可以在需要时转换为特定算法的密钥。
 /// 这在简化密钥管理的同时保持了灵活性的。
-#[derive(Debug, Clone)]
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct SymmetricKey(pub Zeroizing<Vec<u8>>);
 
 impl SymmetricKey {
@@ -123,7 +115,7 @@ impl SymmetricKey {
     ///
     /// * `len` - 所需的密钥长度（以字节为单位）。
     pub fn generate(len: usize) -> Result<Self, Error> {
-        use rand::{rngs::OsRng, TryRngCore};
+        use rand::{TryRngCore, rngs::OsRng};
         let mut key_bytes = vec![0; len];
         OsRng.try_fill_bytes(&mut key_bytes)?;
         Ok(Self::new(key_bytes))
@@ -183,7 +175,10 @@ impl SymmetricKey {
     ) -> Result<Self, Error> {
         use crate::traits::KdfKeyAlgorithmTrait;
 
-        let derived_key_bytes = algorithm.into_kdf_key_wrapper().derive(self.as_bytes(), salt, info, output_len)?;
+        let derived_key_bytes =
+            algorithm
+                .into_kdf_key_wrapper()
+                .derive(self.as_bytes(), salt, info, output_len)?;
         Ok(SymmetricKey::new(derived_key_bytes))
     }
 

@@ -1,6 +1,6 @@
-use crate::traits::XofAlgorithmTrait;
-use crate::error::{Error, Result};
 use crate::algorithms::xof::{ShakeVariant, XofAlgorithm};
+use crate::error::{Error, Result};
+use crate::traits::XofAlgorithmTrait;
 use seal_crypto::prelude::{XofDerivation, XofReader};
 use seal_crypto::schemes::xof::shake::{Shake128, Shake256};
 
@@ -24,7 +24,8 @@ impl XofAlgorithmTrait for Shake128Wrapper {
         salt: Option<&'a [u8]>,
         info: Option<&'a [u8]>,
     ) -> Result<XofReaderWrapper<'a>> {
-        self.shake.reader(ikm, salt, info)
+        self.shake
+            .reader(ikm, salt, info)
             .map(|r| XofReaderWrapper::new(r))
             .map_err(Error::from)
     }

@@ -1,10 +1,10 @@
-use crate::algorithms::kdf::key::KdfKeyAlgorithm;
 use crate::algorithms::HashAlgorithmEnum;
+use crate::algorithms::kdf::key::KdfKeyAlgorithm;
 use crate::error::{Error, Result};
+use crate::traits::KdfKeyAlgorithmTrait;
 use seal_crypto::prelude::KeyBasedDerivation;
 use seal_crypto::schemes::kdf::hkdf::{HkdfSha256, HkdfSha384, HkdfSha512};
 use seal_crypto::zeroize::Zeroizing;
-use crate::traits::KdfKeyAlgorithmTrait;
 
 #[derive(Clone, Default)]
 pub struct HkdfSha256Wrapper {
@@ -20,13 +20,8 @@ impl KdfKeyAlgorithmTrait for HkdfSha256Wrapper {
         output_len: usize,
     ) -> Result<Zeroizing<Vec<u8>>> {
         self.algorithm
-            .derive(
-                ikm,
-                salt,
-                info,
-                output_len,
-            )
-            .map(|dk| dk.0)
+            .derive(ikm, salt, info, output_len)
+            .map(|k| k.0)
             .map_err(Error::from)
     }
 
@@ -53,13 +48,8 @@ impl KdfKeyAlgorithmTrait for HkdfSha384Wrapper {
         output_len: usize,
     ) -> Result<Zeroizing<Vec<u8>>> {
         self.algorithm
-            .derive(
-                ikm,
-                salt,
-                info,
-                output_len,
-            )
-            .map(|dk| dk.0)
+            .derive(ikm, salt, info, output_len)
+            .map(|k| k.0)
             .map_err(Error::from)
     }
 
@@ -87,7 +77,7 @@ impl KdfKeyAlgorithmTrait for HkdfSha512Wrapper {
     ) -> Result<Zeroizing<Vec<u8>>> {
         self.algorithm
             .derive(ikm, salt, info, output_len)
-            .map(|dk| dk.0)
+            .map(|k| k.0)
             .map_err(Error::from)
     }
 

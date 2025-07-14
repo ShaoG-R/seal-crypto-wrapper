@@ -160,8 +160,4 @@ impl_signature_algorithm!(
     SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L5)
 );
 impl_signature_algorithm!(Ed25519Wrapper, Ed25519, SignatureAlgorithm::Ed25519);
-impl_signature_algorithm!(
-    EcdsaP256Wrapper,
-    EcdsaP256,
-    SignatureAlgorithm::EcdsaP256
-);
+impl_signature_algorithm!(EcdsaP256Wrapper, EcdsaP256, SignatureAlgorithm::EcdsaP256);

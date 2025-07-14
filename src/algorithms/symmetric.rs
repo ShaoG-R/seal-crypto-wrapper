@@ -1,18 +1,19 @@
-
 use bincode::{Decode, Encode};
 
 ///
 /// 对称加密算法枚举。
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode)]
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode, serde::Serialize, serde::Deserialize,
+)]
 pub enum SymmetricAlgorithm {
     AesGcm(AesKeySize),
     ChaCha20Poly1305,
     XChaCha20Poly1305,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode)]
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode, serde::Serialize, serde::Deserialize,
+)]
 pub enum AesKeySize {
     K128,
     K256,
@@ -40,7 +41,6 @@ impl SymmetricAlgorithmBuilder {
         SymmetricAlgorithm::XChaCha20Poly1305
     }
 }
-
 
 use crate::wrappers::symmetric::SymmetricAlgorithmWrapper;
 impl SymmetricAlgorithm {

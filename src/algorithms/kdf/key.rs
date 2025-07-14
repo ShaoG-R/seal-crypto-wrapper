@@ -1,10 +1,11 @@
-use bincode::{Decode, Encode};
 use crate::algorithms::HashAlgorithmEnum;
+use bincode::{Decode, Encode};
 
 ///
 /// 密钥派生函数 (KDF) 算法枚举。
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode)]
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode, serde::Serialize, serde::Deserialize,
+)]
 pub enum KdfKeyAlgorithm {
     Hkdf(HashAlgorithmEnum),
 }
@@ -33,9 +34,7 @@ use crate::wrappers::kdf::key::KdfKeyWrapper;
 
 impl KdfKeyAlgorithm {
     pub fn into_kdf_key_wrapper(self) -> KdfKeyWrapper {
-        use crate::wrappers::kdf::key::{
-            HkdfSha256Wrapper, HkdfSha384Wrapper, HkdfSha512Wrapper,
-        };
+        use crate::wrappers::kdf::key::{HkdfSha256Wrapper, HkdfSha384Wrapper, HkdfSha512Wrapper};
         match self {
             KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha256) => {
                 KdfKeyWrapper::new(Box::new(HkdfSha256Wrapper::default()))

@@ -1,0 +1,11 @@
+[package]
+name = "seal-crypto-wrapper"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+seal-crypto = { path = "../seal-crypto", features = ["full"]}
+bincode = "2.0.1"
+serde = "1.0.219"
+rand = "0.9.1"
+thiserror = "2.0.12"

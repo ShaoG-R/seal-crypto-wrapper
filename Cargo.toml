@@ -19,3 +19,11 @@ kdf = ["seal-crypto/kdf"]
 xof = ["seal-crypto/xof"]
 signature = ["seal-crypto/dilithium", "seal-crypto/ecc"]
 hybrid = ["symmetric", "asymmetric"]
+
+asymmetric-avx2 = ["seal-crypto/kyber-avx2", "asymmetric"]
+signature-avx2 = ["seal-crypto/dilithium-avx2", "signature"]
+
+sha2-asm = ["seal-crypto/sha2-asm"]
+xof-asm = ["seal-crypto/sha3-asm"]
+
+full = ["symmetric", "asymmetric", "kdf", "xof", "signature", "hybrid"]

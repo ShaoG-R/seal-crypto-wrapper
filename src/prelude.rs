@@ -1,4 +1,4 @@
-#[cfg(any(feature = "asymmetric-kem", feature = "asymmetric-signature"))]
+#[cfg(any(feature = "asymmetric-kem", feature = "asymmetric-signature", feature = "asymmetric-key-agreement"))]
 pub use crate::algorithms::asymmetric::AsymmetricAlgorithm;
 #[cfg(feature = "kdf")]
 pub use crate::algorithms::kdf::KdfAlgorithm;

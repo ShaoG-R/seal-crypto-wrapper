@@ -1,10 +1,10 @@
 [package]
 name = "seal-crypto-wrapper"
-version = "0.1.0"
+version = "0.1.2"
 edition = "2024"
 
 [dependencies]
-seal-crypto = { path = "../seal-crypto", default-features = false, features = ["std", "serde", "secrecy"]}
+seal-crypto = { version = "0.1.2", default-features = false, features = ["std", "serde", "secrecy"]}
 bincode = "2.0.1"
 serde = "1.0.219"
 rand = "0.9.1"

@@ -18,7 +18,6 @@ kem = ["seal-crypto/rsa", "seal-crypto/kyber"]
 signature = ["seal-crypto/dilithium", "seal-crypto/ecc"]
 kdf = ["seal-crypto/kdf"]
 xof = ["seal-crypto/xof"]
-hybrid = ["symmetric", "kem"]
 
 kem-avx2 = ["seal-crypto/kyber-avx2", "kem"]
 signature-avx2 = ["seal-crypto/dilithium-avx2", "signature"]
@@ -26,4 +25,4 @@ signature-avx2 = ["seal-crypto/dilithium-avx2", "signature"]
 sha2-asm = ["seal-crypto/sha2-asm"]
 xof-asm = ["seal-crypto/sha3-asm"]
 
-full = ["symmetric", "kem", "kdf", "xof", "signature", "hybrid"]
+full = ["symmetric", "kem", "kdf", "xof", "signature"]

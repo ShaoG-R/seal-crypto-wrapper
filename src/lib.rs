@@ -4,3 +4,5 @@ pub mod keys;
 pub mod prelude;
 pub mod traits;
 pub mod wrappers;
+
+pub use ::bincode;

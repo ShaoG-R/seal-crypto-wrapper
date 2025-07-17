@@ -2,7 +2,7 @@
 //!
 //! 定义用于类型安全算法规范的核心 trait。
 
-#[cfg(feature = "kem")]
+#[cfg(feature = "asymmetric-kem")]
 use {
     crate::algorithms::asymmetric::kem::KemAlgorithm,
     crate::keys::asymmetric::{
@@ -14,7 +14,7 @@ use {
     crate::algorithms::kdf::key::KdfKeyAlgorithm,
     crate::algorithms::kdf::passwd::KdfPasswordAlgorithm,
 };
-#[cfg(feature = "signature")]
+#[cfg(feature = "asymmetric-signature")]
 use crate::keys::signature::{
     TypedSignatureKeyPair, TypedSignaturePrivateKey, TypedSignaturePublicKey,
 };
@@ -27,16 +27,16 @@ use {
 use {crate::algorithms::xof::XofAlgorithm, crate::wrappers::xof::XofReaderWrapper};
 #[cfg(any(
     feature = "symmetric",
-    feature = "kem",
+    feature = "asymmetric-kem",
     feature = "kdf",
     feature = "xof",
-    feature = "signature"
+    feature = "asymmetric-signature"
 ))]
 use {
     crate::error::Result,
     seal_crypto::{secrecy::SecretBox, zeroize::Zeroizing},
 };
-#[cfg(feature = "signature")]
+#[cfg(feature = "asymmetric-signature")]
 use crate::algorithms::asymmetric::signature::SignatureAlgorithm;
 
 #[allow(unused_macros)]
@@ -261,7 +261,7 @@ impl_trait_for_box!(SymmetricAlgorithmTrait {
 ///
 /// 用于提供特定非对称算法详细信息的 trait。
 /// 该 trait 的实现者是算法方案本身。
-#[cfg(feature = "kem")]
+#[cfg(feature = "asymmetric-kem")]
 pub trait KemAlgorithmTrait: Send + Sync + 'static {
     /// Returns the algorithm enum.
     ///
@@ -295,7 +295,7 @@ pub trait KemAlgorithmTrait: Send + Sync + 'static {
     fn into_asymmetric_boxed(self) -> Box<dyn KemAlgorithmTrait>;
 }
 
-#[cfg(feature = "kem")]
+#[cfg(feature = "asymmetric-kem")]
 impl_trait_for_box!(KemAlgorithmTrait {
     ref fn clone_box_asymmetric(&self,) -> Box<dyn KemAlgorithmTrait>;
     ref fn algorithm(&self,) -> KemAlgorithm;
@@ -368,7 +368,7 @@ impl_trait_for_box!(XofAlgorithmTrait {
     ref fn clone_box(&self,) -> Box<dyn XofAlgorithmTrait>;
 }, clone_box);
 
-#[cfg(feature = "signature")]
+#[cfg(feature = "asymmetric-signature")]
 pub trait SignatureAlgorithmTrait: Send + Sync + 'static {
     fn sign(&self, message: &[u8], key: &TypedSignaturePrivateKey) -> Result<Vec<u8>>;
     fn verify(
@@ -382,7 +382,7 @@ pub trait SignatureAlgorithmTrait: Send + Sync + 'static {
     fn algorithm(&self) -> SignatureAlgorithm;
 }
 
-#[cfg(feature = "signature")]
+#[cfg(feature = "asymmetric-signature")]
 impl_trait_for_box!(SignatureAlgorithmTrait {
     ref fn sign(&self, message: &[u8], key: &TypedSignaturePrivateKey) -> Result<Vec<u8>>;
     ref fn verify(&self, message: &[u8], key: &TypedSignaturePublicKey, signature: Vec<u8>) -> Result<()>;

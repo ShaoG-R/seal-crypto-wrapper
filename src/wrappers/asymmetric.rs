@@ -1,5 +1,5 @@
-#[cfg(feature = "signature")]
+#[cfg(feature = "asymmetric-signature")]
 pub mod signature;
 
-#[cfg(feature = "kem")]
+#[cfg(feature = "asymmetric-kem")]
 pub mod kem;

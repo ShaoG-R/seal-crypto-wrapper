@@ -1,4 +1,4 @@
-#[cfg(any(feature = "kem", feature = "signature"))]
+#[cfg(any(feature = "asymmetric-kem", feature = "asymmetric-signature"))]
 pub mod asymmetric;
 #[cfg(feature = "kdf")]
 pub mod kdf;

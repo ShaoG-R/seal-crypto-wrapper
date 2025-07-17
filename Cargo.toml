@@ -14,15 +14,16 @@ thiserror = "2.0.12"
 default = []
 
 symmetric = ["seal-crypto/aes-gcm", "seal-crypto/chacha20-poly1305"]
-kem = ["seal-crypto/rsa", "seal-crypto/kyber"]
-signature = ["seal-crypto/dilithium", "seal-crypto/ecc"]
+asymmetric-kem = ["seal-crypto/rsa", "seal-crypto/kyber"]
+asymmetric-signature = ["seal-crypto/dilithium", "seal-crypto/ecc"]
+asymmetric = ["asymmetric-kem", "asymmetric-signature"]
 kdf = ["seal-crypto/kdf"]
 xof = ["seal-crypto/xof"]
 
-kem-avx2 = ["seal-crypto/kyber-avx2", "kem"]
-signature-avx2 = ["seal-crypto/dilithium-avx2", "signature"]
+kem-avx2 = ["seal-crypto/kyber-avx2", "asymmetric-kem"]
+signature-avx2 = ["seal-crypto/dilithium-avx2", "asymmetric-signature"]
 
 sha2-asm = ["seal-crypto/sha2-asm"]
 xof-asm = ["seal-crypto/sha3-asm"]
 
-full = ["symmetric", "kem", "kdf", "xof", "signature"]
+full = ["symmetric", "asymmetric", "kdf", "xof"]

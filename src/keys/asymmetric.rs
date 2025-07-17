@@ -1,15 +1,25 @@
 use crate::algorithms::{
-    HashAlgorithmEnum,
     asymmetric::kem::{KemAlgorithm, KyberSecurityLevel, RsaBits},
+    HashAlgorithmEnum,
 };
 use crate::error::Error;
-use seal_crypto::prelude::{AsymmetricKeySet, Key, KeyGenerator};
-use seal_crypto::schemes::asymmetric::post_quantum::kyber::{Kyber512, Kyber768, Kyber1024};
+use seal_crypto::prelude::{AsymmetricKeySet, Key};
+use seal_crypto::schemes::asymmetric::post_quantum::kyber::{Kyber1024, Kyber512, Kyber768};
 use seal_crypto::schemes::asymmetric::traditional::rsa::{Rsa2048, Rsa4096};
 use seal_crypto::schemes::hash::{Sha256, Sha384, Sha512};
 use seal_crypto::zeroize;
+use kem::{TypedKemPrivateKey, TypedKemPublicKey};
 
-macro_rules! dispatch_asymmetric {
+#[cfg(feature = "asymmetric-signature")]
+pub mod signature;
+
+#[cfg(feature = "asymmetric-kem")]
+pub mod kem;
+
+#[cfg(feature = "asymmetric-key-agreement")]
+pub mod key_agreement;
+
+macro_rules! dispatch_kem {
     ($algorithm:expr, $action:ident) => {
         match $algorithm {
             KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256) => {
@@ -70,114 +80,6 @@ macro_rules! dispatch_asymmetric {
     };
 }
 
-/// An enum wrapping a typed asymmetric key pair.
-///
-/// 包装了类型化非对称密钥对的枚举。
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
-pub struct TypedAsymmetricKeyPair {
-    public_key: AsymmetricPublicKey,
-    private_key: AsymmetricPrivateKey,
-    algorithm: KemAlgorithm,
-}
-
-impl TypedAsymmetricKeyPair {
-    /// Generates a new key pair for the specified algorithm.
-    ///
-    /// 为指定的算法生成一个新的密钥对。
-    pub fn generate(algorithm: KemAlgorithm) -> Result<Self, Error> {
-        macro_rules! generate_keypair {
-            ($key_type:ty, $alg_enum:expr) => {
-                <$key_type>::generate_keypair()
-                    .map(|(pk, sk)| Self {
-                        public_key: AsymmetricPublicKey::new(pk.to_bytes()),
-                        private_key: AsymmetricPrivateKey::new(sk.to_bytes()),
-                        algorithm: $alg_enum,
-                    })
-                    .map_err(Error::from)
-            };
-        }
-        dispatch_asymmetric!(algorithm, generate_keypair)
-    }
-
-    pub fn into_keypair(self) -> (TypedAsymmetricPublicKey, TypedAsymmetricPrivateKey) {
-        (
-            TypedAsymmetricPublicKey {
-                key: self.public_key,
-                algorithm: self.algorithm,
-            },
-            TypedAsymmetricPrivateKey {
-                key: self.private_key,
-                algorithm: self.algorithm,
-            },
-        )
-    }
-
-    /// Returns the public key as a generic byte wrapper.
-    ///
-    /// 以通用字节包装器形式返回公钥。
-    pub fn public_key(&self) -> TypedAsymmetricPublicKey {
-        TypedAsymmetricPublicKey {
-            key: self.public_key.clone(),
-            algorithm: self.algorithm,
-        }
-    }
-
-    /// Returns the private key as a generic byte wrapper.
-    ///
-    /// 以通用字节包装器形式返回私钥。
-    pub fn private_key(&self) -> TypedAsymmetricPrivateKey {
-        TypedAsymmetricPrivateKey {
-            key: self.private_key.clone(),
-            algorithm: self.algorithm,
-        }
-    }
-
-    /// Returns the algorithm of the key pair.
-    ///
-    /// 返回密钥对的算法。
-    pub fn algorithm(&self) -> KemAlgorithm {
-        self.algorithm
-    }
-}
-
-/// An enum wrapping a typed asymmetric private key.
-///
-/// 包装了类型化非对称私钥的枚举。
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
-pub struct TypedAsymmetricPublicKey {
-    key: AsymmetricPublicKey,
-    algorithm: KemAlgorithm,
-}
-
-impl TypedAsymmetricPublicKey {
-    pub fn to_bytes(&self) -> Vec<u8> {
-        self.key.as_bytes().to_vec()
-    }
-
-    pub fn algorithm(&self) -> KemAlgorithm {
-        self.algorithm
-    }
-}
-
-/// An enum wrapping a typed asymmetric private key.
-///
-/// 包装了类型化非对称私钥的枚举。
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
-pub struct TypedAsymmetricPrivateKey {
-    key: AsymmetricPrivateKey,
-    algorithm: KemAlgorithm,
-}
-
-impl TypedAsymmetricPrivateKey {
-    pub fn to_bytes(&self) -> Vec<u8> {
-        self.key.as_bytes().to_vec()
-    }
-
-    pub fn algorithm(&self) -> KemAlgorithm {
-        self.algorithm
-    }
-}
-
 /// A byte wrapper for an asymmetric private key.
 ///
 /// 非对称私钥的字节包装器。
@@ -209,21 +111,21 @@ impl AsymmetricPrivateKey {
     /// Converts the raw key bytes into a typed private key enum.
     ///
     /// 将原始密钥字节转换为类型化的私钥枚举。
-    pub fn into_typed(
+    pub fn into_kem_typed(
         self,
         algorithm: KemAlgorithm,
-    ) -> Result<TypedAsymmetricPrivateKey, Error> {
+    ) -> Result<TypedKemPrivateKey, Error> {
         macro_rules! into_typed_sk {
             ($key_type:ty, $alg_enum:expr) => {{
                 type KT = $key_type;
                 let sk = <KT as AsymmetricKeySet>::PrivateKey::from_bytes(self.as_bytes())?;
-                Ok(TypedAsymmetricPrivateKey {
+                Ok(TypedKemPrivateKey {
                     key: AsymmetricPrivateKey::new(sk.to_bytes()),
                     algorithm: $alg_enum,
                 })
             }};
         }
-        dispatch_asymmetric!(algorithm, into_typed_sk)
+        dispatch_kem!(algorithm, into_typed_sk)
     }
 }
 
@@ -255,20 +157,20 @@ impl AsymmetricPublicKey {
         self.0
     }
 
-    pub fn into_typed(
+    pub fn into_kem_typed(
         self,
         algorithm: KemAlgorithm,
-    ) -> Result<TypedAsymmetricPublicKey, Error> {
+    ) -> Result<TypedKemPublicKey, Error> {
         macro_rules! into_typed_pk {
             ($key_type:ty, $alg_enum:expr) => {{
                 type KT = $key_type;
                 let pk = <KT as AsymmetricKeySet>::PublicKey::from_bytes(self.as_bytes())?;
-                Ok(TypedAsymmetricPublicKey {
+                Ok(TypedKemPublicKey {
                     key: AsymmetricPublicKey::new(pk.to_bytes()),
                     algorithm: $alg_enum,
                 })
             }};
         }
-        dispatch_asymmetric!(algorithm, into_typed_pk)
+        dispatch_kem!(algorithm, into_typed_pk)
     }
 }

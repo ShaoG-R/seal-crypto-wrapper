@@ -1,6 +1,6 @@
 use crate::algorithms::asymmetric::signature::{DilithiumSecurityLevel, SignatureAlgorithm};
 use crate::error::{Error, FormatError, Result};
-use crate::keys::signature::{
+use crate::keys::asymmetric::signature::{
     TypedSignatureKeyPair, TypedSignaturePrivateKey, TypedSignaturePublicKey,
 };
 use crate::traits::SignatureAlgorithmTrait;

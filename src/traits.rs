@@ -3,20 +3,19 @@
 //! 定义用于类型安全算法规范的核心 trait。
 
 #[cfg(feature = "asymmetric-kem")]
-use {
-    crate::algorithms::asymmetric::kem::KemAlgorithm,
-    crate::keys::asymmetric::{
-        TypedAsymmetricKeyPair, TypedAsymmetricPrivateKey, TypedAsymmetricPublicKey,
-    },
-};
+use crate::algorithms::asymmetric::kem::KemAlgorithm;
 #[cfg(feature = "kdf")]
 use {
     crate::algorithms::kdf::key::KdfKeyAlgorithm,
     crate::algorithms::kdf::passwd::KdfPasswordAlgorithm,
 };
 #[cfg(feature = "asymmetric-signature")]
-use crate::keys::signature::{
+use crate::keys::asymmetric::signature::{
     TypedSignatureKeyPair, TypedSignaturePrivateKey, TypedSignaturePublicKey,
+};
+#[cfg(feature = "asymmetric-key-agreement")]
+use crate::keys::asymmetric::key_agreement::{
+    TypedKeyAgreementKeyPair, TypedKeyAgreementPrivateKey, TypedKeyAgreementPublicKey,
 };
 #[cfg(feature = "symmetric")]
 use {
@@ -30,7 +29,8 @@ use {crate::algorithms::xof::XofAlgorithm, crate::wrappers::xof::XofReaderWrappe
     feature = "asymmetric-kem",
     feature = "kdf",
     feature = "xof",
-    feature = "asymmetric-signature"
+    feature = "asymmetric-signature",
+    feature = "asymmetric-key-agreement"
 ))]
 use {
     crate::error::Result,
@@ -38,6 +38,14 @@ use {
 };
 #[cfg(feature = "asymmetric-signature")]
 use crate::algorithms::asymmetric::signature::SignatureAlgorithm;
+#[cfg(feature = "asymmetric-key-agreement")]
+use crate::algorithms::asymmetric::key_agreement::KeyAgreementAlgorithm;
+#[cfg(feature = "asymmetric-kem")]
+use crate::keys::asymmetric::kem::TypedKemKeyPair;
+#[cfg(feature = "asymmetric-kem")]
+use crate::keys::asymmetric::kem::TypedKemPrivateKey;
+#[cfg(feature = "asymmetric-kem")]
+use crate::keys::asymmetric::kem::TypedKemPublicKey;
 
 #[allow(unused_macros)]
 macro_rules! impl_trait_for_box {
@@ -273,7 +281,7 @@ pub trait KemAlgorithmTrait: Send + Sync + 'static {
     /// 封装一个密钥。
     fn encapsulate_key(
         &self,
-        public_key: &TypedAsymmetricPublicKey,
+        public_key: &TypedKemPublicKey,
     ) -> Result<(Zeroizing<Vec<u8>>, Vec<u8>)>;
 
     /// Decapsulates a key.
@@ -281,11 +289,11 @@ pub trait KemAlgorithmTrait: Send + Sync + 'static {
     /// 解封装一个密钥。
     fn decapsulate_key(
         &self,
-        private_key: &TypedAsymmetricPrivateKey,
+        private_key: &TypedKemPrivateKey,
         encapsulated_key: &Zeroizing<Vec<u8>>,
     ) -> Result<Zeroizing<Vec<u8>>>;
 
-    fn generate_keypair(&self) -> Result<TypedAsymmetricKeyPair>;
+    fn generate_keypair(&self) -> Result<TypedKemKeyPair>;
 
     /// Clones the algorithm.
     ///
@@ -299,9 +307,9 @@ pub trait KemAlgorithmTrait: Send + Sync + 'static {
 impl_trait_for_box!(KemAlgorithmTrait {
     ref fn clone_box_asymmetric(&self,) -> Box<dyn KemAlgorithmTrait>;
     ref fn algorithm(&self,) -> KemAlgorithm;
-    ref fn encapsulate_key(&self, public_key: &TypedAsymmetricPublicKey) -> Result<(Zeroizing<Vec<u8>>, Vec<u8>)>;
-    ref fn decapsulate_key(&self, private_key: &TypedAsymmetricPrivateKey, encapsulated_key: &Zeroizing<Vec<u8>>) -> Result<Zeroizing<Vec<u8>>>;
-    ref fn generate_keypair(&self,) -> Result<TypedAsymmetricKeyPair>;
+    ref fn encapsulate_key(&self, public_key: &TypedKemPublicKey) -> Result<(Zeroizing<Vec<u8>>, Vec<u8>)>;
+    ref fn decapsulate_key(&self, private_key: &TypedKemPrivateKey, encapsulated_key: &Zeroizing<Vec<u8>>) -> Result<Zeroizing<Vec<u8>>>;
+    ref fn generate_keypair(&self,) -> Result<TypedKemKeyPair>;
     self fn into_asymmetric_boxed(self,) -> Box<dyn KemAlgorithmTrait>;
 }, clone_box_asymmetric);
 
@@ -389,4 +397,24 @@ impl_trait_for_box!(SignatureAlgorithmTrait {
     ref fn generate_keypair(&self,) -> Result<TypedSignatureKeyPair>;
     ref fn clone_box(&self,) -> Box<dyn SignatureAlgorithmTrait>;
     ref fn algorithm(&self,) -> SignatureAlgorithm;
+}, clone_box);
+
+#[cfg(feature = "asymmetric-key-agreement")]
+pub trait KeyAgreementAlgorithmTrait: Send + Sync + 'static {
+    fn agree(
+        &self,
+        sk: &TypedKeyAgreementPrivateKey,
+        pk: &TypedKeyAgreementPublicKey,
+    ) -> Result<Zeroizing<Vec<u8>>>;
+    fn generate_keypair(&self) -> Result<TypedKeyAgreementKeyPair>;
+    fn clone_box(&self) -> Box<dyn KeyAgreementAlgorithmTrait>;
+    fn algorithm(&self) -> KeyAgreementAlgorithm;
+}
+
+#[cfg(feature = "asymmetric-key-agreement")]
+impl_trait_for_box!(KeyAgreementAlgorithmTrait {
+    ref fn agree(&self, sk: &TypedKeyAgreementPrivateKey, pk: &TypedKeyAgreementPublicKey) -> Result<Zeroizing<Vec<u8>>>;
+    ref fn generate_keypair(&self,) -> Result<TypedKeyAgreementKeyPair>;
+    ref fn clone_box(&self,) -> Box<dyn KeyAgreementAlgorithmTrait>;
+    ref fn algorithm(&self,) -> KeyAgreementAlgorithm;
 }, clone_box);

@@ -4,8 +4,5 @@
 #[cfg(feature = "asymmetric-kem")]
 pub mod asymmetric;
 
-#[cfg(feature = "asymmetric-signature")]
-pub mod signature;
-
 #[cfg(feature = "symmetric")]
 pub mod symmetric;

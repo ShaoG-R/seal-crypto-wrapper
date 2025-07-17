@@ -3,9 +3,6 @@ use crate::algorithms::{
     HashAlgorithmEnum,
 };
 use crate::error::{Error, FormatError, Result};
-use crate::keys::asymmetric::{
-    TypedAsymmetricKeyPair, TypedAsymmetricPrivateKey, TypedAsymmetricPublicKey,
-};
 use crate::traits::KemAlgorithmTrait;
 use seal_crypto::prelude::{AsymmetricKeySet, Kem, Key};
 use seal_crypto::schemes::asymmetric::post_quantum::kyber::{Kyber1024, Kyber512, Kyber768};
@@ -13,8 +10,7 @@ use seal_crypto::schemes::asymmetric::traditional::rsa::{Rsa2048, Rsa4096};
 use seal_crypto::schemes::hash::{Sha256, Sha384, Sha512};
 use seal_crypto::zeroize::Zeroizing;
 use std::ops::Deref;
-
-
+use crate::keys::asymmetric::kem::{TypedKemKeyPair, TypedKemPrivateKey, TypedKemPublicKey};
 
 macro_rules! impl_kem_algorithm {
     ($wrapper:ident, $algo:ty, $algo_enum:expr) => {
@@ -40,7 +36,7 @@ macro_rules! impl_kem_algorithm {
 
             fn encapsulate_key(
                 &self,
-                public_key: &TypedAsymmetricPublicKey,
+                public_key: &TypedKemPublicKey,
             ) -> Result<(Zeroizing<Vec<u8>>, Vec<u8>)> {
                 if public_key.algorithm() != $algo_enum {
                     return Err(Error::FormatError(FormatError::InvalidKeyType));
@@ -52,7 +48,7 @@ macro_rules! impl_kem_algorithm {
 
             fn decapsulate_key(
                 &self,
-                private_key: &TypedAsymmetricPrivateKey,
+                private_key: &TypedKemPrivateKey,
                 encapsulated_key: &Zeroizing<Vec<u8>>,
             ) -> Result<Zeroizing<Vec<u8>>> {
                 if private_key.algorithm() != $algo_enum {
@@ -63,8 +59,8 @@ macro_rules! impl_kem_algorithm {
                 KT::decapsulate(&sk, encapsulated_key).map_err(Error::from)
             }
 
-            fn generate_keypair(&self) -> Result<TypedAsymmetricKeyPair> {
-                TypedAsymmetricKeyPair::generate($algo_enum)
+            fn generate_keypair(&self) -> Result<TypedKemKeyPair> {
+                TypedKemKeyPair::generate($algo_enum)
             }
 
             fn clone_box_asymmetric(&self) -> Box<dyn KemAlgorithmTrait> {
@@ -134,7 +130,7 @@ impl KemAlgorithmWrapper {
         Self::new(algorithm)
     }
 
-    pub fn generate_keypair(&self) -> Result<TypedAsymmetricKeyPair> {
+    pub fn generate_keypair(&self) -> Result<TypedKemKeyPair> {
         self.algorithm.generate_keypair()
     }
 }
@@ -146,21 +142,21 @@ impl KemAlgorithmTrait for KemAlgorithmWrapper {
 
     fn encapsulate_key(
         &self,
-        public_key: &TypedAsymmetricPublicKey,
+        public_key: &TypedKemPublicKey,
     ) -> Result<(Zeroizing<Vec<u8>>, Vec<u8>)> {
         self.algorithm.encapsulate_key(public_key)
     }
 
     fn decapsulate_key(
         &self,
-        private_key: &TypedAsymmetricPrivateKey,
+        private_key: &TypedKemPrivateKey,
         encapsulated_key: &Zeroizing<Vec<u8>>,
     ) -> Result<Zeroizing<Vec<u8>>> {
         self.algorithm
             .decapsulate_key(private_key, encapsulated_key)
     }
 
-    fn generate_keypair(&self) -> Result<TypedAsymmetricKeyPair> {
+    fn generate_keypair(&self) -> Result<TypedKemKeyPair> {
         self.algorithm.generate_keypair()
     }
 

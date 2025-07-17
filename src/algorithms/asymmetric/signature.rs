@@ -47,11 +47,11 @@ impl SignatureAlgorithmBuilder {
     }
 }
 
-use crate::wrappers::signature::SignatureAlgorithmWrapper;
+use crate::wrappers::asymmetric::signature::SignatureAlgorithmWrapper;
 
 impl SignatureAlgorithm {
     pub fn into_signature_wrapper(self) -> SignatureAlgorithmWrapper {
-        use crate::wrappers::signature::{
+        use crate::wrappers::asymmetric::signature::{
             Dilithium2Wrapper, Dilithium3Wrapper, Dilithium5Wrapper, EcdsaP256Wrapper,
             Ed25519Wrapper,
         };

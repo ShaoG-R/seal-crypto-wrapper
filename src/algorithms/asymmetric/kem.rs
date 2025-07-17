@@ -1,6 +1,6 @@
 use bincode::{Decode, Encode};
 use crate::algorithms::HashAlgorithmEnum;
-use crate::wrappers::asymmetric::AsymmetricAlgorithmWrapper;
+use crate::wrappers::asymmetric::kem::AsymmetricAlgorithmWrapper;
 
 /// Asymmetric encryption algorithm enum.
 ///
@@ -30,9 +30,9 @@ pub enum KyberSecurityLevel {
     L1024,
 }
 
-pub struct AsymmetricAlgorithmBuilder;
+pub struct KemAlgorithmBuilder;
 
-impl AsymmetricAlgorithmBuilder {
+impl KemAlgorithmBuilder {
     pub fn rsa2048(self) -> RsaBuilder {
         RsaBuilder {
             bits: RsaBits::B2048,
@@ -77,15 +77,15 @@ impl RsaBuilder {
 }
 
 impl KemAlgorithm {
-    pub fn build() -> AsymmetricAlgorithmBuilder {
-        AsymmetricAlgorithmBuilder
+    pub fn build() -> KemAlgorithmBuilder {
+        KemAlgorithmBuilder
     }
 }
 
 impl KemAlgorithm {
     pub fn into_asymmetric_wrapper(self) -> AsymmetricAlgorithmWrapper {
         use crate::algorithms::HashAlgorithmEnum;
-        use crate::wrappers::asymmetric::{Kyber512Wrapper, Kyber768Wrapper, Kyber1024Wrapper, Rsa2048Sha256Wrapper, Rsa2048Sha384Wrapper, Rsa2048Sha512Wrapper, Rsa4096Sha256Wrapper, Rsa4096Sha384Wrapper, Rsa4096Sha512Wrapper, AsymmetricAlgorithmWrapper};
+        use crate::wrappers::asymmetric::kem::{Kyber512Wrapper, Kyber768Wrapper, Kyber1024Wrapper, Rsa2048Sha256Wrapper, Rsa2048Sha384Wrapper, Rsa2048Sha512Wrapper, Rsa4096Sha256Wrapper, Rsa4096Sha384Wrapper, Rsa4096Sha512Wrapper, AsymmetricAlgorithmWrapper};
         match self {
             KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256) => {
                 AsymmetricAlgorithmWrapper::new(Box::new(Rsa2048Sha256Wrapper::default()))

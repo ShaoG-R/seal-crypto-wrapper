@@ -260,7 +260,7 @@ impl_trait_for_box!(SymmetricAlgorithmTrait {
 /// 用于提供特定非对称算法详细信息的 trait。
 /// 该 trait 的实现者是算法方案本身。
 #[cfg(feature = "kem")]
-pub trait AsymmetricAlgorithmTrait: Send + Sync + 'static {
+pub trait KemAlgorithmTrait: Send + Sync + 'static {
     /// Returns the algorithm enum.
     ///
     /// 返回算法枚举。
@@ -288,30 +288,30 @@ pub trait AsymmetricAlgorithmTrait: Send + Sync + 'static {
     /// Clones the algorithm.
     ///
     /// 克隆算法。
-    fn clone_box_asymmetric(&self) -> Box<dyn AsymmetricAlgorithmTrait>;
+    fn clone_box_asymmetric(&self) -> Box<dyn KemAlgorithmTrait>;
 
-    fn into_asymmetric_boxed(self) -> Box<dyn AsymmetricAlgorithmTrait>;
+    fn into_asymmetric_boxed(self) -> Box<dyn KemAlgorithmTrait>;
 }
 
 #[cfg(feature = "kem")]
-impl_trait_for_box!(AsymmetricAlgorithmTrait {
-    ref fn clone_box_asymmetric(&self,) -> Box<dyn AsymmetricAlgorithmTrait>;
+impl_trait_for_box!(KemAlgorithmTrait {
+    ref fn clone_box_asymmetric(&self,) -> Box<dyn KemAlgorithmTrait>;
     ref fn algorithm(&self,) -> KemAlgorithm;
     ref fn encapsulate_key(&self, public_key: &TypedAsymmetricPublicKey) -> Result<(Zeroizing<Vec<u8>>, Vec<u8>)>;
     ref fn decapsulate_key(&self, private_key: &TypedAsymmetricPrivateKey, encapsulated_key: &Zeroizing<Vec<u8>>) -> Result<Zeroizing<Vec<u8>>>;
     ref fn generate_keypair(&self,) -> Result<TypedAsymmetricKeyPair>;
-    self fn into_asymmetric_boxed(self,) -> Box<dyn AsymmetricAlgorithmTrait>;
+    self fn into_asymmetric_boxed(self,) -> Box<dyn KemAlgorithmTrait>;
 }, clone_box_asymmetric);
 
 #[cfg(feature = "hybrid")]
-pub trait HybridAlgorithmTrait: AsymmetricAlgorithmTrait + SymmetricAlgorithmTrait {
-    fn asymmetric_algorithm(&self) -> &dyn AsymmetricAlgorithmTrait;
+pub trait HybridAlgorithmTrait: KemAlgorithmTrait + SymmetricAlgorithmTrait {
+    fn asymmetric_algorithm(&self) -> &dyn KemAlgorithmTrait;
     fn symmetric_algorithm(&self) -> &dyn SymmetricAlgorithmTrait;
     fn clone_box(&self) -> Box<dyn HybridAlgorithmTrait>;
 }
 
 #[cfg(feature = "hybrid")]
-impl AsymmetricAlgorithmTrait for Box<dyn HybridAlgorithmTrait> {
+impl KemAlgorithmTrait for Box<dyn HybridAlgorithmTrait> {
     fn algorithm(&self) -> KemAlgorithm {
         self.as_ref().asymmetric_algorithm().algorithm()
     }
@@ -331,10 +331,10 @@ impl AsymmetricAlgorithmTrait for Box<dyn HybridAlgorithmTrait> {
     fn generate_keypair(&self) -> Result<TypedAsymmetricKeyPair> {
         self.as_ref().generate_keypair()
     }
-    fn clone_box_asymmetric(&self) -> Box<dyn AsymmetricAlgorithmTrait> {
+    fn clone_box_asymmetric(&self) -> Box<dyn KemAlgorithmTrait> {
         self.clone()
     }
-    fn into_asymmetric_boxed(self) -> Box<dyn AsymmetricAlgorithmTrait> {
+    fn into_asymmetric_boxed(self) -> Box<dyn KemAlgorithmTrait> {
         Box::new(self)
     }
 }
@@ -415,7 +415,7 @@ impl SymmetricAlgorithmTrait for Box<dyn HybridAlgorithmTrait> {
 
 #[cfg(feature = "hybrid")]
 impl HybridAlgorithmTrait for Box<dyn HybridAlgorithmTrait> {
-    fn asymmetric_algorithm(&self) -> &dyn AsymmetricAlgorithmTrait {
+    fn asymmetric_algorithm(&self) -> &dyn KemAlgorithmTrait {
         self.as_ref().asymmetric_algorithm()
     }
     fn symmetric_algorithm(&self) -> &dyn SymmetricAlgorithmTrait {

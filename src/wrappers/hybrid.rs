@@ -5,18 +5,18 @@ use crate::keys::asymmetric::{
     TypedAsymmetricKeyPair, TypedAsymmetricPrivateKey, TypedAsymmetricPublicKey,
 };
 use crate::keys::symmetric::{SymmetricKey as UntypedSymmetricKey, TypedSymmetricKey};
-use crate::traits::{AsymmetricAlgorithmTrait, HybridAlgorithmTrait, SymmetricAlgorithmTrait};
+use crate::traits::{KemAlgorithmTrait, HybridAlgorithmTrait, SymmetricAlgorithmTrait};
 use seal_crypto::zeroize::Zeroizing;
 
 #[derive(Clone)]
 pub struct HybridAlgorithmWrapper {
-    asymmetric_algorithm: Box<dyn AsymmetricAlgorithmTrait>,
+    asymmetric_algorithm: Box<dyn KemAlgorithmTrait>,
     symmetric_algorithm: Box<dyn SymmetricAlgorithmTrait>,
 }
 
 impl HybridAlgorithmWrapper {
     pub fn new(
-        asymmetric_algorithm: impl Into<Box<dyn AsymmetricAlgorithmTrait>>,
+        asymmetric_algorithm: impl Into<Box<dyn KemAlgorithmTrait>>,
         symmetric_algorithm: impl Into<Box<dyn SymmetricAlgorithmTrait>>,
     ) -> Self {
         Self {
@@ -27,7 +27,7 @@ impl HybridAlgorithmWrapper {
 }
 
 impl HybridAlgorithmTrait for HybridAlgorithmWrapper {
-    fn asymmetric_algorithm(&self) -> &dyn AsymmetricAlgorithmTrait {
+    fn asymmetric_algorithm(&self) -> &dyn KemAlgorithmTrait {
         self.asymmetric_algorithm.as_ref()
     }
 
@@ -40,7 +40,7 @@ impl HybridAlgorithmTrait for HybridAlgorithmWrapper {
     }
 }
 
-impl AsymmetricAlgorithmTrait for HybridAlgorithmWrapper {
+impl KemAlgorithmTrait for HybridAlgorithmWrapper {
     fn algorithm(&self) -> KemAlgorithm {
         self.asymmetric_algorithm.algorithm()
     }
@@ -65,11 +65,11 @@ impl AsymmetricAlgorithmTrait for HybridAlgorithmWrapper {
         self.asymmetric_algorithm.generate_keypair()
     }
 
-    fn clone_box_asymmetric(&self) -> Box<dyn AsymmetricAlgorithmTrait> {
+    fn clone_box_asymmetric(&self) -> Box<dyn KemAlgorithmTrait> {
         Box::new(self.clone())
     }
 
-    fn into_asymmetric_boxed(self) -> Box<dyn AsymmetricAlgorithmTrait> {
+    fn into_asymmetric_boxed(self) -> Box<dyn KemAlgorithmTrait> {
         Box::new(self.asymmetric_algorithm)
     }
 }

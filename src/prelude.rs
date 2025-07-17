@@ -1,11 +1,7 @@
-#[cfg(feature = "kem")]
-pub use crate::algorithms::asymmetric::kem::KemAlgorithm;
-#[cfg(feature = "signature")]
-pub use crate::algorithms::asymmetric::signature::SignatureAlgorithm;
+#[cfg(any(feature = "kem", feature = "signature"))]
+pub use crate::algorithms::asymmetric::AsymmetricAlgorithm;
 #[cfg(feature = "kdf")]
-pub use crate::algorithms::kdf::key::KdfKeyAlgorithm;
-#[cfg(feature = "kdf")]
-pub use crate::algorithms::kdf::passwd::KdfPasswordAlgorithm;
+pub use crate::algorithms::kdf::KdfAlgorithm;
 #[cfg(feature = "symmetric")]
 pub use crate::algorithms::symmetric::SymmetricAlgorithm;
 #[cfg(feature = "xof")]

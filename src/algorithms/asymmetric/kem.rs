@@ -1,6 +1,6 @@
 use bincode::{Decode, Encode};
 use crate::algorithms::HashAlgorithmEnum;
-use crate::wrappers::asymmetric::kem::AsymmetricAlgorithmWrapper;
+use crate::wrappers::asymmetric::kem::KemAlgorithmWrapper;
 
 /// Asymmetric encryption algorithm enum.
 ///
@@ -83,36 +83,36 @@ impl KemAlgorithm {
 }
 
 impl KemAlgorithm {
-    pub fn into_asymmetric_wrapper(self) -> AsymmetricAlgorithmWrapper {
+    pub fn into_asymmetric_wrapper(self) -> KemAlgorithmWrapper {
         use crate::algorithms::HashAlgorithmEnum;
-        use crate::wrappers::asymmetric::kem::{Kyber512Wrapper, Kyber768Wrapper, Kyber1024Wrapper, Rsa2048Sha256Wrapper, Rsa2048Sha384Wrapper, Rsa2048Sha512Wrapper, Rsa4096Sha256Wrapper, Rsa4096Sha384Wrapper, Rsa4096Sha512Wrapper, AsymmetricAlgorithmWrapper};
+        use crate::wrappers::asymmetric::kem::{Kyber512Wrapper, Kyber768Wrapper, Kyber1024Wrapper, Rsa2048Sha256Wrapper, Rsa2048Sha384Wrapper, Rsa2048Sha512Wrapper, Rsa4096Sha256Wrapper, Rsa4096Sha384Wrapper, Rsa4096Sha512Wrapper, KemAlgorithmWrapper};
         match self {
             KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256) => {
-                AsymmetricAlgorithmWrapper::new(Box::new(Rsa2048Sha256Wrapper::default()))
+                KemAlgorithmWrapper::new(Box::new(Rsa2048Sha256Wrapper::default()))
             }
             KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384) => {
-                AsymmetricAlgorithmWrapper::new(Box::new(Rsa2048Sha384Wrapper::default()))
+                KemAlgorithmWrapper::new(Box::new(Rsa2048Sha384Wrapper::default()))
             }
             KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512) => {
-                AsymmetricAlgorithmWrapper::new(Box::new(Rsa2048Sha512Wrapper::default()))
+                KemAlgorithmWrapper::new(Box::new(Rsa2048Sha512Wrapper::default()))
             }
             KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256) => {
-                AsymmetricAlgorithmWrapper::new(Box::new(Rsa4096Sha256Wrapper::default()))
+                KemAlgorithmWrapper::new(Box::new(Rsa4096Sha256Wrapper::default()))
             }
             KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384) => {
-                AsymmetricAlgorithmWrapper::new(Box::new(Rsa4096Sha384Wrapper::default()))
+                KemAlgorithmWrapper::new(Box::new(Rsa4096Sha384Wrapper::default()))
             }
             KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512) => {
-                AsymmetricAlgorithmWrapper::new(Box::new(Rsa4096Sha512Wrapper::default()))
+                KemAlgorithmWrapper::new(Box::new(Rsa4096Sha512Wrapper::default()))
             }
             KemAlgorithm::Kyber(KyberSecurityLevel::L512) => {
-                AsymmetricAlgorithmWrapper::new(Box::new(Kyber512Wrapper::default()))
+                KemAlgorithmWrapper::new(Box::new(Kyber512Wrapper::default()))
             }
             KemAlgorithm::Kyber(KyberSecurityLevel::L768) => {
-                AsymmetricAlgorithmWrapper::new(Box::new(Kyber768Wrapper::default()))
+                KemAlgorithmWrapper::new(Box::new(Kyber768Wrapper::default()))
             }
             KemAlgorithm::Kyber(KyberSecurityLevel::L1024) => {
-                AsymmetricAlgorithmWrapper::new(Box::new(Kyber1024Wrapper::default()))
+                KemAlgorithmWrapper::new(Box::new(Kyber1024Wrapper::default()))
             }
         }
     }

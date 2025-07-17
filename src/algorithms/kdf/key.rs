@@ -1,3 +1,4 @@
+
 use crate::algorithms::HashAlgorithmEnum;
 use bincode::{Decode, Encode};
 

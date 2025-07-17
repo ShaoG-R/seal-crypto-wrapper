@@ -10,7 +10,10 @@ use {
     },
 };
 #[cfg(feature = "kdf")]
-use {crate::algorithms::kdf::key::KdfKeyAlgorithm, crate::prelude::KdfPasswordAlgorithm};
+use {
+    crate::algorithms::kdf::key::KdfKeyAlgorithm,
+    crate::algorithms::kdf::passwd::KdfPasswordAlgorithm,
+};
 #[cfg(feature = "signature")]
 use crate::keys::signature::{
     TypedSignatureKeyPair, TypedSignaturePrivateKey, TypedSignaturePublicKey,

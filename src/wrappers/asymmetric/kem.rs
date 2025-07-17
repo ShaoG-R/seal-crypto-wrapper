@@ -78,11 +78,11 @@ macro_rules! impl_kem_algorithm {
     };
 }
 
-pub struct AsymmetricAlgorithmWrapper {
+pub struct KemAlgorithmWrapper {
     pub(crate) algorithm: Box<dyn KemAlgorithmTrait>,
 }
 
-impl Deref for AsymmetricAlgorithmWrapper {
+impl Deref for KemAlgorithmWrapper {
     type Target = Box<dyn KemAlgorithmTrait>;
 
     fn deref(&self) -> &Self::Target {
@@ -90,13 +90,13 @@ impl Deref for AsymmetricAlgorithmWrapper {
     }
 }
 
-impl Into<Box<dyn KemAlgorithmTrait>> for AsymmetricAlgorithmWrapper {
+impl Into<Box<dyn KemAlgorithmTrait>> for KemAlgorithmWrapper {
     fn into(self) -> Box<dyn KemAlgorithmTrait> {
         self.algorithm
     }
 }
 
-impl AsymmetricAlgorithmWrapper {
+impl KemAlgorithmWrapper {
     pub fn new(algorithm: Box<dyn KemAlgorithmTrait>) -> Self {
         Self { algorithm }
     }
@@ -139,7 +139,7 @@ impl AsymmetricAlgorithmWrapper {
     }
 }
 
-impl KemAlgorithmTrait for AsymmetricAlgorithmWrapper {
+impl KemAlgorithmTrait for KemAlgorithmWrapper {
     fn algorithm(&self) -> KemAlgorithm {
         self.algorithm.algorithm()
     }
@@ -173,13 +173,13 @@ impl KemAlgorithmTrait for AsymmetricAlgorithmWrapper {
     }
 }
 
-impl From<KemAlgorithm> for AsymmetricAlgorithmWrapper {
+impl From<KemAlgorithm> for KemAlgorithmWrapper {
     fn from(algorithm: KemAlgorithm) -> Self {
         Self::from_enum(algorithm)
     }
 }
 
-impl From<Box<dyn KemAlgorithmTrait>> for AsymmetricAlgorithmWrapper {
+impl From<Box<dyn KemAlgorithmTrait>> for KemAlgorithmWrapper {
     fn from(algorithm: Box<dyn KemAlgorithmTrait>) -> Self {
         Self::new(algorithm)
     }

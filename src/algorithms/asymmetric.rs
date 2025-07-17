@@ -52,4 +52,12 @@ impl AsymmetricAlgorithmBuilder {
     pub fn signature(self) -> signature::SignatureAlgorithmBuilder {
         signature::SignatureAlgorithm::build()
     }
+
+    /// Create a new key agreement algorithm builder.
+    ///
+    /// 创建一个新的密钥协商算法构建器。
+    #[cfg(feature = "asymmetric-key-agreement")]
+    pub fn key_agreement(self) -> key_agreement::KeyAgreementAlgorithmBuilder {
+        key_agreement::KeyAgreementAlgorithm::build()
+    }
 }

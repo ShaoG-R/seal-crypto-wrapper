@@ -10,25 +10,11 @@ use seal_crypto::schemes::asymmetric::post_quantum::dilithium::{
 };
 use seal_crypto::schemes::asymmetric::traditional::ecc::{EcdsaP256, Ed25519};
 use std::ops::Deref;
+use crate::define_wrapper;
 
 macro_rules! impl_signature_algorithm {
     ($wrapper:ident, $algo:ty, $algo_enum:expr) => {
-        #[derive(Clone, Debug, Default)]
-        pub struct $wrapper;
-
-        impl $wrapper {
-            pub fn new() -> Self {
-                Self
-            }
-        }
-
-        impl From<$wrapper> for Box<dyn SignatureAlgorithmTrait> {
-            fn from(wrapper: $wrapper) -> Self {
-                Box::new(wrapper)
-            }
-        }
-
-        impl SignatureAlgorithmTrait for $wrapper {
+        define_wrapper!(@unit_struct, $wrapper, SignatureAlgorithmTrait, {
             fn algorithm(&self) -> SignatureAlgorithm {
                 $algo_enum
             }
@@ -65,7 +51,7 @@ macro_rules! impl_signature_algorithm {
             fn clone_box(&self) -> Box<dyn SignatureAlgorithmTrait> {
                 Box::new(self.clone())
             }
-        }
+        });
     };
 }
 

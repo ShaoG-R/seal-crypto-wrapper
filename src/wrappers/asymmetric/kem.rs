@@ -11,25 +11,11 @@ use seal_crypto::schemes::hash::{Sha256, Sha384, Sha512};
 use seal_crypto::zeroize::Zeroizing;
 use std::ops::Deref;
 use crate::keys::asymmetric::kem::{TypedKemKeyPair, TypedKemPrivateKey, TypedKemPublicKey};
+use crate::define_wrapper;
 
 macro_rules! impl_kem_algorithm {
     ($wrapper:ident, $algo:ty, $algo_enum:expr) => {
-        #[derive(Clone, Debug, Default)]
-        pub struct $wrapper;
-
-        impl $wrapper {
-            pub fn new() -> Self {
-                Self
-            }
-        }
-
-        impl From<$wrapper> for Box<dyn KemAlgorithmTrait> {
-            fn from(wrapper: $wrapper) -> Self {
-                Box::new(wrapper)
-            }
-        }
-
-        impl KemAlgorithmTrait for $wrapper {
+        define_wrapper!(@unit_struct, $wrapper, KemAlgorithmTrait, {
             fn algorithm(&self) -> KemAlgorithm {
                 $algo_enum
             }
@@ -70,7 +56,7 @@ macro_rules! impl_kem_algorithm {
             fn into_asymmetric_boxed(self) -> Box<dyn KemAlgorithmTrait> {
                 Box::new(self)
             }
-        }
+        });
     };
 }
 

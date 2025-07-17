@@ -8,27 +8,11 @@ use seal_crypto::prelude::{AsymmetricKeySet, Key, KeyAgreement};
 use seal_crypto::schemes::asymmetric::traditional::ecdh::EcdhP256;
 use seal_crypto::zeroize::Zeroizing;
 use std::ops::Deref;
-
-
+use crate::define_wrapper;
 
 macro_rules! impl_key_agreement_algorithm {
     ($wrapper:ident, $algo:ty, $algo_enum:expr) => {
-        #[derive(Clone, Debug, Default)]
-        pub struct $wrapper;
-
-        impl $wrapper {
-            pub fn new() -> Self {
-                Self
-            }
-        }
-
-        impl From<$wrapper> for Box<dyn KeyAgreementAlgorithmTrait> {
-            fn from(wrapper: $wrapper) -> Self {
-                Box::new(wrapper)
-            }
-        }
-
-        impl KeyAgreementAlgorithmTrait for $wrapper {
+        define_wrapper!(@unit_struct, $wrapper, KeyAgreementAlgorithmTrait, {
             fn algorithm(&self) -> KeyAgreementAlgorithm {
                 $algo_enum
             }
@@ -59,7 +43,7 @@ macro_rules! impl_key_agreement_algorithm {
             fn clone_box(&self) -> Box<dyn KeyAgreementAlgorithmTrait> {
                 Box::new(self.clone())
             }
-        }
+        });
     };
 }
 

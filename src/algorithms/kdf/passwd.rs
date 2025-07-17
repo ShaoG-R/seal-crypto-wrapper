@@ -7,8 +7,15 @@ use bincode::{Decode, Encode};
     Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode, serde::Serialize, serde::Deserialize,
 )]
 pub enum KdfPasswordAlgorithm {
-    Argon2,
-    Pbkdf2(HashAlgorithmEnum),
+    Argon2 {
+        m_cost: u32,
+        t_cost: u32,
+        p_cost: u32,
+    },
+    Pbkdf2 {
+        hash: HashAlgorithmEnum,
+        c: u32,
+    },
 }
 
 impl KdfPasswordAlgorithm {
@@ -20,17 +27,17 @@ impl KdfPasswordAlgorithm {
 pub struct KdfPasswordAlgorithmBuilder;
 
 impl KdfPasswordAlgorithmBuilder {
-    pub fn argon2(self) -> KdfPasswordAlgorithm {
-        KdfPasswordAlgorithm::Argon2
+    pub fn argon2(self, m_cost: u32, t_cost: u32, p_cost: u32) -> KdfPasswordAlgorithm {
+        KdfPasswordAlgorithm::Argon2 { m_cost, t_cost, p_cost }
     }
-    pub fn pbkdf2_sha256(self) -> KdfPasswordAlgorithm {
-        KdfPasswordAlgorithm::Pbkdf2(HashAlgorithmEnum::Sha256)
+    pub fn pbkdf2_sha256(self, c: u32) -> KdfPasswordAlgorithm {
+        KdfPasswordAlgorithm::Pbkdf2 { hash: HashAlgorithmEnum::Sha256, c }
     }
-    pub fn pbkdf2_sha384(self) -> KdfPasswordAlgorithm {
-        KdfPasswordAlgorithm::Pbkdf2(HashAlgorithmEnum::Sha384)
+    pub fn pbkdf2_sha384(self, c: u32) -> KdfPasswordAlgorithm {
+        KdfPasswordAlgorithm::Pbkdf2 { hash: HashAlgorithmEnum::Sha384, c }
     }
-    pub fn pbkdf2_sha512(self) -> KdfPasswordAlgorithm {
-        KdfPasswordAlgorithm::Pbkdf2(HashAlgorithmEnum::Sha512)
+    pub fn pbkdf2_sha512(self, c: u32) -> KdfPasswordAlgorithm {
+        KdfPasswordAlgorithm::Pbkdf2 { hash: HashAlgorithmEnum::Sha512, c }
     }
 }
 
@@ -42,17 +49,21 @@ impl KdfPasswordAlgorithm {
             Argon2Wrapper, Pbkdf2Sha256Wrapper, Pbkdf2Sha384Wrapper, Pbkdf2Sha512Wrapper,
         };
         match self {
-            KdfPasswordAlgorithm::Argon2 => {
-                KdfPasswordWrapper::new(Box::new(Argon2Wrapper::default()))
+            KdfPasswordAlgorithm::Argon2 { m_cost, t_cost, p_cost } => {
+                KdfPasswordWrapper::new(Box::new(Argon2Wrapper::new(m_cost, t_cost, p_cost)))
             }
-            KdfPasswordAlgorithm::Pbkdf2(HashAlgorithmEnum::Sha256) => {
-                KdfPasswordWrapper::new(Box::new(Pbkdf2Sha256Wrapper::default()))
-            }
-            KdfPasswordAlgorithm::Pbkdf2(HashAlgorithmEnum::Sha384) => {
-                KdfPasswordWrapper::new(Box::new(Pbkdf2Sha384Wrapper::default()))
-            }
-            KdfPasswordAlgorithm::Pbkdf2(HashAlgorithmEnum::Sha512) => {
-                KdfPasswordWrapper::new(Box::new(Pbkdf2Sha512Wrapper::default()))
+            KdfPasswordAlgorithm::Pbkdf2 { hash, c } => {
+                match hash {
+                    HashAlgorithmEnum::Sha256 => {
+                        KdfPasswordWrapper::new(Box::new(Pbkdf2Sha256Wrapper::new(c)))
+                    }
+                    HashAlgorithmEnum::Sha384 => {
+                        KdfPasswordWrapper::new(Box::new(Pbkdf2Sha384Wrapper::new(c)))
+                    }
+                    HashAlgorithmEnum::Sha512 => {
+                        KdfPasswordWrapper::new(Box::new(Pbkdf2Sha512Wrapper::new(c)))
+                    }
+                }
             }
         }
     }

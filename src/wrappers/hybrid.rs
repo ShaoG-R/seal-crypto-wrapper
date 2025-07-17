@@ -1,4 +1,5 @@
-use crate::algorithms::{asymmetric::AsymmetricAlgorithm, symmetric::SymmetricAlgorithm};
+use crate::algorithms::{asymmetric::kem
+                        ::KemAlgorithm, symmetric::SymmetricAlgorithm};
 use crate::error::Result;
 use crate::keys::asymmetric::{
     TypedAsymmetricKeyPair, TypedAsymmetricPrivateKey, TypedAsymmetricPublicKey,
@@ -40,7 +41,7 @@ impl HybridAlgorithmTrait for HybridAlgorithmWrapper {
 }
 
 impl AsymmetricAlgorithmTrait for HybridAlgorithmWrapper {
-    fn algorithm(&self) -> AsymmetricAlgorithm {
+    fn algorithm(&self) -> KemAlgorithm {
         self.asymmetric_algorithm.algorithm()
     }
 
@@ -60,12 +61,12 @@ impl AsymmetricAlgorithmTrait for HybridAlgorithmWrapper {
             .decapsulate_key(private_key, encapsulated_key)
     }
 
-    fn clone_box_asymmetric(&self) -> Box<dyn AsymmetricAlgorithmTrait> {
-        Box::new(self.clone())
-    }
-
     fn generate_keypair(&self) -> Result<TypedAsymmetricKeyPair> {
         self.asymmetric_algorithm.generate_keypair()
+    }
+
+    fn clone_box_asymmetric(&self) -> Box<dyn AsymmetricAlgorithmTrait> {
+        Box::new(self.clone())
     }
 
     fn into_asymmetric_boxed(self) -> Box<dyn AsymmetricAlgorithmTrait> {

@@ -2,9 +2,9 @@
 //!
 //! 定义用于类型安全算法规范的核心 trait。
 
-#[cfg(feature = "asymmetric")]
+#[cfg(feature = "kem")]
 use {
-    crate::algorithms::asymmetric::AsymmetricAlgorithm,
+    crate::algorithms::asymmetric::kem::KemAlgorithm,
     crate::keys::asymmetric::{
         TypedAsymmetricKeyPair, TypedAsymmetricPrivateKey, TypedAsymmetricPublicKey,
     },
@@ -12,11 +12,8 @@ use {
 #[cfg(feature = "kdf")]
 use {crate::algorithms::kdf::key::KdfKeyAlgorithm, crate::prelude::KdfPasswordAlgorithm};
 #[cfg(feature = "signature")]
-use {
-    crate::algorithms::signature::SignatureAlgorithm,
-    crate::keys::signature::{
-        TypedSignatureKeyPair, TypedSignaturePrivateKey, TypedSignaturePublicKey,
-    },
+use crate::keys::signature::{
+    TypedSignatureKeyPair, TypedSignaturePrivateKey, TypedSignaturePublicKey,
 };
 #[cfg(feature = "symmetric")]
 use {
@@ -27,7 +24,7 @@ use {
 use {crate::algorithms::xof::XofAlgorithm, crate::wrappers::xof::XofReaderWrapper};
 #[cfg(any(
     feature = "symmetric",
-    feature = "asymmetric",
+    feature = "kem",
     feature = "hybrid",
     feature = "kdf",
     feature = "xof",
@@ -37,6 +34,8 @@ use {
     crate::error::Result,
     seal_crypto::{secrecy::SecretBox, zeroize::Zeroizing},
 };
+#[cfg(feature = "signature")]
+use crate::algorithms::asymmetric::signature::SignatureAlgorithm;
 
 #[allow(unused_macros)]
 macro_rules! impl_trait_for_box {
@@ -260,12 +259,12 @@ impl_trait_for_box!(SymmetricAlgorithmTrait {
 ///
 /// 用于提供特定非对称算法详细信息的 trait。
 /// 该 trait 的实现者是算法方案本身。
-#[cfg(feature = "asymmetric")]
+#[cfg(feature = "kem")]
 pub trait AsymmetricAlgorithmTrait: Send + Sync + 'static {
     /// Returns the algorithm enum.
     ///
     /// 返回算法枚举。
-    fn algorithm(&self) -> AsymmetricAlgorithm;
+    fn algorithm(&self) -> KemAlgorithm;
 
     /// Encapsulates a key.
     ///
@@ -294,10 +293,10 @@ pub trait AsymmetricAlgorithmTrait: Send + Sync + 'static {
     fn into_asymmetric_boxed(self) -> Box<dyn AsymmetricAlgorithmTrait>;
 }
 
-#[cfg(feature = "asymmetric")]
+#[cfg(feature = "kem")]
 impl_trait_for_box!(AsymmetricAlgorithmTrait {
     ref fn clone_box_asymmetric(&self,) -> Box<dyn AsymmetricAlgorithmTrait>;
-    ref fn algorithm(&self,) -> AsymmetricAlgorithm;
+    ref fn algorithm(&self,) -> KemAlgorithm;
     ref fn encapsulate_key(&self, public_key: &TypedAsymmetricPublicKey) -> Result<(Zeroizing<Vec<u8>>, Vec<u8>)>;
     ref fn decapsulate_key(&self, private_key: &TypedAsymmetricPrivateKey, encapsulated_key: &Zeroizing<Vec<u8>>) -> Result<Zeroizing<Vec<u8>>>;
     ref fn generate_keypair(&self,) -> Result<TypedAsymmetricKeyPair>;
@@ -313,7 +312,7 @@ pub trait HybridAlgorithmTrait: AsymmetricAlgorithmTrait + SymmetricAlgorithmTra
 
 #[cfg(feature = "hybrid")]
 impl AsymmetricAlgorithmTrait for Box<dyn HybridAlgorithmTrait> {
-    fn algorithm(&self) -> AsymmetricAlgorithm {
+    fn algorithm(&self) -> KemAlgorithm {
         self.as_ref().asymmetric_algorithm().algorithm()
     }
     fn encapsulate_key(

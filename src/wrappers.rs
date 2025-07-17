@@ -1,4 +1,4 @@
-#[cfg(feature = "asymmetric")]
+#[cfg(feature = "kem")]
 pub mod asymmetric;
 #[cfg(feature = "hybrid")]
 pub mod hybrid;

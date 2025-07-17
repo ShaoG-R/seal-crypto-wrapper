@@ -1,6 +1,6 @@
 use crate::algorithms::{
     HashAlgorithmEnum,
-    asymmetric::{AsymmetricAlgorithm, KyberSecurityLevel, RsaBits},
+    asymmetric::kem::{KemAlgorithm, KyberSecurityLevel, RsaBits},
 };
 use crate::error::{Error, FormatError, Result};
 use crate::keys::asymmetric::{
@@ -32,7 +32,7 @@ macro_rules! impl_asymmetric_algorithm {
         }
 
         impl AsymmetricAlgorithmTrait for $wrapper {
-            fn algorithm(&self) -> AsymmetricAlgorithm {
+            fn algorithm(&self) -> KemAlgorithm {
                 $algo_enum
             }
 
@@ -99,33 +99,33 @@ impl AsymmetricAlgorithmWrapper {
         Self { algorithm }
     }
 
-    pub fn from_enum(algorithm: AsymmetricAlgorithm) -> Self {
+    pub fn from_enum(algorithm: KemAlgorithm) -> Self {
         let algorithm: Box<dyn AsymmetricAlgorithmTrait> = match algorithm {
-            AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256) => {
+            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256) => {
                 Box::new(Rsa2048Sha256Wrapper::new())
             }
-            AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384) => {
+            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384) => {
                 Box::new(Rsa2048Sha384Wrapper::new())
             }
-            AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512) => {
+            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512) => {
                 Box::new(Rsa2048Sha512Wrapper::new())
             }
-            AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256) => {
+            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256) => {
                 Box::new(Rsa4096Sha256Wrapper::new())
             }
-            AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384) => {
+            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384) => {
                 Box::new(Rsa4096Sha384Wrapper::new())
             }
-            AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512) => {
+            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512) => {
                 Box::new(Rsa4096Sha512Wrapper::new())
             }
-            AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L512) => {
+            KemAlgorithm::Kyber(KyberSecurityLevel::L512) => {
                 Box::new(Kyber512Wrapper::new())
             }
-            AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L768) => {
+            KemAlgorithm::Kyber(KyberSecurityLevel::L768) => {
                 Box::new(Kyber768Wrapper::new())
             }
-            AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L1024) => {
+            KemAlgorithm::Kyber(KyberSecurityLevel::L1024) => {
                 Box::new(Kyber1024Wrapper::new())
             }
         };
@@ -138,7 +138,7 @@ impl AsymmetricAlgorithmWrapper {
 }
 
 impl AsymmetricAlgorithmTrait for AsymmetricAlgorithmWrapper {
-    fn algorithm(&self) -> AsymmetricAlgorithm {
+    fn algorithm(&self) -> KemAlgorithm {
         self.algorithm.algorithm()
     }
 
@@ -171,8 +171,8 @@ impl AsymmetricAlgorithmTrait for AsymmetricAlgorithmWrapper {
     }
 }
 
-impl From<AsymmetricAlgorithm> for AsymmetricAlgorithmWrapper {
-    fn from(algorithm: AsymmetricAlgorithm) -> Self {
+impl From<KemAlgorithm> for AsymmetricAlgorithmWrapper {
+    fn from(algorithm: KemAlgorithm) -> Self {
         Self::from_enum(algorithm)
     }
 }
@@ -186,53 +186,53 @@ impl From<Box<dyn AsymmetricAlgorithmTrait>> for AsymmetricAlgorithmWrapper {
 impl_asymmetric_algorithm!(
     Rsa2048Sha256Wrapper,
     Rsa2048<Sha256>,
-    AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256)
+    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256)
 );
 
 impl_asymmetric_algorithm!(
     Rsa2048Sha384Wrapper,
     Rsa2048<Sha384>,
-    AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384)
+    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384)
 );
 
 impl_asymmetric_algorithm!(
     Rsa2048Sha512Wrapper,
     Rsa2048<Sha512>,
-    AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512)
+    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512)
 );
 
 impl_asymmetric_algorithm!(
     Rsa4096Sha256Wrapper,
     Rsa4096<Sha256>,
-    AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256)
+    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256)
 );
 
 impl_asymmetric_algorithm!(
     Rsa4096Sha384Wrapper,
     Rsa4096<Sha384>,
-    AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384)
+    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384)
 );
 
 impl_asymmetric_algorithm!(
     Rsa4096Sha512Wrapper,
     Rsa4096<Sha512>,
-    AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512)
+    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512)
 );
 
 impl_asymmetric_algorithm!(
     Kyber512Wrapper,
     Kyber512,
-    AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L512)
+    KemAlgorithm::Kyber(KyberSecurityLevel::L512)
 );
 
 impl_asymmetric_algorithm!(
     Kyber768Wrapper,
     Kyber768,
-    AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L768)
+    KemAlgorithm::Kyber(KyberSecurityLevel::L768)
 );
 
 impl_asymmetric_algorithm!(
     Kyber1024Wrapper,
     Kyber1024,
-    AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L1024)
+    KemAlgorithm::Kyber(KyberSecurityLevel::L1024)
 );

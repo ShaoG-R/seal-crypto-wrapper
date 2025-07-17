@@ -1,9 +1,7 @@
-#[cfg(feature = "asymmetric")]
+#[cfg(feature = "kem")]
 pub mod asymmetric;
 #[cfg(feature = "kdf")]
 pub mod kdf;
-#[cfg(feature = "signature")]
-pub mod signature;
 #[cfg(feature = "symmetric")]
 pub mod symmetric;
 #[cfg(feature = "xof")]

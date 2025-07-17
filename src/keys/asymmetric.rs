@@ -1,6 +1,6 @@
 use crate::algorithms::{
     HashAlgorithmEnum,
-    asymmetric::{AsymmetricAlgorithm, KyberSecurityLevel, RsaBits},
+    asymmetric::kem::{KemAlgorithm, KyberSecurityLevel, RsaBits},
 };
 use crate::error::Error;
 use seal_crypto::prelude::{AsymmetricKeySet, Key, KeyGenerator};
@@ -12,58 +12,58 @@ use seal_crypto::zeroize;
 macro_rules! dispatch_asymmetric {
     ($algorithm:expr, $action:ident) => {
         match $algorithm {
-            AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256) => {
+            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256) => {
                 $action!(
                     Rsa2048<Sha256>,
-                    AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256)
+                    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256)
                 )
             }
-            AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384) => {
+            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384) => {
                 $action!(
                     Rsa2048<Sha384>,
-                    AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384)
+                    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384)
                 )
             }
-            AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512) => {
+            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512) => {
                 $action!(
                     Rsa2048<Sha512>,
-                    AsymmetricAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512)
+                    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512)
                 )
             }
-            AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256) => {
+            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256) => {
                 $action!(
                     Rsa4096<Sha256>,
-                    AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256)
+                    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256)
                 )
             }
-            AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384) => {
+            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384) => {
                 $action!(
                     Rsa4096<Sha384>,
-                    AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384)
+                    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384)
                 )
             }
-            AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512) => {
+            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512) => {
                 $action!(
                     Rsa4096<Sha512>,
-                    AsymmetricAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512)
+                    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512)
                 )
             }
-            AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L512) => {
+            KemAlgorithm::Kyber(KyberSecurityLevel::L512) => {
                 $action!(
                     Kyber512,
-                    AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L512)
+                    KemAlgorithm::Kyber(KyberSecurityLevel::L512)
                 )
             }
-            AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L768) => {
+            KemAlgorithm::Kyber(KyberSecurityLevel::L768) => {
                 $action!(
                     Kyber768,
-                    AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L768)
+                    KemAlgorithm::Kyber(KyberSecurityLevel::L768)
                 )
             }
-            AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L1024) => {
+            KemAlgorithm::Kyber(KyberSecurityLevel::L1024) => {
                 $action!(
                     Kyber1024,
-                    AsymmetricAlgorithm::Kyber(KyberSecurityLevel::L1024)
+                    KemAlgorithm::Kyber(KyberSecurityLevel::L1024)
                 )
             }
         }
@@ -77,14 +77,14 @@ macro_rules! dispatch_asymmetric {
 pub struct TypedAsymmetricKeyPair {
     public_key: AsymmetricPublicKey,
     private_key: AsymmetricPrivateKey,
-    algorithm: AsymmetricAlgorithm,
+    algorithm: KemAlgorithm,
 }
 
 impl TypedAsymmetricKeyPair {
     /// Generates a new key pair for the specified algorithm.
     ///
     /// 为指定的算法生成一个新的密钥对。
-    pub fn generate(algorithm: AsymmetricAlgorithm) -> Result<Self, Error> {
+    pub fn generate(algorithm: KemAlgorithm) -> Result<Self, Error> {
         macro_rules! generate_keypair {
             ($key_type:ty, $alg_enum:expr) => {
                 <$key_type>::generate_keypair()
@@ -135,7 +135,7 @@ impl TypedAsymmetricKeyPair {
     /// Returns the algorithm of the key pair.
     ///
     /// 返回密钥对的算法。
-    pub fn algorithm(&self) -> AsymmetricAlgorithm {
+    pub fn algorithm(&self) -> KemAlgorithm {
         self.algorithm
     }
 }
@@ -146,7 +146,7 @@ impl TypedAsymmetricKeyPair {
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct TypedAsymmetricPublicKey {
     key: AsymmetricPublicKey,
-    algorithm: AsymmetricAlgorithm,
+    algorithm: KemAlgorithm,
 }
 
 impl TypedAsymmetricPublicKey {
@@ -154,7 +154,7 @@ impl TypedAsymmetricPublicKey {
         self.key.as_bytes().to_vec()
     }
 
-    pub fn algorithm(&self) -> AsymmetricAlgorithm {
+    pub fn algorithm(&self) -> KemAlgorithm {
         self.algorithm
     }
 }
@@ -165,7 +165,7 @@ impl TypedAsymmetricPublicKey {
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct TypedAsymmetricPrivateKey {
     key: AsymmetricPrivateKey,
-    algorithm: AsymmetricAlgorithm,
+    algorithm: KemAlgorithm,
 }
 
 impl TypedAsymmetricPrivateKey {
@@ -173,7 +173,7 @@ impl TypedAsymmetricPrivateKey {
         self.key.as_bytes().to_vec()
     }
 
-    pub fn algorithm(&self) -> AsymmetricAlgorithm {
+    pub fn algorithm(&self) -> KemAlgorithm {
         self.algorithm
     }
 }
@@ -211,7 +211,7 @@ impl AsymmetricPrivateKey {
     /// 将原始密钥字节转换为类型化的私钥枚举。
     pub fn into_typed(
         self,
-        algorithm: AsymmetricAlgorithm,
+        algorithm: KemAlgorithm,
     ) -> Result<TypedAsymmetricPrivateKey, Error> {
         macro_rules! into_typed_sk {
             ($key_type:ty, $alg_enum:expr) => {{
@@ -257,7 +257,7 @@ impl AsymmetricPublicKey {
 
     pub fn into_typed(
         self,
-        algorithm: AsymmetricAlgorithm,
+        algorithm: KemAlgorithm,
     ) -> Result<TypedAsymmetricPublicKey, Error> {
         macro_rules! into_typed_pk {
             ($key_type:ty, $alg_enum:expr) => {{

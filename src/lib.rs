@@ -51,6 +51,8 @@
 //! ### Symmetric Encryption Example | 对称加密示例
 //!
 //! ```rust
+//! # #[cfg(feature = "symmetric")]
+//! # {
 //! use seal_crypto_wrapper::prelude::*;
 //! use seal_crypto_wrapper::error::Result;
 //!
@@ -68,7 +70,7 @@
 //!     let plaintext = b"Hello, World!";
 //!     let nonce = vec![0u8; cipher.nonce_size()]; // Use random nonce in production
 //!     let aad = b"Additional Authenticated Data";
-//!     let ciphertext = cipher.encrypt(plaintext, &key, &nonce,Some(aad))?;
+//!     let ciphertext = cipher.encrypt(plaintext, &key, &nonce, Some(aad))?;
 //!
 //!     // 5. Decrypt data | 解密数据
 //!     let decrypted = cipher.decrypt(&ciphertext, &key, &nonce, Some(aad))?;
@@ -76,11 +78,14 @@
 //!
 //!     Ok(())
 //! }
+//! # }
 //! ```
 //!
 //! ### Digital Signature Example | 数字签名示例
 //!
 //! ```rust
+//! # #[cfg(feature = "asymmetric-signature")]
+//! # {
 //! use seal_crypto_wrapper::prelude::*;
 //! use seal_crypto_wrapper::error::Result;
 //!
@@ -104,6 +109,7 @@
 //!
 //!     Ok(())
 //! }
+//! # }
 //! ```
 //!
 //! ## Feature Flags | 功能标志

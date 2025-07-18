@@ -50,7 +50,7 @@
 //!
 //! let plaintext = b"Hello, World!";
 //! let nonce = vec![0u8; cipher.nonce_size()]; // Use random nonce in production
-//! let ciphertext = cipher.encrypt(plaintext, &key, &nonce,  None)?;
+//! let ciphertext = cipher.encrypt(plaintext, &key, &nonce, None)?;
 //!
 //! let decrypted = cipher.decrypt(&ciphertext, &key, &nonce, None)?;
 //! assert_eq!(plaintext, &decrypted[..]);
@@ -132,9 +132,9 @@ macro_rules! impl_symmetric_algorithm {
         impl SymmetricAlgorithmTrait for $wrapper {
             fn encrypt(
                 &self,
-                nonce: &[u8],
-                key: &TypedSymmetricKey,
                 plaintext: &[u8],
+                key: &TypedSymmetricKey,
+                nonce: &[u8],
                 aad: Option<&[u8]>,
             ) -> Result<Vec<u8>> {
                 if key.algorithm() != $algo_enum {
@@ -406,10 +406,6 @@ impl SymmetricAlgorithmWrapper {
 }
 
 impl SymmetricAlgorithmTrait for SymmetricAlgorithmWrapper {
-    fn clone_box_symmetric(&self) -> Box<dyn SymmetricAlgorithmTrait> {
-        Box::new(self.clone())
-    }
-
     fn encrypt(
         &self,
         plaintext: &[u8],
@@ -480,6 +476,10 @@ impl SymmetricAlgorithmTrait for SymmetricAlgorithmWrapper {
 
     fn into_symmetric_boxed(self) -> Box<dyn SymmetricAlgorithmTrait> {
         self.algorithm
+    }
+
+    fn clone_box_symmetric(&self) -> Box<dyn SymmetricAlgorithmTrait> {
+        Box::new(self.clone())
     }
 }
 

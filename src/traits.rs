@@ -324,8 +324,8 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static {
     /// # Arguments | 参数
     ///
     /// * `key` - Typed symmetric key bound to this algorithm | 绑定到此算法的类型化对称密钥
-    /// * `nonce` - Unique number used once (must be unique per key) | 一次性使用的唯一数字（每个密钥必须唯一）
     /// * `plaintext` - Data to encrypt | 要加密的数据
+    /// * `nonce` - Unique number used once (must be unique per key) | 一次性使用的唯一数字（每个密钥必须唯一）
     /// * `aad` - Optional associated data to authenticate | 要认证的可选关联数据
     ///
     /// # Returns | 返回值
@@ -387,11 +387,10 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static {
     /// 解密密文并验证认证。
     ///
     /// # Arguments | 参数
-    ///
+    /// * `ciphertext` - Encrypted data with authentication tag | 带认证标签的加密数据
     /// * `key` - Typed symmetric key bound to this algorithm | 绑定到此算法的类型化对称密钥
     /// * `nonce` - Same nonce used for encryption | 用于加密的相同 nonce
     /// * `aad` - Same associated data used for encryption | 用于加密的相同关联数据
-    /// * `ciphertext` - Encrypted data with authentication tag | 带认证标签的加密数据
     ///
     /// # Returns | 返回值
     ///

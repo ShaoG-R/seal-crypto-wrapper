@@ -324,17 +324,26 @@ macro_rules! dispatch_key_agreement {
 /// ## Examples | 示例
 ///
 /// ```rust
+/// use seal_crypto_wrapper::algorithms::asymmetric::AsymmetricAlgorithm;
 /// use seal_crypto_wrapper::keys::asymmetric::AsymmetricPrivateKey;
-/// use seal_crypto_wrapper::algorithms::asymmetric::kem::KemAlgorithm;
 ///
-/// // Create from raw bytes (e.g., loaded from file)
-/// let key_bytes = vec![0u8; 32]; // Example key material
-/// let untyped_key = AsymmetricPrivateKey::new(key_bytes);
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     // Generate a valid key pair first
+///     use seal_crypto_wrapper::prelude::TypedAsymmetricPrivateKeyTrait;
+///     let algorithm = AsymmetricAlgorithm::build().kem().kyber512();
+///     let kem = algorithm.into_asymmetric_wrapper();
+///     let keypair = kem.generate_keypair()?;
+///     let (public_key, private_key) = keypair.into_keypair();
 ///
-/// // Convert to typed key when algorithm is known
-/// let algorithm = KemAlgorithm::build().kyber512();
-/// let typed_key = untyped_key.into_kem_typed(algorithm)?;
-/// # Ok::<(), Box<dyn std::error::Error>>(())
+///     // Extract raw bytes from the generated key
+///     let key_bytes = private_key.to_bytes();
+///     let untyped_key = AsymmetricPrivateKey::new(key_bytes);
+///
+///     // Convert back to typed key when algorithm is known
+///     let typed_key = untyped_key.into_kem_typed(algorithm.into())?;
+///     println!("Successfully converted untyped key to typed key");
+///     Ok(())
+/// }
 /// ```
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct AsymmetricPrivateKey(pub zeroize::Zeroizing<Vec<u8>>);
@@ -439,14 +448,26 @@ impl AsymmetricPrivateKey {
     /// ## Examples | 示例
     ///
     /// ```rust
+    /// use seal_crypto_wrapper::algorithms::asymmetric::AsymmetricAlgorithm;
     /// use seal_crypto_wrapper::keys::asymmetric::AsymmetricPrivateKey;
-    /// use seal_crypto_wrapper::algorithms::asymmetric::kem::KemAlgorithm;
     ///
-    /// let key_bytes = vec![0u8; 32]; // Example key material
-    /// let untyped_key = AsymmetricPrivateKey::new(key_bytes);
-    /// let algorithm = KemAlgorithm::build().kyber512();
-    /// let typed_key = untyped_key.into_kem_typed(algorithm)?;
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     // Generate a valid key pair first
+    ///     use seal_crypto_wrapper::prelude::TypedAsymmetricPrivateKeyTrait;
+    ///     let algorithm = AsymmetricAlgorithm::build().kem().kyber512();
+    ///     let kem = algorithm.into_asymmetric_wrapper();
+    ///     let keypair = kem.generate_keypair()?;
+    ///     let (public_key, private_key) = keypair.into_keypair();
+    ///
+    ///     // Extract raw bytes from the generated key
+    ///     let key_bytes = private_key.to_bytes();
+    ///     let untyped_key = AsymmetricPrivateKey::new(key_bytes);
+    ///
+    ///     // Convert to typed key when algorithm is known
+    ///     let typed_key = untyped_key.into_kem_typed(algorithm.into())?;
+    ///     println!("Successfully converted to typed KEM key");
+    ///     Ok(())
+    /// }
     /// ```
     #[cfg(feature = "asymmetric-kem")]
     pub fn into_kem_typed(

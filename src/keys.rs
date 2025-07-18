@@ -87,15 +87,15 @@
 //! ```rust
 //! use seal_crypto_wrapper::prelude::*;
 //! use serde::{Serialize, Deserialize};
+//!
 //! #[cfg(feature = "asymmetric-signature")]
 //! {
 //!     let keypair = AsymmetricAlgorithm::build().signature().ed25519().into_signature_wrapper().generate_keypair().unwrap();
 //!     // Keys can be serialized with algorithm information
-//!     let key_json = serde_json::to_string(&keypair)?;
-//!     let restored_key: TypedSymmetricKey = serde_json::from_str(&key_json)?;
-//!     Ok::<(), Box<dyn std::error::Error>>(())
+//!     let key_json = serde_json::to_string(&keypair).unwrap();
+//!     let restored_keypair: seal_crypto_wrapper::keys::asymmetric::signature::TypedSignatureKeyPair = serde_json::from_str(&key_json).unwrap();
+//!     println!("Successfully serialized and deserialized signature keypair");
 //! }
-//!  
 //! ```
 //!
 //! ## Security Considerations | 安全考虑

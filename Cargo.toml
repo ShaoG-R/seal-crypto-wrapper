@@ -10,10 +10,6 @@ serde = "1.0.219"
 rand = "0.9.1"
 thiserror = "2.0.12"
 
-[[example]]
-name = "kem"
-required-features = ["asymmetric-kem"]
-
 [features]
 default = []
 
@@ -32,3 +28,31 @@ sha2-asm = ["seal-crypto/sha2-asm"]
 xof-asm = ["seal-crypto/sha3-asm"]
 
 full = ["symmetric", "asymmetric", "kdf", "xof"]
+
+[[example]]
+name = "kem"
+required-features = ["asymmetric-kem"]
+
+[[example]]
+name = "signature"
+required-features = ["asymmetric-signature"]
+
+[[example]]
+name = "key_agreement"
+required-features = ["asymmetric-key-agreement"]
+
+[[example]]
+name = "kdf_key"
+required-features = ["kdf"]
+
+[[example]]
+name = "kdf_passwd"
+required-features = ["kdf"]
+
+[[example]]
+name = "xof"
+required-features = ["xof"]
+
+[[example]]
+name = "symmetric"
+required-features = ["symmetric"]

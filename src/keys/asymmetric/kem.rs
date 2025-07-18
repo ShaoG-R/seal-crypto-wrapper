@@ -1,77 +1,12 @@
-use seal_crypto::prelude::Key;
-use seal_crypto::prelude::KeyGenerator;
-use crate::keys::asymmetric::RsaBits;
-use crate::keys::asymmetric::KyberSecurityLevel;
-use crate::keys::asymmetric::HashAlgorithmEnum;
+
+use crate::dispatch_kem;
 use crate::algorithms::asymmetric::kem::KemAlgorithm;
 use crate::error::Error;
+use seal_crypto::prelude::{Key, KeyGenerator};
 use crate::keys::asymmetric::{AsymmetricPrivateKey, AsymmetricPublicKey};
+use crate::impl_typed_asymmetric_public_key;
+use crate::impl_typed_asymmetric_private_key;
 
-
-use seal_crypto::schemes::asymmetric::post_quantum::kyber::{Kyber1024, Kyber512, Kyber768};
-use seal_crypto::schemes::asymmetric::traditional::rsa::{Rsa2048, Rsa4096};
-use seal_crypto::schemes::hash::{Sha256, Sha384, Sha512};
-macro_rules! dispatch_kem {
-    ($algorithm:expr, $action:ident) => {
-        
-        match $algorithm {
-            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256) => {
-                $action!(
-                    Rsa2048<Sha256>,
-                    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256)
-                )
-            }
-            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384) => {
-                $action!(
-                    Rsa2048<Sha384>,
-                    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384)
-                )
-            }
-            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512) => {
-                $action!(
-                    Rsa2048<Sha512>,
-                    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512)
-                )
-            }
-            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256) => {
-                $action!(
-                    Rsa4096<Sha256>,
-                    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256)
-                )
-            }
-            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384) => {
-                $action!(
-                    Rsa4096<Sha384>,
-                    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384)
-                )
-            }
-            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512) => {
-                $action!(
-                    Rsa4096<Sha512>,
-                    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512)
-                )
-            }
-            KemAlgorithm::Kyber(KyberSecurityLevel::L512) => {
-                $action!(
-                    Kyber512,
-                    KemAlgorithm::Kyber(KyberSecurityLevel::L512)
-                )
-            }
-            KemAlgorithm::Kyber(KyberSecurityLevel::L768) => {
-                $action!(
-                    Kyber768,
-                    KemAlgorithm::Kyber(KyberSecurityLevel::L768)
-                )
-            }
-            KemAlgorithm::Kyber(KyberSecurityLevel::L1024) => {
-                $action!(
-                    Kyber1024,
-                    KemAlgorithm::Kyber(KyberSecurityLevel::L1024)
-                )
-            }
-        }
-    };
-}
 
 
 /// An enum wrapping a typed asymmetric key pair.
@@ -116,7 +51,7 @@ impl TypedKemKeyPair {
         )
     }
 
-    /// Returns the public key as a generic byte wrapper.
+    /// Returns the public key with the specified algorithm.
     ///
     /// 以通用字节包装器形式返回公钥。
     pub fn public_key(&self) -> TypedKemPublicKey {
@@ -126,7 +61,7 @@ impl TypedKemKeyPair {
         }
     }
 
-    /// Returns the private key as a generic byte wrapper.
+    /// Returns the private key with the specified algorithm.
     ///
     /// 以通用字节包装器形式返回私钥。
     pub fn private_key(&self) -> TypedKemPrivateKey {
@@ -144,24 +79,16 @@ impl TypedKemKeyPair {
     }
 }
 
-/// An enum wrapping a typed asymmetric private key.
+/// An enum wrapping a typed asymmetric public key.
 ///
-/// 包装了类型化非对称私钥的枚举。
+/// 包装了类型化非对称公钥的枚举。
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct TypedKemPublicKey {
     pub(crate) key: AsymmetricPublicKey,
     pub(crate) algorithm: KemAlgorithm,
 }
 
-impl TypedKemPublicKey {
-    pub fn to_bytes(&self) -> Vec<u8> {
-        self.key.as_bytes().to_vec()
-    }
-
-    pub fn algorithm(&self) -> KemAlgorithm {
-        self.algorithm
-    }
-}
+impl_typed_asymmetric_public_key!(TypedKemPublicKey, KemAlgorithm);
 
 /// An enum wrapping a typed asymmetric private key.
 ///
@@ -172,12 +99,4 @@ pub struct TypedKemPrivateKey {
     pub(crate) algorithm: KemAlgorithm,
 }
 
-impl TypedKemPrivateKey {
-    pub fn to_bytes(&self) -> Vec<u8> {
-        self.key.as_bytes().to_vec()
-    }
-
-    pub fn algorithm(&self) -> KemAlgorithm {
-        self.algorithm
-    }
-}
+impl_typed_asymmetric_private_key!(TypedKemPrivateKey, KemAlgorithm);

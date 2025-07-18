@@ -71,6 +71,10 @@ impl TypedSymmetricKey {
     pub fn into_bytes(self) -> Zeroizing<Vec<u8>> {
         self.key.into_bytes()
     }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.key.to_bytes()
+    }
 }
 
 impl AsRef<[u8]> for TypedSymmetricKey {
@@ -126,6 +130,10 @@ impl SymmetricKey {
     /// 获取密钥原始字节的引用
     pub fn as_bytes(&self) -> &[u8] {
         &self.0
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.0.to_vec()
     }
 
     /// Consume the key and return the inner bytes

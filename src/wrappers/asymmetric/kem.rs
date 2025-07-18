@@ -12,6 +12,7 @@ use seal_crypto::zeroize::Zeroizing;
 use std::ops::Deref;
 use crate::keys::asymmetric::kem::{TypedKemKeyPair, TypedKemPrivateKey, TypedKemPublicKey};
 use crate::define_wrapper;
+use crate::keys::asymmetric::{TypedAsymmetricPrivateKeyTrait, TypedAsymmetricPublicKeyTrait};
 
 macro_rules! impl_kem_algorithm {
     ($wrapper:ident, $algo:ty, $algo_enum:expr) => {
@@ -24,7 +25,7 @@ macro_rules! impl_kem_algorithm {
                 &self,
                 public_key: &TypedKemPublicKey,
             ) -> Result<(Zeroizing<Vec<u8>>, Vec<u8>)> {
-                if public_key.algorithm() != $algo_enum {
+                if public_key.algorithm != $algo_enum {
                     return Err(Error::FormatError(FormatError::InvalidKeyType));
                 }
                 type KT = $algo;
@@ -37,7 +38,7 @@ macro_rules! impl_kem_algorithm {
                 private_key: &TypedKemPrivateKey,
                 encapsulated_key: &Zeroizing<Vec<u8>>,
             ) -> Result<Zeroizing<Vec<u8>>> {
-                if private_key.algorithm() != $algo_enum {
+                if private_key.algorithm != $algo_enum {
                     return Err(Error::FormatError(FormatError::InvalidKeyType));
                 }
                 type KT = $algo;

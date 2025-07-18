@@ -9,6 +9,7 @@ use seal_crypto::schemes::asymmetric::traditional::ecdh::EcdhP256;
 use seal_crypto::zeroize::Zeroizing;
 use std::ops::Deref;
 use crate::define_wrapper;
+use crate::keys::asymmetric::{TypedAsymmetricPrivateKeyTrait, TypedAsymmetricPublicKeyTrait};
 
 macro_rules! impl_key_agreement_algorithm {
     ($wrapper:ident, $algo:ty, $algo_enum:expr) => {
@@ -22,7 +23,7 @@ macro_rules! impl_key_agreement_algorithm {
                 sk: &TypedKeyAgreementPrivateKey,
                 pk: &TypedKeyAgreementPublicKey,
             ) -> Result<Zeroizing<Vec<u8>>> {
-                if sk.algorithm() != $algo_enum || pk.algorithm() != $algo_enum {
+                if sk.algorithm != $algo_enum || pk.algorithm != $algo_enum {
                     return Err(Error::FormatError(
                         crate::error::FormatError::InvalidKeyType,
                     ));

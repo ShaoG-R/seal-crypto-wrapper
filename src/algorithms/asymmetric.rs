@@ -1,6 +1,6 @@
 
 
-#[cfg(feature = "asymmetric-kem")]
+#[cfg(feature = "asymmetric-signature")]
 pub mod signature;
 
 #[cfg(feature = "asymmetric-kem")]
@@ -42,7 +42,7 @@ impl AsymmetricAlgorithmBuilder {
     /// 创建一个新的 KEM 算法构建器。
     #[cfg(feature = "asymmetric-kem")]
     pub fn kem(self) -> kem::KemAlgorithmBuilder {
-        kem::KemAlgorithm::build()
+        KemAlgorithm::build()
     }
 
     /// Create a new signature algorithm builder.
@@ -50,7 +50,7 @@ impl AsymmetricAlgorithmBuilder {
     /// 创建一个新的数字签名算法构建器。
     #[cfg(feature = "asymmetric-signature")]
     pub fn signature(self) -> signature::SignatureAlgorithmBuilder {
-        signature::SignatureAlgorithm::build()
+        SignatureAlgorithm::build()
     }
 
     /// Create a new key agreement algorithm builder.

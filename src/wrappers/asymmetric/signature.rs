@@ -11,6 +11,7 @@ use seal_crypto::schemes::asymmetric::post_quantum::dilithium::{
 use seal_crypto::schemes::asymmetric::traditional::ecc::{EcdsaP256, Ed25519};
 use std::ops::Deref;
 use crate::define_wrapper;
+use crate::keys::asymmetric::{TypedAsymmetricPrivateKeyTrait, TypedAsymmetricPublicKeyTrait};
 
 macro_rules! impl_signature_algorithm {
     ($wrapper:ident, $algo:ty, $algo_enum:expr) => {
@@ -20,7 +21,7 @@ macro_rules! impl_signature_algorithm {
             }
 
             fn sign(&self, message: &[u8], key: &TypedSignaturePrivateKey) -> Result<Vec<u8>> {
-                if key.algorithm() != $algo_enum {
+                if key.algorithm != $algo_enum {
                     return Err(Error::FormatError(FormatError::InvalidKeyType));
                 }
                 type KT = $algo;
@@ -35,7 +36,7 @@ macro_rules! impl_signature_algorithm {
                 key: &TypedSignaturePublicKey,
                 signature: Vec<u8>,
             ) -> Result<()> {
-                if key.algorithm() != $algo_enum {
+                if key.algorithm != $algo_enum {
                     return Err(Error::FormatError(FormatError::InvalidKeyType));
                 }
                 type KT = $algo;

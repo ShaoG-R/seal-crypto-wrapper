@@ -2,6 +2,16 @@
 name = "seal-crypto-wrapper"
 version = "0.1.2"
 edition = "2024"
+description = "A high-level, misuse-resistant cryptographic wrapper library for Rust, binding algorithms to keys to ensure type safety."
+license = "MPL-2.0"
+repository = "https://github.com/ShaoG-R/seal-crypto-wrapper"
+homepage = "https://github.com/ShaoG-R/seal-crypto-wrapper"
+documentation = "https://docs.rs/seal-crypto-wrapper"
+keywords = ["crypto", "wrapper", "seal", "kyber", "dilithium"]
+categories = ["cryptography"]
+
+[package.metadata.docs.rs]
+features = ["full"]
 
 [dependencies]
 seal-crypto = { version = "0.1.2", default-features = false, features = ["std", "serde", "secrecy"]}

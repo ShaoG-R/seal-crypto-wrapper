@@ -1,6 +1,67 @@
-//! Defines the core traits for type-safe algorithm specification.
+//! Core traits for type-safe cryptographic algorithm specification.
 //!
-//! 定义用于类型安全算法规范的核心 trait。
+//! 用于类型安全密码算法规范的核心 trait。
+//!
+//! ## Overview | 概述
+//!
+//! This module defines the fundamental traits that enable type-safe cryptographic operations
+//! in the seal-crypto-wrapper library. These traits provide object-safe interfaces for
+//! different cryptographic primitives while maintaining algorithm-specific type information.
+//!
+//! 此模块定义了在 seal-crypto-wrapper 库中启用类型安全密码操作的基本 trait。
+//! 这些 trait 为不同的密码原语提供对象安全接口，同时保持算法特定的类型信息。
+//!
+//! ## Design Principles | 设计原则
+//!
+//! ### Object Safety | 对象安全性
+//!
+//! All traits in this module are designed to be object-safe, allowing them to be used
+//! as trait objects (`Box<dyn Trait>`). This enables runtime polymorphism while
+//! maintaining compile-time type safety.
+//!
+//! 此模块中的所有 trait 都设计为对象安全的，允许它们用作 trait 对象 (`Box<dyn Trait>`)。
+//! 这在保持编译时类型安全的同时启用了运行时多态性。
+//!
+//! ### Algorithm Binding | 算法绑定
+//!
+//! Each trait includes an `algorithm()` method that returns the specific algorithm
+//! enum variant. This allows runtime verification that keys and operations match
+//! the expected algorithm.
+//!
+//! 每个 trait 都包含一个 `algorithm()` 方法，返回特定的算法枚举变体。
+//! 这允许运行时验证密钥和操作是否匹配预期的算法。
+//!
+//! ### Memory Safety | 内存安全
+//!
+//! Sensitive data is handled using `Zeroizing<Vec<u8>>` and `SecretBox<[u8]>`
+//! to ensure proper cleanup and prevent accidental exposure.
+//!
+//! 敏感数据使用 `Zeroizing<Vec<u8>>` 和 `SecretBox<[u8]>` 处理，
+//! 以确保正确清理并防止意外暴露。
+//!
+//! ## Trait Categories | Trait 分类
+//!
+//! - **Symmetric Cryptography**: `SymmetricAlgorithmTrait` for AEAD ciphers
+//! - **Asymmetric KEM**: `KemAlgorithmTrait` for key encapsulation mechanisms
+//! - **Digital Signatures**: `SignatureAlgorithmTrait` for signing and verification
+//! - **Key Agreement**: `KeyAgreementAlgorithmTrait` for shared secret derivation
+//! - **Key Derivation**: `KdfKeyAlgorithmTrait`, `KdfPasswordAlgorithmTrait` for key derivation
+//! - **Extendable Output**: `XofAlgorithmTrait` for variable-length output functions
+//!
+//! - **对称密码学**: `SymmetricAlgorithmTrait` 用于 AEAD 密码
+//! - **非对称 KEM**: `KemAlgorithmTrait` 用于密钥封装机制
+//! - **数字签名**: `SignatureAlgorithmTrait` 用于签名和验证
+//! - **密钥协商**: `KeyAgreementAlgorithmTrait` 用于共享密钥派生
+//! - **密钥派生**: `KdfKeyAlgorithmTrait`, `KdfPasswordAlgorithmTrait` 用于密钥派生
+//! - **可扩展输出**: `XofAlgorithmTrait` 用于可变长度输出函数
+//!
+//! ## Macro Utilities | 宏工具
+//!
+//! The `impl_trait_for_box!` macro automatically implements traits for `Box<dyn Trait>`
+//! types, enabling seamless use of trait objects with the same interface as concrete types.
+//!
+//! `impl_trait_for_box!` 宏自动为 `Box<dyn Trait>` 类型实现 trait，
+//! 使 trait 对象能够与具体类型使用相同的接口。
 
 #[cfg(feature = "kdf")]
 use {
@@ -44,6 +105,44 @@ use {
     crate::algorithms::asymmetric::kem::KemAlgorithm,
 };
 
+/// Macro for automatically implementing traits for `Box<dyn Trait>` types.
+///
+/// 用于自动为 `Box<dyn Trait>` 类型实现 trait 的宏。
+///
+/// ## Purpose | 目的
+///
+/// This macro generates implementations that allow `Box<dyn Trait>` to be used
+/// seamlessly as if it were a concrete type implementing the trait. It handles
+/// method delegation and provides automatic `Clone` implementation.
+///
+/// 此宏生成实现，允许 `Box<dyn Trait>` 像具体类型一样无缝使用。
+/// 它处理方法委托并提供自动的 `Clone` 实现。
+///
+/// ## Syntax | 语法
+///
+/// ```ignore
+/// impl_trait_for_box!(TraitName {
+///     ref fn method_name(&self, arg: Type) -> ReturnType;
+///     self fn consuming_method(self, arg: Type) -> ReturnType;
+/// }, clone_method_name);
+/// ```
+///
+/// ## Method Types | 方法类型
+///
+/// - `ref fn`: Methods that take `&self` - delegated to the inner trait object
+/// - `self fn`: Methods that consume `self` - may have custom implementations
+///
+/// - `ref fn`: 接受 `&self` 的方法 - 委托给内部 trait 对象
+/// - `self fn`: 消费 `self` 的方法 - 可能有自定义实现
+///
+/// ## Examples | 示例
+///
+/// ```ignore
+/// impl_trait_for_box!(SymmetricAlgorithmTrait {
+///     ref fn encrypt(&self, key: &Key, data: &[u8]) -> Result<Vec<u8>>;
+///     ref fn decrypt(&self, key: &Key, data: &[u8]) -> Result<Vec<u8>>;
+/// }, clone_box_symmetric);
+/// ```
 #[allow(unused_macros)]
 macro_rules! impl_trait_for_box {
     // Internal recursive rules for TT muncher
@@ -177,14 +276,77 @@ macro_rules! impl_trait_for_box {
     };
 }
 
-/// Represents a concrete symmetric encryption algorithm.
-/// This is an object-safe trait that erases the concrete algorithm type.
+/// Trait for symmetric encryption algorithms with Authenticated Encryption with Associated Data (AEAD).
 ///
-/// 表示一个具体的对称加密算法。
-/// 这是一个对象安全的 trait，它擦除了具体的算法类型。
+/// 用于带关联数据认证加密 (AEAD) 的对称加密算法 trait。
+///
+/// ## Overview | 概述
+///
+/// This trait provides a unified interface for symmetric encryption algorithms that support
+/// AEAD (Authenticated Encryption with Associated Data). All methods are object-safe,
+/// allowing the trait to be used as a trait object.
+///
+/// 此 trait 为支持 AEAD（带关联数据的认证加密）的对称加密算法提供统一接口。
+/// 所有方法都是对象安全的，允许将 trait 用作 trait 对象。
+///
+/// ## Supported Algorithms | 支持的算法
+///
+/// - AES-128-GCM, AES-256-GCM
+/// - ChaCha20-Poly1305, XChaCha20-Poly1305
+///
+/// ## Security Guarantees | 安全保证
+///
+/// - **Confidentiality**: Plaintext is encrypted and cannot be recovered without the key
+/// - **Authenticity**: Ciphertext integrity is verified during decryption
+/// - **Associated Data**: Additional data can be authenticated without encryption
+///
+/// - **机密性**: 明文被加密，没有密钥无法恢复
+/// - **真实性**: 解密时验证密文完整性
+/// - **关联数据**: 可以在不加密的情况下认证附加数据
+///
+/// ## Usage Guidelines | 使用指南
+///
+/// - Always use a unique nonce for each encryption operation
+/// - Never reuse nonce-key pairs
+/// - Use cryptographically secure random number generation for nonces
+/// - Consider using associated data for context binding
+///
+/// - 每次加密操作都使用唯一的 nonce
+/// - 永远不要重复使用 nonce-密钥对
+/// - 为 nonce 使用密码学安全的随机数生成
+/// - 考虑使用关联数据进行上下文绑定
 #[cfg(feature = "symmetric")]
 pub trait SymmetricAlgorithmTrait: Send + Sync + 'static {
-    /// Encrypts the given plaintext.
+    /// Encrypts plaintext with optional associated data.
+    ///
+    /// 使用可选关联数据加密明文。
+    ///
+    /// # Arguments | 参数
+    ///
+    /// * `key` - Typed symmetric key bound to this algorithm | 绑定到此算法的类型化对称密钥
+    /// * `nonce` - Unique number used once (must be unique per key) | 一次性使用的唯一数字（每个密钥必须唯一）
+    /// * `plaintext` - Data to encrypt | 要加密的数据
+    /// * `aad` - Optional associated data to authenticate | 要认证的可选关联数据
+    ///
+    /// # Returns | 返回值
+    ///
+    /// Encrypted ciphertext with authentication tag appended.
+    ///
+    /// 附加了认证标签的加密密文。
+    ///
+    /// # Errors | 错误
+    ///
+    /// - Key algorithm mismatch | 密钥算法不匹配
+    /// - Invalid nonce length | 无效的 nonce 长度
+    /// - Encryption failure | 加密失败
+    ///
+    /// # Security | 安全性
+    ///
+    /// The nonce MUST be unique for each encryption with the same key.
+    /// Reusing nonces can lead to catastrophic security failures.
+    ///
+    /// 对于同一密钥的每次加密，nonce 必须是唯一的。
+    /// 重复使用 nonce 可能导致灾难性的安全故障。
     fn encrypt(
         &self,
         key: &TypedSymmetricKey,
@@ -193,6 +355,24 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static {
         aad: Option<&[u8]>,
     ) -> Result<Vec<u8>>;
 
+    /// Encrypts plaintext into a provided buffer.
+    ///
+    /// 将明文加密到提供的缓冲区中。
+    ///
+    /// This is a zero-allocation variant of `encrypt` that writes directly
+    /// to the provided output buffer.
+    ///
+    /// 这是 `encrypt` 的零分配变体，直接写入提供的输出缓冲区。
+    ///
+    /// # Arguments | 参数
+    ///
+    /// * `output` - Buffer to write encrypted data (must be large enough) | 写入加密数据的缓冲区（必须足够大）
+    ///
+    /// # Returns | 返回值
+    ///
+    /// Number of bytes written to the output buffer.
+    ///
+    /// 写入输出缓冲区的字节数。
     fn encrypt_to_buffer(
         &self,
         key: &TypedSymmetricKey,
@@ -202,7 +382,36 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static {
         aad: Option<&[u8]>,
     ) -> Result<usize>;
 
-    /// Decrypts the given ciphertext.
+    /// Decrypts ciphertext and verifies authentication.
+    ///
+    /// 解密密文并验证认证。
+    ///
+    /// # Arguments | 参数
+    ///
+    /// * `key` - Typed symmetric key bound to this algorithm | 绑定到此算法的类型化对称密钥
+    /// * `nonce` - Same nonce used for encryption | 用于加密的相同 nonce
+    /// * `aad` - Same associated data used for encryption | 用于加密的相同关联数据
+    /// * `ciphertext` - Encrypted data with authentication tag | 带认证标签的加密数据
+    ///
+    /// # Returns | 返回值
+    ///
+    /// Decrypted plaintext if authentication succeeds.
+    ///
+    /// 如果认证成功则返回解密的明文。
+    ///
+    /// # Errors | 错误
+    ///
+    /// - Key algorithm mismatch | 密钥算法不匹配
+    /// - Authentication failure (tampered data) | 认证失败（数据被篡改）
+    /// - Invalid ciphertext format | 无效的密文格式
+    ///
+    /// # Security | 安全性
+    ///
+    /// Authentication failure indicates the ciphertext has been tampered with
+    /// or the wrong key/nonce/AAD was used. Never use unauthenticated data.
+    ///
+    /// 认证失败表示密文已被篡改或使用了错误的密钥/nonce/AAD。
+    /// 永远不要使用未经认证的数据。
     fn decrypt(
         &self,
         key: &TypedSymmetricKey,
@@ -211,6 +420,19 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static {
         ciphertext: &[u8],
     ) -> Result<Vec<u8>>;
 
+    /// Decrypts ciphertext into a provided buffer.
+    ///
+    /// 将密文解密到提供的缓冲区中。
+    ///
+    /// Zero-allocation variant of `decrypt` that writes directly to the output buffer.
+    ///
+    /// `decrypt` 的零分配变体，直接写入输出缓冲区。
+    ///
+    /// # Returns | 返回值
+    ///
+    /// Number of bytes written to the output buffer.
+    ///
+    /// 写入输出缓冲区的字节数。
     fn decrypt_to_buffer(
         &self,
         key: &TypedSymmetricKey,
@@ -220,28 +442,93 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static {
         aad: Option<&[u8]>,
     ) -> Result<usize>;
 
+    /// Generates a new typed symmetric key for this algorithm.
+    ///
+    /// 为此算法生成新的类型化对称密钥。
+    ///
+    /// The generated key is cryptographically bound to this specific algorithm
+    /// and cannot be used with other algorithms.
+    ///
+    /// 生成的密钥在密码学上绑定到此特定算法，不能与其他算法一起使用。
+    ///
+    /// # Returns | 返回值
+    ///
+    /// A new typed symmetric key with proper algorithm binding.
+    ///
+    /// 具有正确算法绑定的新类型化对称密钥。
     fn generate_typed_key(&self) -> Result<TypedSymmetricKey>;
 
+    /// Generates a new untyped symmetric key.
+    ///
+    /// 生成新的非类型化对称密钥。
+    ///
+    /// This generates raw key material without algorithm binding.
+    /// Use `generate_typed_key` for type-safe operations.
+    ///
+    /// 这生成没有算法绑定的原始密钥材料。
+    /// 使用 `generate_typed_key` 进行类型安全操作。
     fn generate_untyped_key(&self) -> Result<UntypedSymmetricKey>;
 
-    /// Returns the algorithm enum.
+    /// Returns the algorithm identifier.
+    ///
+    /// 返回算法标识符。
+    ///
+    /// Used for runtime algorithm verification and key compatibility checking.
+    ///
+    /// 用于运行时算法验证和密钥兼容性检查。
     fn algorithm(&self) -> SymmetricAlgorithm;
 
-    /// Returns the key size in bytes.
+    /// Returns the key size in bytes for this algorithm.
+    ///
+    /// 返回此算法的密钥大小（字节）。
+    ///
+    /// # Examples | 示例
+    ///
+    /// - AES-128: 16 bytes
+    /// - AES-256: 32 bytes
+    /// - ChaCha20: 32 bytes
     fn key_size(&self) -> usize;
 
-    /// Returns the nonce size in bytes.
+    /// Returns the nonce size in bytes for this algorithm.
+    ///
+    /// 返回此算法的 nonce 大小（字节）。
+    ///
+    /// # Examples | 示例
+    ///
+    /// - AES-GCM: 12 bytes (96 bits)
+    /// - ChaCha20-Poly1305: 12 bytes
+    /// - XChaCha20-Poly1305: 24 bytes
     fn nonce_size(&self) -> usize;
 
-    /// Returns the tag size in bytes.
+    /// Returns the authentication tag size in bytes.
+    ///
+    /// 返回认证标签大小（字节）。
+    ///
+    /// All supported AEAD algorithms use 16-byte (128-bit) tags.
+    ///
+    /// 所有支持的 AEAD 算法都使用 16 字节（128 位）标签。
     fn tag_size(&self) -> usize;
 
     /// Converts the algorithm into a boxed trait object.
     ///
     /// 将算法转换为 boxed trait 对象。
+    ///
+    /// Consumes `self` and returns a heap-allocated trait object.
+    /// Useful for storing different algorithm types in collections.
+    ///
+    /// 消费 `self` 并返回堆分配的 trait 对象。
+    /// 用于在集合中存储不同的算法类型。
     fn into_symmetric_boxed(self) -> Box<dyn SymmetricAlgorithmTrait>;
 
-    /// 克隆自身到一个 Box<dyn SymmetricAlgorithm>
+    /// Creates a cloned boxed trait object.
+    ///
+    /// 创建克隆的 boxed trait 对象。
+    ///
+    /// Returns a new heap-allocated trait object with the same algorithm.
+    /// Required for implementing `Clone` on `Box<dyn SymmetricAlgorithmTrait>`.
+    ///
+    /// 返回具有相同算法的新堆分配 trait 对象。
+    /// 在 `Box<dyn SymmetricAlgorithmTrait>` 上实现 `Clone` 所必需的。
     fn clone_box_symmetric(&self) -> Box<dyn SymmetricAlgorithmTrait>;
 }
 

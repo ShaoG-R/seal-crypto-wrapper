@@ -202,6 +202,7 @@ impl XofAlgorithmBuilder {
     ///
     /// ```rust
     /// use seal_crypto_wrapper::algorithms::xof::XofAlgorithm;
+    /// use seal_crypto_wrapper::prelude::XofAlgorithmTrait;
     ///
     /// let xof = XofAlgorithm::build().shake128();
     /// let wrapper = xof.into_xof_wrapper();
@@ -240,6 +241,7 @@ impl XofAlgorithmBuilder {
     ///
     /// ```rust
     /// use seal_crypto_wrapper::algorithms::xof::XofAlgorithm;
+    /// use seal_crypto_wrapper::prelude::XofAlgorithmTrait;
     ///
     /// let xof = XofAlgorithm::build().shake256();
     /// let wrapper = xof.into_xof_wrapper();
@@ -288,6 +290,7 @@ impl XofAlgorithm {
     ///
     /// ```rust
     /// use seal_crypto_wrapper::algorithms::xof::XofAlgorithm;
+    /// use seal_crypto_wrapper::prelude::XofAlgorithmTrait;
     ///
     /// let algorithm = XofAlgorithm::build().shake128();
     /// let xof = algorithm.into_xof_wrapper();

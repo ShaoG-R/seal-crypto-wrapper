@@ -50,9 +50,9 @@
 //!
 //! let plaintext = b"Hello, World!";
 //! let nonce = vec![0u8; cipher.nonce_size()]; // Use random nonce in production
-//! let ciphertext = cipher.encrypt(&key, &nonce, plaintext, None)?;
+//! let ciphertext = cipher.encrypt(plaintext, &key, &nonce,  None)?;
 //!
-//! let decrypted = cipher.decrypt(&key, &nonce, None, &ciphertext)?;
+//! let decrypted = cipher.decrypt(&ciphertext, &key, &nonce, None)?;
 //! assert_eq!(plaintext, &decrypted[..]);
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
@@ -69,8 +69,8 @@
 //! let aad = b"public header";
 //! let nonce = vec![0u8; cipher.nonce_size()];
 //!
-//! let ciphertext = cipher.encrypt(&key, &nonce, plaintext, Some(aad))?;
-//! let decrypted = cipher.decrypt(&key, &nonce, Some(aad), &ciphertext)?;
+//! let ciphertext = cipher.encrypt(plaintext, &key, &nonce, Some(aad))?;
+//! let decrypted = cipher.decrypt(&ciphertext, &key, &nonce, Some(aad))?;
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 
@@ -270,7 +270,7 @@ macro_rules! impl_symmetric_algorithm {
 /// let key = wrapper.generate_typed_key()?;
 /// let plaintext = b"Hello, World!";
 /// let nonce = vec![0u8; wrapper.nonce_size()];
-/// let ciphertext = wrapper.encrypt(&key, &nonce, plaintext, None)?;
+/// let ciphertext = wrapper.encrypt(plaintext, &key, &nonce, None)?;
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[derive(Clone)]

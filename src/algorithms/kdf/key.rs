@@ -191,9 +191,9 @@ impl KdfKeyAlgorithmBuilder {
     ///
     /// // Derive keys from master key
     /// let master_key = b"high-entropy-master-key-material";
-    /// let salt = Some(b"unique-salt");
-    /// let info = Some(b"application-context");
-    /// let derived_key = kdf.derive_key(master_key, salt, info, 32)?;
+    /// let salt = Some(b"unique-salt".as_slice());
+    /// let info = Some(b"application-context".as_slice());
+    /// let derived_key = kdf.derive(master_key, salt, info, 32)?;
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn hkdf_sha256(self) -> KdfKeyAlgorithm {
@@ -296,10 +296,10 @@ impl KdfKeyAlgorithm {
     ///
     /// // Derive multiple keys from a master key
     /// let master_key = b"high-entropy-master-key-32-bytes";
-    /// let salt = Some(b"application-salt");
+    /// let salt = Some(b"application-salt".as_slice());
     ///
     /// // Derive encryption key
-    /// let enc_key = kdf.derive_key(
+    /// let enc_key = kdf.derive(
     ///     master_key,
     ///     salt,
     ///     Some(b"encryption"),
@@ -307,7 +307,7 @@ impl KdfKeyAlgorithm {
     /// )?;
     ///
     /// // Derive MAC key
-    /// let mac_key = kdf.derive_key(
+    /// let mac_key = kdf.derive(
     ///     master_key,
     ///     salt,
     ///     Some(b"authentication"),

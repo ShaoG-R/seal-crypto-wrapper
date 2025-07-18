@@ -232,10 +232,10 @@ impl KdfAlgorithmBuilder {
     /// use seal_crypto_wrapper::algorithms::kdf::KdfAlgorithm;
     ///
     /// // PBKDF2 with 100,000 iterations
-    /// let pbkdf2 = KdfAlgorithm::build().passwd().pbkdf2_sha256(100000);
+    /// let pbkdf2 = KdfAlgorithm::build().passwd().pbkdf2_sha256_with_params(100000);
     ///
     /// // Argon2 with memory cost, time cost, and parallelism
-    /// let argon2 = KdfAlgorithm::build().passwd().argon2(65536, 3, 4);
+    /// let argon2 = KdfAlgorithm::build().passwd().argon2_with_params(65536, 3, 4);
     /// ```
     pub fn passwd(self) -> passwd::KdfPasswordAlgorithmBuilder {
         passwd::KdfPasswordAlgorithm::build()

@@ -473,20 +473,21 @@ impl KdfPasswordAlgorithm {
     ///
     /// ```rust
     /// use seal_crypto_wrapper::algorithms::kdf::passwd::KdfPasswordAlgorithm;
+    /// use seal_crypto_wrapper::prelude::SecretBox;
     ///
     /// // Argon2 for new applications (recommended)
     /// let argon2_alg = KdfPasswordAlgorithm::build().argon2_default();
     /// let argon2_kdf = argon2_alg.into_kdf_password_wrapper();
     ///
-    /// let password = b"user_password_123";
+    /// let password = SecretBox::new(Box::from(b"my-secret-password".as_slice()));
     /// let salt = b"random_salt_16_bytes";
-    /// let derived_key = argon2_kdf.derive_key(password, salt, 32)?;
+    /// let derived_key = argon2_kdf.derive(&password, salt, 32)?;
     ///
     /// // PBKDF2 for compatibility
     /// let pbkdf2_alg = KdfPasswordAlgorithm::build().pbkdf2_sha256_with_params(100000);
     /// let pbkdf2_kdf = pbkdf2_alg.into_kdf_password_wrapper();
     ///
-    /// let key2 = pbkdf2_kdf.derive_key(password, salt, 32)?;
+    /// let key2 = pbkdf2_kdf.derive(&password, salt, 32)?;
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     ///

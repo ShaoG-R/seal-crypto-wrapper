@@ -93,7 +93,7 @@
 //!     // Keys can be serialized with algorithm information
 //!     let key_json = serde_json::to_string(&keypair)?;
 //!     let restored_key: TypedSymmetricKey = serde_json::from_str(&key_json)?;
-//!     # Ok::<(), Box<dyn std::error::Error>>(())
+//!     Ok::<(), Box<dyn std::error::Error>>(())
 //! }
 //!  
 //! ```

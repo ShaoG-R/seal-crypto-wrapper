@@ -1,3 +1,79 @@
+//! Symmetric encryption algorithm wrappers with AEAD support.
+//!
+//! 支持 AEAD 的对称加密算法包装器。
+//!
+//! ## Overview | 概述
+//!
+//! This module provides concrete implementations of symmetric encryption algorithms
+//! that support Authenticated Encryption with Associated Data (AEAD). Each wrapper
+//! implements the `SymmetricAlgorithmTrait` and provides type-safe access to the
+//! underlying cryptographic operations.
+//!
+//! 此模块提供支持带关联数据认证加密 (AEAD) 的对称加密算法的具体实现。
+//! 每个包装器都实现 `SymmetricAlgorithmTrait` 并提供对底层密码操作的类型安全访问。
+//!
+//! ## Supported Algorithms | 支持的算法
+//!
+//! - **AES-128-GCM**: Fast, hardware-accelerated, 128-bit security
+//! - **AES-256-GCM**: Fast, hardware-accelerated, 256-bit security
+//! - **ChaCha20-Poly1305**: Software-optimized, 256-bit security
+//! - **XChaCha20-Poly1305**: Extended nonce variant, 256-bit security
+//!
+//! ## Key Features | 关键特性
+//!
+//! ### Type Safety | 类型安全
+//! - Algorithm-key binding verification
+//! - Runtime compatibility checking
+//! - Compile-time algorithm selection
+//!
+//! ### Performance | 性能
+//! - Zero-allocation buffer operations
+//! - Hardware acceleration when available
+//! - Optimized software implementations
+//!
+//! ### Security | 安全性
+//! - Authenticated encryption (confidentiality + integrity)
+//! - Associated data authentication
+//! - Constant-time operations
+//! - Secure memory management
+//!
+//! ## Usage Examples | 使用示例
+//!
+//! ### Basic Encryption | 基本加密
+//!
+//! ```rust
+//! use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
+//!
+//! let algorithm = SymmetricAlgorithm::build().aes256_gcm();
+//! let cipher = algorithm.into_symmetric_wrapper();
+//! let key = cipher.generate_typed_key()?;
+//!
+//! let plaintext = b"Hello, World!";
+//! let nonce = vec![0u8; cipher.nonce_size()]; // Use random nonce in production
+//! let ciphertext = cipher.encrypt(&key, &nonce, plaintext, None)?;
+//!
+//! let decrypted = cipher.decrypt(&key, &nonce, None, &ciphertext)?;
+//! assert_eq!(plaintext, &decrypted[..]);
+//! # Ok::<(), Box<dyn std::error::Error>>(())
+//! ```
+//!
+//! ### With Associated Data | 使用关联数据
+//!
+//! ```rust
+//! use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
+//!
+//! let cipher = SymmetricAlgorithm::build().chacha20_poly1305().into_symmetric_wrapper();
+//! let key = cipher.generate_typed_key()?;
+//!
+//! let plaintext = b"Secret message";
+//! let aad = b"public header";
+//! let nonce = vec![0u8; cipher.nonce_size()];
+//!
+//! let ciphertext = cipher.encrypt(&key, &nonce, plaintext, Some(aad))?;
+//! let decrypted = cipher.decrypt(&key, &nonce, Some(aad), &ciphertext)?;
+//! # Ok::<(), Box<dyn std::error::Error>>(())
+//! ```
+
 use crate::algorithms::symmetric::{AesKeySize, SymmetricAlgorithm};
 use crate::error::{Error, FormatError, Result};
 use crate::keys::symmetric::{SymmetricKey as UntypedSymmetricKey, TypedSymmetricKey};
@@ -7,8 +83,37 @@ use seal_crypto::schemes::symmetric::aes_gcm::{Aes128Gcm, Aes256Gcm};
 use seal_crypto::schemes::symmetric::chacha20_poly1305::{ChaCha20Poly1305, XChaCha20Poly1305};
 use std::ops::Deref;
 
+/// Macro for implementing symmetric algorithm wrappers.
+///
+/// 用于实现对称算法包装器的宏。
+///
+/// This macro generates a complete wrapper implementation for a symmetric algorithm,
+/// including all required trait methods, key validation, and error handling.
+///
+/// 此宏为对称算法生成完整的包装器实现，
+/// 包括所有必需的 trait 方法、密钥验证和错误处理。
+///
+/// ## Parameters | 参数
+///
+/// - `$wrapper`: The name of the wrapper struct to generate
+/// - `$algo`: The underlying algorithm type from seal-crypto
+/// - `$algo_enum`: The corresponding algorithm enum variant
+///
+/// - `$wrapper`: 要生成的包装器结构体名称
+/// - `$algo`: 来自 seal-crypto 的底层算法类型
+/// - `$algo_enum`: 对应的算法枚举变体
 macro_rules! impl_symmetric_algorithm {
     ($wrapper:ident, $algo:ty, $algo_enum:expr) => {
+        /// Wrapper implementation for a specific symmetric algorithm.
+        ///
+        /// 特定对称算法的包装器实现。
+        ///
+        /// This struct provides a type-safe interface to the underlying cryptographic
+        /// algorithm, ensuring that keys are validated and operations are performed
+        /// with the correct algorithm parameters.
+        ///
+        /// 此结构体为底层密码算法提供类型安全接口，
+        /// 确保密钥得到验证并使用正确的算法参数执行操作。
         #[derive(Clone, Debug, Default)]
         pub struct $wrapper;
 
@@ -27,8 +132,8 @@ macro_rules! impl_symmetric_algorithm {
         impl SymmetricAlgorithmTrait for $wrapper {
             fn encrypt(
                 &self,
-                key: &TypedSymmetricKey,
                 nonce: &[u8],
+                key: &TypedSymmetricKey,
                 plaintext: &[u8],
                 aad: Option<&[u8]>,
             ) -> Result<Vec<u8>> {
@@ -43,10 +148,10 @@ macro_rules! impl_symmetric_algorithm {
 
             fn encrypt_to_buffer(
                 &self,
-                key: &TypedSymmetricKey,
-                nonce: &[u8],
                 plaintext: &[u8],
                 output: &mut [u8],
+                key: &TypedSymmetricKey,
+                nonce: &[u8],
                 aad: Option<&[u8]>,
             ) -> Result<usize> {
                 if key.algorithm() != $algo_enum {
@@ -60,10 +165,10 @@ macro_rules! impl_symmetric_algorithm {
 
             fn decrypt(
                 &self,
+                ciphertext: &[u8],
                 key: &TypedSymmetricKey,
                 nonce: &[u8],
                 aad: Option<&[u8]>,
-                ciphertext: &[u8],
             ) -> Result<Vec<u8>> {
                 if key.algorithm() != $algo_enum {
                     return Err(Error::FormatError(FormatError::InvalidKeyType));
@@ -76,10 +181,10 @@ macro_rules! impl_symmetric_algorithm {
 
             fn decrypt_to_buffer(
                 &self,
-                key: &TypedSymmetricKey,
-                nonce: &[u8],
                 ciphertext: &[u8],
                 output: &mut [u8],
+                key: &TypedSymmetricKey,
+                nonce: &[u8],
                 aad: Option<&[u8]>,
             ) -> Result<usize> {
                 if key.algorithm() != $algo_enum {
@@ -126,6 +231,48 @@ macro_rules! impl_symmetric_algorithm {
     };
 }
 
+/// Universal wrapper for symmetric encryption algorithms.
+///
+/// 对称加密算法的通用包装器。
+///
+/// ## Purpose | 目的
+///
+/// This wrapper provides a unified interface for all symmetric encryption algorithms,
+/// allowing runtime algorithm selection while maintaining type safety. It acts as
+/// a bridge between algorithm enums and concrete implementations.
+///
+/// 此包装器为所有对称加密算法提供统一接口，
+/// 允许运行时算法选择同时保持类型安全。它充当算法枚举和具体实现之间的桥梁。
+///
+/// ## Features | 特性
+///
+/// - **Runtime Polymorphism**: Switch between algorithms at runtime
+/// - **Type Safety**: Maintains algorithm-key binding verification
+/// - **Unified Interface**: Same API for all symmetric algorithms
+/// - **Performance**: Zero-cost abstractions where possible
+///
+/// - **运行时多态性**: 在运行时切换算法
+/// - **类型安全**: 保持算法-密钥绑定验证
+/// - **统一接口**: 所有对称算法的相同 API
+/// - **性能**: 尽可能的零成本抽象
+///
+/// ## Examples | 示例
+///
+/// ```rust
+/// use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
+/// use seal_crypto_wrapper::wrappers::symmetric::SymmetricAlgorithmWrapper;
+///
+/// // Create from algorithm enum
+/// let algorithm = SymmetricAlgorithm::build().aes256_gcm();
+/// let wrapper = SymmetricAlgorithmWrapper::from_enum(algorithm);
+///
+/// // Use unified interface
+/// let key = wrapper.generate_typed_key()?;
+/// let plaintext = b"Hello, World!";
+/// let nonce = vec![0u8; wrapper.nonce_size()];
+/// let ciphertext = wrapper.encrypt(&key, &nonce, plaintext, None)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone)]
 pub struct SymmetricAlgorithmWrapper {
     pub(crate) algorithm: Box<dyn SymmetricAlgorithmTrait>,
@@ -146,10 +293,54 @@ impl Into<Box<dyn SymmetricAlgorithmTrait>> for SymmetricAlgorithmWrapper {
 }
 
 impl SymmetricAlgorithmWrapper {
+    /// Creates a new wrapper from a boxed trait object.
+    ///
+    /// 从 boxed trait 对象创建新的包装器。
+    ///
+    /// This constructor allows you to wrap any implementation of
+    /// `SymmetricAlgorithmTrait` in the universal wrapper interface.
+    ///
+    /// 此构造函数允许您将 `SymmetricAlgorithmTrait` 的任何实现
+    /// 包装在通用包装器接口中。
+    ///
+    /// ## Arguments | 参数
+    ///
+    /// * `algorithm` - A boxed trait object implementing the symmetric algorithm
+    ///
+    /// * `algorithm` - 实现对称算法的 boxed trait 对象
     pub fn new(algorithm: Box<dyn SymmetricAlgorithmTrait>) -> Self {
         Self { algorithm }
     }
 
+    /// Creates a wrapper from a symmetric algorithm enum.
+    ///
+    /// 从对称算法枚举创建包装器。
+    ///
+    /// This is the most common way to create a wrapper, as it automatically
+    /// selects the appropriate concrete implementation based on the algorithm.
+    ///
+    /// 这是创建包装器的最常见方式，因为它根据算法自动选择适当的具体实现。
+    ///
+    /// ## Arguments | 参数
+    ///
+    /// * `algorithm` - The symmetric algorithm enum variant
+    ///
+    /// * `algorithm` - 对称算法枚举变体
+    ///
+    /// ## Examples | 示例
+    ///
+    /// ```rust
+    /// use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
+    /// use seal_crypto_wrapper::wrappers::symmetric::SymmetricAlgorithmWrapper;
+    ///
+    /// let aes = SymmetricAlgorithmWrapper::from_enum(
+    ///     SymmetricAlgorithm::build().aes256_gcm()
+    /// );
+    ///
+    /// let chacha = SymmetricAlgorithmWrapper::from_enum(
+    ///     SymmetricAlgorithm::build().chacha20_poly1305()
+    /// );
+    /// ```
     pub fn from_enum(algorithm: SymmetricAlgorithm) -> Self {
         let algorithm: Box<dyn SymmetricAlgorithmTrait> = match algorithm {
             SymmetricAlgorithm::AesGcm(AesKeySize::K128) => Box::new(Aes128GcmWrapper::new()),
@@ -160,10 +351,55 @@ impl SymmetricAlgorithmWrapper {
         Self::new(algorithm)
     }
 
+    /// Generates a new algorithm-bound typed key.
+    ///
+    /// 生成新的算法绑定类型化密钥。
+    ///
+    /// The generated key is automatically bound to the algorithm used by this wrapper,
+    /// ensuring type safety for all subsequent operations.
+    ///
+    /// 生成的密钥自动绑定到此包装器使用的算法，
+    /// 确保所有后续操作的类型安全。
+    ///
+    /// ## Returns | 返回值
+    ///
+    /// A new `TypedSymmetricKey` that can only be used with this algorithm.
+    ///
+    /// 只能与此算法一起使用的新 `TypedSymmetricKey`。
+    ///
+    /// ## Examples | 示例
+    ///
+    /// ```rust
+    /// use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
+    ///
+    /// let cipher = SymmetricAlgorithm::build().aes256_gcm().into_symmetric_wrapper();
+    /// let key = cipher.generate_typed_key()?;
+    ///
+    /// // Key is bound to AES-256-GCM
+    /// assert_eq!(key.algorithm(), SymmetricAlgorithm::build().aes256_gcm());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     pub fn generate_typed_key(&self) -> Result<TypedSymmetricKey> {
         self.algorithm.generate_typed_key()
     }
 
+    /// Generates a new untyped key.
+    ///
+    /// 生成新的非类型化密钥。
+    ///
+    /// This method generates key material without algorithm binding,
+    /// which can be useful for key derivation or storage scenarios.
+    ///
+    /// 此方法生成没有算法绑定的密钥材料，
+    /// 这对密钥派生或存储场景很有用。
+    ///
+    /// ## Security Note | 安全注意
+    ///
+    /// Untyped keys lose algorithm binding information. Use `generate_typed_key()`
+    /// when possible to maintain type safety.
+    ///
+    /// 非类型化密钥失去算法绑定信息。尽可能使用 `generate_typed_key()`
+    /// 以保持类型安全。
     pub fn generate_untyped_key(&self) -> Result<UntypedSymmetricKey> {
         self.algorithm.generate_untyped_key()
     }
@@ -176,46 +412,46 @@ impl SymmetricAlgorithmTrait for SymmetricAlgorithmWrapper {
 
     fn encrypt(
         &self,
+        plaintext: &[u8],
         key: &TypedSymmetricKey,
         nonce: &[u8],
-        plaintext: &[u8],
         aad: Option<&[u8]>,
     ) -> Result<Vec<u8>> {
-        self.algorithm.encrypt(key, nonce, plaintext, aad)
+        self.algorithm.encrypt(plaintext, key, nonce, aad)
     }
 
     fn encrypt_to_buffer(
         &self,
-        key: &TypedSymmetricKey,
-        nonce: &[u8],
         plaintext: &[u8],
         output: &mut [u8],
+        key: &TypedSymmetricKey,
+        nonce: &[u8],
         aad: Option<&[u8]>,
     ) -> Result<usize> {
         self.algorithm
-            .encrypt_to_buffer(key, nonce, plaintext, output, aad)
+            .encrypt_to_buffer(plaintext, output, key, nonce, aad)
     }
 
     fn decrypt(
         &self,
+        ciphertext: &[u8],
         key: &TypedSymmetricKey,
         nonce: &[u8],
         aad: Option<&[u8]>,
-        ciphertext: &[u8],
     ) -> Result<Vec<u8>> {
-        self.algorithm.decrypt(key, nonce, aad, ciphertext)
+        self.algorithm.decrypt(ciphertext, key, nonce, aad)
     }
 
     fn decrypt_to_buffer(
         &self,
-        key: &TypedSymmetricKey,
-        nonce: &[u8],
         ciphertext: &[u8],
         output: &mut [u8],
+        key: &TypedSymmetricKey,
+        nonce: &[u8],
         aad: Option<&[u8]>,
     ) -> Result<usize> {
         self.algorithm
-            .decrypt_to_buffer(key, nonce, ciphertext, output, aad)
+            .decrypt_to_buffer(ciphertext, output, key, nonce, aad)
     }
 
     fn generate_typed_key(&self) -> Result<TypedSymmetricKey> {

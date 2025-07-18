@@ -349,9 +349,9 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static {
     /// 重复使用 nonce 可能导致灾难性的安全故障。
     fn encrypt(
         &self,
+        plaintext: &[u8],
         key: &TypedSymmetricKey,
         nonce: &[u8],
-        plaintext: &[u8],
         aad: Option<&[u8]>,
     ) -> Result<Vec<u8>>;
 
@@ -375,10 +375,10 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static {
     /// 写入输出缓冲区的字节数。
     fn encrypt_to_buffer(
         &self,
-        key: &TypedSymmetricKey,
-        nonce: &[u8],
         plaintext: &[u8],
         output: &mut [u8],
+        key: &TypedSymmetricKey,
+        nonce: &[u8],
         aad: Option<&[u8]>,
     ) -> Result<usize>;
 
@@ -414,10 +414,10 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static {
     /// 永远不要使用未经认证的数据。
     fn decrypt(
         &self,
+        ciphertext: &[u8],
         key: &TypedSymmetricKey,
         nonce: &[u8],
         aad: Option<&[u8]>,
-        ciphertext: &[u8],
     ) -> Result<Vec<u8>>;
 
     /// Decrypts ciphertext into a provided buffer.
@@ -435,10 +435,10 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static {
     /// 写入输出缓冲区的字节数。
     fn decrypt_to_buffer(
         &self,
-        key: &TypedSymmetricKey,
-        nonce: &[u8],
         ciphertext: &[u8],
         output: &mut [u8],
+        key: &TypedSymmetricKey,
+        nonce: &[u8],
         aad: Option<&[u8]>,
     ) -> Result<usize>;
 
@@ -534,10 +534,10 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static {
 
 #[cfg(feature = "symmetric")]
 impl_trait_for_box!(SymmetricAlgorithmTrait {
-    ref fn encrypt(&self, key: &TypedSymmetricKey, nonce: &[u8], plaintext: &[u8], aad: Option<&[u8]>) -> Result<Vec<u8>>;
-    ref fn encrypt_to_buffer(&self, key: &TypedSymmetricKey, nonce: &[u8], plaintext: &[u8], output: &mut [u8], aad: Option<&[u8]>) -> Result<usize>;
-    ref fn decrypt(&self, key: &TypedSymmetricKey, nonce: &[u8], aad: Option<&[u8]>, ciphertext: &[u8]) -> Result<Vec<u8>>;
-    ref fn decrypt_to_buffer(&self, key: &TypedSymmetricKey, nonce: &[u8], ciphertext: &[u8], output: &mut [u8], aad: Option<&[u8]>) -> Result<usize>;
+    ref fn encrypt(&self, plaintext: &[u8], key: &TypedSymmetricKey, nonce: &[u8], aad: Option<&[u8]>) -> Result<Vec<u8>>;
+    ref fn encrypt_to_buffer(&self, plaintext: &[u8], output: &mut [u8], key: &TypedSymmetricKey, nonce: &[u8], aad: Option<&[u8]>) -> Result<usize>;
+    ref fn decrypt(&self, ciphertext: &[u8], key: &TypedSymmetricKey, nonce: &[u8], aad: Option<&[u8]>) -> Result<Vec<u8>>;
+    ref fn decrypt_to_buffer(&self, ciphertext: &[u8], output: &mut [u8], key: &TypedSymmetricKey, nonce: &[u8], aad: Option<&[u8]>) -> Result<usize>;
     ref fn generate_typed_key(&self,) -> Result<TypedSymmetricKey>;
     ref fn generate_untyped_key(&self,) -> Result<UntypedSymmetricKey>;
     ref fn algorithm(&self,) -> SymmetricAlgorithm;

@@ -67,10 +67,11 @@
 //!     // 4. Encrypt data | 加密数据
 //!     let plaintext = b"Hello, World!";
 //!     let nonce = vec![0u8; cipher.nonce_size()]; // Use random nonce in production
-//!     let ciphertext = cipher.encrypt(plaintext, &nonce, &key)?;
+//!     let aad = b"Additional Authenticated Data";
+//!     let ciphertext = cipher.encrypt(&key,&nonce,plaintext, Some(aad))?;
 //!
 //!     // 5. Decrypt data | 解密数据
-//!     let decrypted = cipher.decrypt(&ciphertext, &key)?;
+//!     let decrypted = cipher.decrypt(&key, &nonce, Some(aad), &ciphertext)?;
 //!     assert_eq!(plaintext, &decrypted[..]);
 //!
 //!     Ok(())

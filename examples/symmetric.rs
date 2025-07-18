@@ -31,12 +31,12 @@ fn main() -> Result<()> {
 
     // 6. Encrypt the plaintext.
     // 6. 加密明文。
-    let ciphertext = cipher.encrypt(&key, &nonce, plaintext, Some(aad))?;
+    let ciphertext = cipher.encrypt(plaintext, &key, &nonce, Some(aad))?;
     println!("Encrypted plaintext.");
 
     // 7. Decrypt the ciphertext.
     // 7. 解密密文。
-    let decrypted_plaintext = cipher.decrypt(&key, &nonce, Some(aad), &ciphertext)?;
+    let decrypted_plaintext = cipher.decrypt(&ciphertext, &key, &nonce, Some(aad))?;
     println!("Decrypted ciphertext.");
 
     // 8. Verify the decrypted plaintext matches the original.

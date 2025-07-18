@@ -5,7 +5,7 @@ pub use {
     crate::keys::asymmetric::{TypedAsymmetricKeyTrait, TypedAsymmetricPrivateKeyTrait, TypedAsymmetricPublicKeyTrait},
 };
 #[cfg(feature = "asymmetric-kem")]
-pub use crate::keys::asymmetric::kem::{TypedKemKeyPair, TypedKemPrivateKey, TypedKemPublicKey};
+pub use crate::keys::asymmetric::kem::{TypedKemKeyPair, TypedKemPrivateKey, TypedKemPublicKey, EncapsulatedKey};
 #[cfg(feature = "asymmetric-signature")]
 pub use crate::keys::asymmetric::signature::{TypedSignatureKeyPair, TypedSignaturePrivateKey, TypedSignaturePublicKey};
 #[cfg(feature = "asymmetric-key-agreement")]
@@ -22,3 +22,5 @@ pub use {
 };
 #[cfg(feature = "xof")]
 pub use crate::algorithms::xof::XofAlgorithm;
+pub use ::seal_crypto::zeroize::Zeroizing;
+pub use ::seal_crypto::secrecy::SecretBox;

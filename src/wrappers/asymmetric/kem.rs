@@ -8,11 +8,11 @@ use seal_crypto::prelude::{AsymmetricKeySet, Kem, Key};
 use seal_crypto::schemes::asymmetric::post_quantum::kyber::{Kyber1024, Kyber512, Kyber768};
 use seal_crypto::schemes::asymmetric::traditional::rsa::{Rsa2048, Rsa4096};
 use seal_crypto::schemes::hash::{Sha256, Sha384, Sha512};
-use seal_crypto::zeroize::Zeroizing;
 use std::ops::Deref;
 use crate::keys::asymmetric::kem::{TypedKemKeyPair, TypedKemPrivateKey, TypedKemPublicKey};
 use crate::define_wrapper;
 use crate::keys::asymmetric::{TypedAsymmetricPrivateKeyTrait, TypedAsymmetricPublicKeyTrait};
+use crate::keys::asymmetric::kem::{SharedSecret, EncapsulatedKey};
 
 macro_rules! impl_kem_algorithm {
     ($wrapper:ident, $algo:ty, $algo_enum:expr) => {
@@ -24,26 +24,26 @@ macro_rules! impl_kem_algorithm {
             fn encapsulate_key(
                 &self,
                 public_key: &TypedKemPublicKey,
-            ) -> Result<(Zeroizing<Vec<u8>>, Vec<u8>)> {
+            ) -> Result<(SharedSecret, EncapsulatedKey)> {
                 if public_key.algorithm != $algo_enum {
                     return Err(Error::FormatError(FormatError::InvalidKeyType));
                 }
                 type KT = $algo;
                 let pk = <KT as AsymmetricKeySet>::PublicKey::from_bytes(&public_key.to_bytes())?;
-                KT::encapsulate(&pk).map_err(Error::from)
+                KT::encapsulate(&pk).map_err(Error::from).map(|(shared_secret, ciphertext)| (SharedSecret(shared_secret), EncapsulatedKey { key: ciphertext, algorithm: $algo_enum }))
             }
 
             fn decapsulate_key(
                 &self,
                 private_key: &TypedKemPrivateKey,
-                encapsulated_key: &Zeroizing<Vec<u8>>,
-            ) -> Result<Zeroizing<Vec<u8>>> {
-                if private_key.algorithm != $algo_enum {
+                encapsulated_key: &EncapsulatedKey,
+            ) -> Result<SharedSecret> {
+                if private_key.algorithm != $algo_enum || encapsulated_key.algorithm != $algo_enum {
                     return Err(Error::FormatError(FormatError::InvalidKeyType));
                 }
                 type KT = $algo;
                 let sk = <KT as AsymmetricKeySet>::PrivateKey::from_bytes(&private_key.to_bytes())?;
-                KT::decapsulate(&sk, encapsulated_key).map_err(Error::from)
+                KT::decapsulate(&sk, &encapsulated_key.key).map_err(Error::from).map(SharedSecret)
             }
 
             fn generate_keypair(&self) -> Result<TypedKemKeyPair> {
@@ -130,15 +130,15 @@ impl KemAlgorithmTrait for KemAlgorithmWrapper {
     fn encapsulate_key(
         &self,
         public_key: &TypedKemPublicKey,
-    ) -> Result<(Zeroizing<Vec<u8>>, Vec<u8>)> {
+    ) -> Result<(SharedSecret, EncapsulatedKey)> {
         self.algorithm.encapsulate_key(public_key)
     }
 
     fn decapsulate_key(
         &self,
         private_key: &TypedKemPrivateKey,
-        encapsulated_key: &Zeroizing<Vec<u8>>,
-    ) -> Result<Zeroizing<Vec<u8>>> {
+        encapsulated_key: &EncapsulatedKey,
+    ) -> Result<SharedSecret> {
         self.algorithm
             .decapsulate_key(private_key, encapsulated_key)
     }

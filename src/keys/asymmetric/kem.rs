@@ -6,6 +6,8 @@ use seal_crypto::prelude::{Key, KeyGenerator};
 use crate::keys::asymmetric::{AsymmetricPrivateKey, AsymmetricPublicKey};
 use crate::impl_typed_asymmetric_public_key;
 use crate::impl_typed_asymmetric_private_key;
+use crate::keys::asymmetric::TypedAsymmetricKeyTrait;
+use seal_crypto::zeroize::Zeroizing;
 
 
 
@@ -100,3 +102,43 @@ pub struct TypedKemPrivateKey {
 }
 
 impl_typed_asymmetric_private_key!(TypedKemPrivateKey, KemAlgorithm);
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SharedSecret(pub Zeroizing<Vec<u8>>);
+
+/// An enum wrapping a typed encapsulated key.
+///
+/// 包装了类型化封装密钥的枚举。
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+pub struct EncapsulatedKey {
+    pub(crate) key: Vec<u8>,
+    pub(crate) algorithm: KemAlgorithm,
+}
+
+impl EncapsulatedKey {
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.key.clone()
+    }
+
+    pub fn as_bytes(&self) -> &[u8] {
+        self.key.as_ref()
+    }
+
+    pub fn into_bytes(self) -> Vec<u8> {
+        self.key
+    }
+}
+
+impl AsRef<[u8]> for EncapsulatedKey {
+    fn as_ref(&self) -> &[u8] {
+        self.key.as_ref()
+    }
+}
+
+impl TypedAsymmetricKeyTrait for EncapsulatedKey {
+    type Algorithm = KemAlgorithm;
+
+    fn algorithm(&self) -> Self::Algorithm {
+        self.algorithm
+    }
+}

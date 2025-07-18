@@ -2,8 +2,6 @@
 //!
 //! 定义用于类型安全算法规范的核心 trait。
 
-#[cfg(feature = "asymmetric-kem")]
-use crate::algorithms::asymmetric::kem::KemAlgorithm;
 #[cfg(feature = "kdf")]
 use {
     crate::algorithms::kdf::key::KdfKeyAlgorithm,
@@ -41,11 +39,10 @@ use crate::algorithms::asymmetric::signature::SignatureAlgorithm;
 #[cfg(feature = "asymmetric-key-agreement")]
 use crate::algorithms::asymmetric::key_agreement::KeyAgreementAlgorithm;
 #[cfg(feature = "asymmetric-kem")]
-use crate::keys::asymmetric::kem::TypedKemKeyPair;
-#[cfg(feature = "asymmetric-kem")]
-use crate::keys::asymmetric::kem::TypedKemPrivateKey;
-#[cfg(feature = "asymmetric-kem")]
-use crate::keys::asymmetric::kem::TypedKemPublicKey;
+use {
+    crate::keys::asymmetric::kem::{TypedKemKeyPair, TypedKemPrivateKey, TypedKemPublicKey, SharedSecret, EncapsulatedKey},
+    crate::algorithms::asymmetric::kem::KemAlgorithm,
+};
 
 #[allow(unused_macros)]
 macro_rules! impl_trait_for_box {
@@ -282,7 +279,7 @@ pub trait KemAlgorithmTrait: Send + Sync + 'static {
     fn encapsulate_key(
         &self,
         public_key: &TypedKemPublicKey,
-    ) -> Result<(Zeroizing<Vec<u8>>, Vec<u8>)>;
+    ) -> Result<(SharedSecret, EncapsulatedKey)>;
 
     /// Decapsulates a key.
     ///
@@ -290,8 +287,8 @@ pub trait KemAlgorithmTrait: Send + Sync + 'static {
     fn decapsulate_key(
         &self,
         private_key: &TypedKemPrivateKey,
-        encapsulated_key: &Zeroizing<Vec<u8>>,
-    ) -> Result<Zeroizing<Vec<u8>>>;
+        encapsulated_key: &EncapsulatedKey,
+    ) -> Result<SharedSecret>;
 
     fn generate_keypair(&self) -> Result<TypedKemKeyPair>;
 
@@ -307,8 +304,8 @@ pub trait KemAlgorithmTrait: Send + Sync + 'static {
 impl_trait_for_box!(KemAlgorithmTrait {
     ref fn clone_box_asymmetric(&self,) -> Box<dyn KemAlgorithmTrait>;
     ref fn algorithm(&self,) -> KemAlgorithm;
-    ref fn encapsulate_key(&self, public_key: &TypedKemPublicKey) -> Result<(Zeroizing<Vec<u8>>, Vec<u8>)>;
-    ref fn decapsulate_key(&self, private_key: &TypedKemPrivateKey, encapsulated_key: &Zeroizing<Vec<u8>>) -> Result<Zeroizing<Vec<u8>>>;
+    ref fn encapsulate_key(&self, public_key: &TypedKemPublicKey) -> Result<(SharedSecret, EncapsulatedKey)>;
+    ref fn decapsulate_key(&self, private_key: &TypedKemPrivateKey, encapsulated_key: &EncapsulatedKey) -> Result<SharedSecret>;
     ref fn generate_keypair(&self,) -> Result<TypedKemKeyPair>;
     self fn into_asymmetric_boxed(self,) -> Box<dyn KemAlgorithmTrait>;
 }, clone_box_asymmetric);

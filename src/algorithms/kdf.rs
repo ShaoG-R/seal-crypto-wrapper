@@ -34,7 +34,7 @@ impl KdfAlgorithmBuilder {
     /// Create a new KDF password algorithm builder.
     ///
     /// 创建一个新的 KDF 密码算法构建器。
-    pub fn password(self) -> passwd::KdfPasswordAlgorithmBuilder {
+    pub fn passwd(self) -> passwd::KdfPasswordAlgorithmBuilder {
         passwd::KdfPasswordAlgorithm::build()
     }
 }

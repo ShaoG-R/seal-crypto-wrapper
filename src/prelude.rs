@@ -11,7 +11,10 @@ pub use crate::keys::asymmetric::signature::{TypedSignatureKeyPair, TypedSignatu
 #[cfg(feature = "asymmetric-key-agreement")]
 pub use crate::keys::asymmetric::key_agreement::{TypedKeyAgreementKeyPair, TypedKeyAgreementPrivateKey, TypedKeyAgreementPublicKey};
 #[cfg(feature = "kdf")]
-pub use crate::algorithms::kdf::KdfAlgorithm;
+pub use {
+    crate::algorithms::kdf::KdfAlgorithm,
+    crate::traits::{KdfKeyAlgorithmTrait, KdfPasswordAlgorithmTrait}
+};
 #[cfg(feature = "symmetric")]
 pub use {
     crate::algorithms::symmetric::SymmetricAlgorithm,
@@ -21,6 +24,9 @@ pub use {
     }
 };
 #[cfg(feature = "xof")]
-pub use crate::algorithms::xof::XofAlgorithm;
+pub use {
+    crate::algorithms::xof::XofAlgorithm,
+    crate::traits::XofAlgorithmTrait,
+};
 pub use ::seal_crypto::zeroize::Zeroizing;
 pub use ::seal_crypto::secrecy::SecretBox;

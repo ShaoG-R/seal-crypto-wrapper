@@ -2,6 +2,7 @@
 pub use {
     crate::algorithms::asymmetric::AsymmetricAlgorithm,
     crate::keys::asymmetric::{AsymmetricPrivateKey, AsymmetricPublicKey},
+    crate::keys::asymmetric::{TypedAsymmetricKeyTrait, TypedAsymmetricPrivateKeyTrait, TypedAsymmetricPublicKeyTrait},
 };
 #[cfg(feature = "asymmetric-kem")]
 pub use crate::keys::asymmetric::kem::{TypedKemKeyPair, TypedKemPrivateKey, TypedKemPublicKey};

@@ -123,7 +123,7 @@ use crate::impl_typed_asymmetric_private_key;
 /// let (public_key, private_key) = keypair.into_keypair();
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, bincode::Encode, bincode::Decode)]
 pub struct TypedKeyAgreementKeyPair {
     public_key: AsymmetricPublicKey,
     private_key: AsymmetricPrivateKey,
@@ -292,7 +292,7 @@ impl TypedKeyAgreementKeyPair {
 /// - **临时密钥**: 用于协议中的前向保密
 /// - **静态密钥**: 用于长期密钥协商关系
 /// - **混合协议**: 与其他密码原语结合
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, bincode::Encode, bincode::Decode)]
 pub struct TypedKeyAgreementPublicKey {
     pub(crate) key: AsymmetricPublicKey,
     pub(crate) algorithm: KeyAgreementAlgorithm,
@@ -335,7 +335,7 @@ impl_typed_asymmetric_public_key!(TypedKeyAgreementPublicKey, KeyAgreementAlgori
 /// - **前向保密**: 为每个会话使用临时密钥
 /// - **完美前向保密**: 使用后删除以防止未来泄露
 /// - **密钥派生**: 使用派生的密钥进行对称加密
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, bincode::Encode, bincode::Decode)]
 pub struct TypedKeyAgreementPrivateKey {
     pub(crate) key: AsymmetricPrivateKey,
     pub(crate) algorithm: KeyAgreementAlgorithm,

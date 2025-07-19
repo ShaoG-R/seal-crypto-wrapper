@@ -127,7 +127,7 @@ use crate::impl_typed_asymmetric_private_key;
 /// let (public_key, private_key) = keypair.into_keypair();
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, bincode::Encode, bincode::Decode)]
 pub struct TypedSignatureKeyPair {
     public_key: AsymmetricPublicKey,
     private_key: AsymmetricPrivateKey,
@@ -301,7 +301,7 @@ impl TypedSignatureKeyPair {
 /// - **身份验证**: 确认消息发送者的身份
 /// - **数据完整性**: 确保数据未被篡改
 /// - **不可否认性**: 提供消息来源证明
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, bincode::Encode, bincode::Decode)]
 pub struct TypedSignaturePublicKey {
     pub(crate) key: AsymmetricPublicKey,
     pub(crate) algorithm: SignatureAlgorithm,
@@ -344,7 +344,7 @@ impl_typed_asymmetric_public_key!(TypedSignaturePublicKey, SignatureAlgorithm);
 /// - **文档签名**: 提供文档批准的法律证明
 /// - **代码签名**: 验证软件真实性和完整性
 /// - **证书签名**: 为 PKI 创建数字证书
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, bincode::Encode, bincode::Decode)]
 pub struct TypedSignaturePrivateKey {
     pub(crate) key: AsymmetricPrivateKey,
     pub(crate) algorithm: SignatureAlgorithm,

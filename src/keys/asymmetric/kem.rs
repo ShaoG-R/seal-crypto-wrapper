@@ -121,7 +121,7 @@ use seal_crypto::zeroize::Zeroizing;
 /// let (public_key, private_key) = keypair.into_keypair();
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, bincode::Encode, bincode::Decode)]
 pub struct TypedKemKeyPair {
     pub(crate) public_key: AsymmetricPublicKey,
     pub(crate) private_key: AsymmetricPrivateKey,
@@ -282,7 +282,7 @@ impl TypedKemKeyPair {
 ///
 /// 公钥可以安全分发和存储而无需特殊保护，
 /// 但算法绑定确保它们只能与兼容的操作一起使用。
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, bincode::Encode, bincode::Decode)]
 pub struct TypedKemPublicKey {
     pub(crate) key: AsymmetricPublicKey,
     pub(crate) algorithm: KemAlgorithm,
@@ -310,7 +310,7 @@ impl_typed_asymmetric_public_key!(TypedKemPublicKey, KemAlgorithm);
 ///
 /// 私钥包含敏感材料，在丢弃时自动清零。
 /// 应使用适当的访问控制和安全存储来保护它们。
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, bincode::Encode, bincode::Decode)]
 pub struct TypedKemPrivateKey {
     pub(crate) key: AsymmetricPrivateKey,
     pub(crate) algorithm: KemAlgorithm,
@@ -361,7 +361,7 @@ pub struct SharedSecret(pub Zeroizing<Vec<u8>>);
 /// reveal the underlying shared secret without the corresponding private key.
 ///
 /// 封装密钥可以安全地通过不安全通道传输，因为没有相应的私钥它们不会泄露底层共享密钥。
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, bincode::Encode, bincode::Decode)]
 pub struct EncapsulatedKey {
     pub(crate) key: Vec<u8>,
     pub(crate) algorithm: KemAlgorithm,

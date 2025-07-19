@@ -142,7 +142,7 @@ macro_rules! dispatch_symmetric {
 /// assert_eq!(deserialized.algorithm(), algorithm);
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, bincode::Encode, bincode::Decode)]
 pub struct TypedSymmetricKey {
     key: SymmetricKey,
     algorithm: SymmetricAlgorithm,
@@ -389,6 +389,34 @@ impl AsRef<[u8]> for TypedSymmetricKey {
 /// 防止敏感数据在使用后仍留在内存中。
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct SymmetricKey(pub Zeroizing<Vec<u8>>);
+
+impl bincode::Encode for SymmetricKey {
+    fn encode<E: bincode::enc::Encoder>(
+        &self,
+        encoder: &mut E,
+    ) -> core::result::Result<(), bincode::error::EncodeError> {
+        let bytes = self.0.as_slice();
+        bincode::Encode::encode(bytes, encoder)?;
+        Ok(())
+    }
+}
+
+impl<Context> bincode::Decode<Context> for SymmetricKey {
+    fn decode<D: bincode::de::Decoder<Context = Context>>(
+        decoder: &mut D,
+    ) -> core::result::Result<Self, bincode::error::DecodeError> {
+        let bytes = bincode::Decode::decode(decoder)?;
+        Ok(Self(Zeroizing::new(bytes)))
+    }
+}
+impl<'de, Context> bincode::BorrowDecode<'de, Context> for SymmetricKey {
+    fn borrow_decode<D: bincode::de::BorrowDecoder<'de, Context = Context>>(
+        decoder: &mut D,
+    ) -> core::result::Result<Self, bincode::error::DecodeError> {
+        let bytes = bincode::BorrowDecode::borrow_decode(decoder)?;
+        Ok(Self(Zeroizing::new(bytes)))
+    }
+}
 
 impl SymmetricKey {
     /// Create a new symmetric key from bytes

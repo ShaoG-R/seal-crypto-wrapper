@@ -78,6 +78,8 @@ use crate::algorithms::symmetric::{AesKeySize, SymmetricAlgorithm};
 use crate::error::{Error, FormatError, Result};
 use crate::keys::symmetric::{SymmetricKey as UntypedSymmetricKey, TypedSymmetricKey};
 use crate::traits::SymmetricAlgorithmTrait;
+use rand::rngs::OsRng;
+use rand::TryRngCore;
 use seal_crypto::prelude::{Key, SymmetricCipher, SymmetricDecryptor, SymmetricEncryptor};
 use seal_crypto::schemes::symmetric::aes_gcm::{Aes128Gcm, Aes256Gcm};
 use seal_crypto::schemes::symmetric::chacha20_poly1305::{ChaCha20Poly1305, XChaCha20Poly1305};
@@ -402,6 +404,26 @@ impl SymmetricAlgorithmWrapper {
     /// 以保持类型安全。
     pub fn generate_untyped_key(&self) -> Result<UntypedSymmetricKey> {
         self.algorithm.generate_untyped_key()
+    }
+
+    /// Generates a new nonce.
+    ///
+    /// 生成新的 nonce。
+    ///
+    /// This method generates a random nonce for the symmetric algorithm.
+    ///
+    /// 此方法生成对称算法的随机 nonce。
+    ///
+    /// ## Returns | 返回值
+    ///
+    /// A new nonce for the symmetric algorithm.
+    ///
+    /// 对称算法的新的 nonce。
+    ///
+    pub fn generate_nonce(&self) -> Result<Vec<u8>> {
+        let mut nonce = vec![0u8; self.nonce_size()];
+        OsRng.try_fill_bytes(&mut nonce)?;
+        Ok(nonce)
     }
 }
 

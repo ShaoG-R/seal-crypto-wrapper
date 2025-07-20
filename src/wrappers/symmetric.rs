@@ -543,13 +543,13 @@ impl_symmetric_algorithm!(
 
 #[cfg(test)]
 mod tests {
-    use crate::keys::symmetric::SymmetricKey;
+    use crate::algorithms::symmetric::SymmetricAlgorithm;
+    use crate::keys::symmetric::{SymmetricKey, TypedSymmetricKey};
     #[cfg(feature = "kdf")]
-    use crate::{
-        algorithms::kdf::key::KdfKeyAlgorithm,
-        wrappers::kdf::passwd::{KdfPasswordWrapper, Pbkdf2Sha256Wrapper},
-    };
+    use crate::algorithms::kdf::{key::KdfKeyAlgorithm, passwd::KdfPasswordAlgorithm};
     use seal_crypto::secrecy::SecretBox;
+    #[cfg(feature = "xof")]
+    use crate::algorithms::xof::XofAlgorithm;
 
     #[test]
     fn test_symmetric_key_generate() {
@@ -579,106 +579,164 @@ mod tests {
 
     #[test]
     #[cfg(feature = "kdf")]
-    fn test_symmetric_key_derive_key() {
+    fn test_typed_symmetric_key_derive_from_kdf() {
         // 使用HKDF-SHA256进行密钥派生
-        let master_key = SymmetricKey::new(vec![0u8; 32]);
+        let master_key_bytes = vec![0u8; 32];
 
         // 使用不同的上下文信息派生出不同的子密钥
         let salt = b"salt_value";
         let info1 = b"encryption_key";
         let info2 = b"signing_key";
+        let kdf_algorithm = KdfKeyAlgorithm::build().hkdf_sha256();
+        let symmetric_algorithm = SymmetricAlgorithm::build().aes256_gcm();
 
-        let derived_key1 = master_key
-            .derive_key(
-                KdfKeyAlgorithm::build().hkdf_sha256(),
-                Some(salt),
-                Some(info1),
-                32,
-            )
-            .unwrap();
-        let derived_key2 = master_key
-            .derive_key(
-                KdfKeyAlgorithm::build().hkdf_sha256(),
-                Some(salt),
-                Some(info2),
-                32,
-            )
-            .unwrap();
+        let derived_key1 = TypedSymmetricKey::derive_from_kdf(
+            &master_key_bytes,
+            kdf_algorithm.clone(),
+            Some(salt),
+            Some(info1),
+            symmetric_algorithm,
+        )
+        .unwrap();
+
+        let derived_key2 = TypedSymmetricKey::derive_from_kdf(
+            &master_key_bytes,
+            kdf_algorithm.clone(),
+            Some(salt),
+            Some(info2),
+            symmetric_algorithm,
+        )
+        .unwrap();
 
         // 相同的主密钥和参数应该产生相同的派生密钥
-        let derived_key1_again = master_key
-            .derive_key(
-                KdfKeyAlgorithm::build().hkdf_sha256(),
-                Some(salt),
-                Some(info1),
-                32,
-            )
-            .unwrap();
+        let derived_key1_again = TypedSymmetricKey::derive_from_kdf(
+            &master_key_bytes,
+            kdf_algorithm.clone(),
+            Some(salt),
+            Some(info1),
+            symmetric_algorithm,
+        )
+        .unwrap();
 
         // 不同的上下文信息应该产生不同的派生密钥
         assert_ne!(derived_key1.as_bytes(), derived_key2.as_bytes());
 
         // 相同的参数应该产生相同的派生密钥
         assert_eq!(derived_key1.as_bytes(), derived_key1_again.as_bytes());
+
+        assert_eq!(derived_key1.algorithm(), symmetric_algorithm);
     }
 
     #[test]
     #[cfg(feature = "kdf")]
-    fn test_symmetric_key_derive_from_password() {
+    fn test_typed_symmetric_key_derive_from_password() {
         // 使用PBKDF2-SHA256从密码派生密钥
         let password = SecretBox::new(Box::from(b"my_secure_password".as_slice()));
         let salt = b"random_salt_value";
+        let symmetric_algorithm = SymmetricAlgorithm::build().aes256_gcm();
 
         // 设置较少的迭代次数以加速测试（实际应用中应使用更多迭代）
-        let deriver = KdfPasswordWrapper::new(Box::new(Pbkdf2Sha256Wrapper::new(1000)));
+        let deriver =
+            KdfPasswordAlgorithm::build().pbkdf2_sha256_with_params(1000).into_kdf_password_wrapper();
 
         let derived_key1 =
-            SymmetricKey::derive_from_password(&password, deriver.clone(), salt, 32).unwrap();
+            TypedSymmetricKey::derive_from_password(&password, deriver.clone(), salt, symmetric_algorithm)
+                .unwrap();
 
         // 相同的密码、盐和迭代次数应该产生相同的密钥
         let derived_key2 =
-            SymmetricKey::derive_from_password(&password, deriver.clone(), salt, 32).unwrap();
+            TypedSymmetricKey::derive_from_password(&password, deriver.clone(), salt, symmetric_algorithm)
+                .unwrap();
 
         assert_eq!(derived_key1.as_bytes(), derived_key2.as_bytes());
 
         // 不同的密码应该产生不同的密钥
         let different_password = SecretBox::new(Box::from(b"different_password".as_slice()));
-        let derived_key3 =
-            SymmetricKey::derive_from_password(&different_password, deriver.clone(), salt, 32)
-                .unwrap();
+        let derived_key3 = TypedSymmetricKey::derive_from_password(
+            &different_password,
+            deriver.clone(),
+            salt,
+            symmetric_algorithm,
+        )
+        .unwrap();
 
         assert_ne!(derived_key1.as_bytes(), derived_key3.as_bytes());
 
         // 不同的盐应该产生不同的密钥
         let different_salt = b"different_salt_value";
-        let derived_key4 =
-            SymmetricKey::derive_from_password(&password, deriver.clone(), different_salt, 32)
-                .unwrap();
+        let derived_key4 = TypedSymmetricKey::derive_from_password(
+            &password,
+            deriver.clone(),
+            different_salt,
+            symmetric_algorithm,
+        )
+        .unwrap();
 
         assert_ne!(derived_key1.as_bytes(), derived_key4.as_bytes());
+
+        assert_eq!(derived_key1.algorithm(), symmetric_algorithm);
+    }
+
+    #[test]
+    #[cfg(feature = "xof")]
+    fn test_typed_symmetric_key_derive_from_xof() {
+        use crate::traits::XofAlgorithmTrait;
+
+        let seed = [0u8; 32];
+        let symmetric_algo_1 = SymmetricAlgorithm::build().aes128_gcm();
+        let symmetric_algo_2 = SymmetricAlgorithm::build().aes256_gcm();
+
+        let mut reader = XofAlgorithm::build()
+            .shake128()
+            .into_xof_wrapper()
+            .reader(&seed, None, None).unwrap();
+
+        let key1 = TypedSymmetricKey::derive_from_xof(&mut reader, symmetric_algo_1).unwrap();
+        let key2 = TypedSymmetricKey::derive_from_xof(&mut reader, symmetric_algo_2).unwrap();
+
+        // Keys derived from the same reader should be different
+        assert_ne!(key1.as_bytes(), key2.as_bytes());
+
+        // Check key lengths and algorithm binding
+        assert_eq!(key1.as_bytes().len(), 16);
+        assert_eq!(key1.algorithm(), symmetric_algo_1);
+
+        assert_eq!(key2.as_bytes().len(), 32);
+        assert_eq!(key2.algorithm(), symmetric_algo_2);
     }
 
     #[test]
     #[cfg(feature = "kdf")]
-    fn test_key_derivation_output_length() {
-        let master_key = SymmetricKey::new(vec![0u8; 32]);
-        let deriver = KdfKeyAlgorithm::build().hkdf_sha256();
+    fn test_kdf_derivation_output_length() {
+        let master_key_bytes = vec![0u8; 32];
+        let kdf_algorithm = KdfKeyAlgorithm::build().hkdf_sha256();
         let salt = b"salt";
         let info = b"info";
 
-        // 测试不同长度的输出
-        let key_16 = master_key
-            .derive_key(deriver.clone(), Some(salt), Some(info), 16)
-            .unwrap();
-        let key_32 = master_key
-            .derive_key(deriver.clone(), Some(salt), Some(info), 32)
-            .unwrap();
-        let key_64 = master_key
-            .derive_key(deriver.clone(), Some(salt), Some(info), 64)
-            .unwrap();
+        let sym_alg_128 = SymmetricAlgorithm::build().aes128_gcm();
+        let sym_alg_256 = SymmetricAlgorithm::build().aes256_gcm();
 
-        assert_eq!(key_16.as_bytes().len(), 16);
-        assert_eq!(key_32.as_bytes().len(), 32);
-        assert_eq!(key_64.as_bytes().len(), 64);
+        // 测试不同长度的输出
+        let key_128 = TypedSymmetricKey::derive_from_kdf(
+            &master_key_bytes,
+            kdf_algorithm.clone(),
+            Some(salt),
+            Some(info),
+            sym_alg_128,
+        )
+        .unwrap();
+        let key_256 = TypedSymmetricKey::derive_from_kdf(
+            &master_key_bytes,
+            kdf_algorithm.clone(),
+            Some(salt),
+            Some(info),
+            sym_alg_256,
+        )
+        .unwrap();
+
+        assert_eq!(key_128.as_bytes().len(), 16);
+        assert_eq!(key_128.algorithm(), sym_alg_128);
+        assert_eq!(key_256.as_bytes().len(), 32);
+        assert_eq!(key_256.algorithm(), sym_alg_256);
     }
 }

@@ -246,6 +246,112 @@ impl TypedSymmetricKey {
         let key = SymmetricKey::new(bytes.to_vec());
         key.into_typed(algorithm)
     }
+
+     /// Derives a new symmetric key from the current key using a specified key-based KDF.
+    ///
+    /// 从当前密钥派生一个新的对称密钥。
+    ///
+    /// This is suitable for key rotation, where a master key is used to generate
+    /// sub-keys for specific purposes.
+    ///
+    /// 适用于密钥轮换，其中主密钥用于生成特定目的的子密钥。
+    ///
+    /// ## Type Parameters | 类型参数
+    ///
+    /// * `K` - The type of the key-based derivation algorithm, which must implement `KeyBasedDerivation`.
+    ///
+    /// * `K` - 密钥派生算法类型，必须实现 `KeyBasedDerivation`。
+    ///
+    /// ## Arguments | 参数
+    ///
+    /// * `deriver` - An instance of the key-based KDF scheme (e.g., `HkdfSha256`).
+    /// * `salt` - An optional salt. While optional in HKDF, providing a salt is highly recommended.
+    /// * `info` - Optional context-specific information.
+    /// * `output_len` - The desired length of the derived key in bytes.
+    ///
+    /// * `deriver` - 密钥派生算法实例（例如 `HkdfSha256`）。
+    /// * `salt` - 可选的盐。虽然 HKDF 中可选，但提供盐是高度推荐的。
+    /// * `info` - 可选的上下文特定信息。
+    /// * `output_len` - 派生密钥的期望长度（以字节为单位）。
+    #[cfg(feature = "kdf")]
+    pub fn derive_from_kdf(
+        bytes: &[u8],
+        kdf_algorithm: KdfKeyAlgorithm,
+        salt: Option<&[u8]>,
+        info: Option<&[u8]>,
+        symmetric_algorithm: SymmetricAlgorithm,
+    ) -> Result<Self, Error> {
+        use crate::traits::KdfKeyAlgorithmTrait;
+
+        let derived_key_bytes =
+            kdf_algorithm
+                .into_kdf_key_wrapper()
+                .derive(bytes, salt, info, symmetric_algorithm.into_symmetric_wrapper().key_size())?;
+        Ok(TypedSymmetricKey::from_bytes(derived_key_bytes.as_slice(), symmetric_algorithm)?)
+    }
+
+    /// Derives a symmetric key from a XOF reader.
+    ///
+    /// 从 XOF 读取器派生对称密钥。
+    ///
+    /// This is suitable for key rotation, where a master key is used to generate
+    /// sub-keys for specific purposes.
+    ///
+    /// 适用于密钥轮换，其中主密钥用于生成特定目的的子密钥。
+    ///
+    /// ## Arguments | 参数
+    ///
+    /// * `xof_reader` - The XOF reader to use for derivation.
+    /// * `output_len` - The desired length of the derived key in bytes.
+    ///
+    /// * `xof_reader` - 用于派生的 XOF 读取器。
+    /// * `output_len` - 派生密钥的期望长度（以字节为单位）。
+    #[cfg(feature = "xof")]
+    pub fn derive_from_xof(
+        xof_reader: &mut XofReaderWrapper,
+        symmetric_algorithm: SymmetricAlgorithm,
+    ) -> Result<Self, Error> {
+        let mut derived_key_bytes = vec![0u8; symmetric_algorithm.into_symmetric_wrapper().key_size()];
+        xof_reader.read(&mut derived_key_bytes);
+        Ok(TypedSymmetricKey::from_bytes(derived_key_bytes.as_slice(), symmetric_algorithm)?)
+    }
+
+    /// Derives a symmetric key from a password using a specified password-based KDF.
+    ///
+    /// 从密码派生对称密钥。
+    ///
+    /// This is ideal for generating a cryptographic key from a low-entropy user password.
+    /// The concrete algorithm instance (e.g., `Pbkdf2Sha256`) should be configured
+    /// with the desired number of iterations before being passed to this function.
+    ///
+    /// ## Type Parameters | 类型参数
+    ///
+    /// * `P` - The type of the password-based derivation algorithm, which must implement `PasswordBasedDerivation`.
+    /// * `P` - 密码派生算法类型，必须实现 `PasswordBasedDerivation`。
+    ///
+    /// ## Arguments | 参数
+    ///
+    /// * `password` - The password to derive the key from.
+    /// * `deriver` - An instance of the password-based KDF scheme (e.g., `Pbkdf2Sha256::new(100_000)`).
+    /// * `salt` - A salt. This is **required** for password-based derivation to be secure.
+    /// * `output_len` - The desired length of the derived key in bytes.
+    ///
+    /// * `password` - 要派生的密码。
+    /// * `deriver` - 密码派生算法实例（例如 `Pbkdf2Sha256::new(100_000)`）。
+    /// * `salt` - 盐。这是 **必需** 的，因为密码派生需要安全。
+    /// * `output_len` - 派生密钥的期望长度（以字节为单位）。
+    #[cfg(feature = "kdf")]
+    pub fn derive_from_password(
+        password: &SecretBox<[u8]>,
+        algorithm: KdfPasswordWrapper,
+        salt: &[u8],
+        symmetric_algorithm: SymmetricAlgorithm,
+    ) -> Result<Self, Error> {
+        use crate::traits::KdfPasswordAlgorithmTrait;
+        let derived_key_bytes = algorithm.derive(password, salt, symmetric_algorithm.into_symmetric_wrapper().key_size())?;
+        Ok(TypedSymmetricKey::from_bytes(derived_key_bytes.as_slice(), symmetric_algorithm)?)
+    }
+
     /// Returns the algorithm this key is bound to.
     ///
     /// 返回此密钥绑定到的算法。
@@ -489,101 +595,5 @@ impl SymmetricKey {
         dispatch_symmetric!(algorithm, into_typed_key)
     }
 
-    /// Derives a new symmetric key from the current key using a specified key-based KDF.
-    ///
-    /// 从当前密钥派生一个新的对称密钥。
-    ///
-    /// This is suitable for key rotation, where a master key is used to generate
-    /// sub-keys for specific purposes.
-    ///
-    /// 适用于密钥轮换，其中主密钥用于生成特定目的的子密钥。
-    ///
-    /// ## Type Parameters | 类型参数
-    ///
-    /// * `K` - The type of the key-based derivation algorithm, which must implement `KeyBasedDerivation`.
-    ///
-    /// * `K` - 密钥派生算法类型，必须实现 `KeyBasedDerivation`。
-    ///
-    /// ## Arguments | 参数
-    ///
-    /// * `deriver` - An instance of the key-based KDF scheme (e.g., `HkdfSha256`).
-    /// * `salt` - An optional salt. While optional in HKDF, providing a salt is highly recommended.
-    /// * `info` - Optional context-specific information.
-    /// * `output_len` - The desired length of the derived key in bytes.
-    ///
-    /// * `deriver` - 密钥派生算法实例（例如 `HkdfSha256`）。
-    /// * `salt` - 可选的盐。虽然 HKDF 中可选，但提供盐是高度推荐的。
-    /// * `info` - 可选的上下文特定信息。
-    /// * `output_len` - 派生密钥的期望长度（以字节为单位）。
-    #[cfg(feature = "kdf")]
-    pub fn derive_key(
-        &self,
-        algorithm: KdfKeyAlgorithm,
-        salt: Option<&[u8]>,
-        info: Option<&[u8]>,
-        output_len: usize,
-    ) -> Result<Self, Error> {
-        use crate::traits::KdfKeyAlgorithmTrait;
-
-        let derived_key_bytes =
-            algorithm
-                .into_kdf_key_wrapper()
-                .derive(self.as_bytes(), salt, info, output_len)?;
-        Ok(SymmetricKey::new(derived_key_bytes))
-    }
-
-    /// Derives a symmetric key from a XOF reader.
-    ///
-    /// 从 XOF 读取器派生对称密钥。
-    ///
-    /// This is suitable for key rotation, where a master key is used to generate
-    /// sub-keys for specific purposes.
-    ///
-    /// 适用于密钥轮换，其中主密钥用于生成特定目的的子密钥。
-    ///
-    /// ## Arguments | 参数
-    ///
-    /// * `xof_reader` - The XOF reader to use for derivation.
-    /// * `output_len` - The desired length of the derived key in bytes.
-    ///
-    /// * `xof_reader` - 用于派生的 XOF 读取器。
-    /// * `output_len` - 派生密钥的期望长度（以字节为单位）。
-    #[cfg(feature = "xof")]
-    pub fn derive_key_from_xof(
-        &self,
-        xof_reader: &mut XofReaderWrapper,
-        output_len: usize,
-    ) -> Result<Self, Error> {
-        let mut derived_key_bytes = vec![0u8; output_len];
-        xof_reader.read(&mut derived_key_bytes);
-        Ok(SymmetricKey::new(derived_key_bytes))
-    }
-
-    /// Derives a symmetric key from a password using a specified password-based KDF.
-    ///
-    /// This is ideal for generating a cryptographic key from a low-entropy user password.
-    /// The concrete algorithm instance (e.g., `Pbkdf2Sha256`) should be configured
-    /// with the desired number of iterations before being passed to this function.
-    ///
-    /// # Type Parameters
-    ///
-    /// * `P` - The type of the password-based derivation algorithm, which must implement `PasswordBasedDerivation`.
-    ///
-    /// # Arguments
-    ///
-    /// * `password` - The password to derive the key from.
-    /// * `deriver` - An instance of the password-based KDF scheme (e.g., `Pbkdf2Sha256::new(100_000)`).
-    /// * `salt` - A salt. This is **required** for password-based derivation to be secure.
-    /// * `output_len` - The desired length of the derived key in bytes.
-    #[cfg(feature = "kdf")]
-    pub fn derive_from_password(
-        password: &SecretBox<[u8]>,
-        algorithm: KdfPasswordWrapper,
-        salt: &[u8],
-        output_len: usize,
-    ) -> Result<Self, Error> {
-        use crate::traits::KdfPasswordAlgorithmTrait;
-        let derived_key_bytes = algorithm.derive(password, salt, output_len)?;
-        Ok(SymmetricKey::new(derived_key_bytes))
-    }
+   
 }

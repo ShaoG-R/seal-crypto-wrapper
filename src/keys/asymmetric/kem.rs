@@ -81,6 +81,9 @@ use crate::prelude::{SymmetricAlgorithm, TypedSymmetricKey};
 #[cfg(feature = "kdf")]
 use crate::algorithms::kdf::key::KdfKeyAlgorithm;
 
+#[cfg(feature = "xof")]
+use crate::algorithms::xof::XofAlgorithm;
+
 /// Algorithm-bound KEM key pair for secure key encapsulation operations.
 ///
 /// 用于安全密钥封装操作的算法绑定 KEM 密钥对。
@@ -370,6 +373,36 @@ impl SharedSecret {
             info,
             algorithm.into_symmetric_wrapper().key_size(),
         )?;
+        TypedSymmetricKey::from_bytes(derived_key_bytes.as_slice(), algorithm)
+    }
+
+    /// Derives a symmetric key from the shared secret using a XOF algorithm.
+    ///
+    /// 使用 XOF 算法从共享密钥派生对称密钥。
+    ///
+    /// This method derives a symmetric key from the shared secret using a XOF algorithm.
+    /// The derived key is returned as a `TypedSymmetricKey` object.
+    ///
+    /// 此方法使用 XOF 算法从共享密钥派生对称密钥。派生的密钥作为 `TypedSymmetricKey` 对象返回。
+    #[cfg(all(feature = "xof", feature = "symmetric"))]
+    pub fn derive_key_xof(
+        &self,
+        xof_algorithm: XofAlgorithm,
+        salt: Option<&[u8]>,
+        info: Option<&[u8]>,
+        algorithm: SymmetricAlgorithm,
+    ) -> Result<TypedSymmetricKey, Error> {
+        use crate::traits::XofAlgorithmTrait;
+
+        let mut reader = xof_algorithm.into_xof_wrapper().reader(
+            self.0.as_ref(),
+            salt,
+            info,
+        )?;
+
+        let mut derived_key_bytes = vec![0u8; algorithm.into_symmetric_wrapper().key_size()];
+        reader.read(&mut derived_key_bytes);
+
         TypedSymmetricKey::from_bytes(derived_key_bytes.as_slice(), algorithm)
     }
 

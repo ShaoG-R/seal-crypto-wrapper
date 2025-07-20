@@ -63,18 +63,17 @@
 //! # }
 //! ```
 
-#[cfg(feature = "kdf")]
-use {
-    crate::algorithms::kdf::key::KdfKeyAlgorithm,
-    crate::wrappers::kdf::passwd::KdfPasswordWrapper,
-    seal_crypto::secrecy::SecretBox,
-};
 use crate::algorithms::symmetric::{AesKeySize, SymmetricAlgorithm};
 use crate::error::Error;
 use seal_crypto::prelude::{Key, SymmetricKeyGenerator, SymmetricKeySet};
 use seal_crypto::schemes::symmetric::aes_gcm::{Aes128Gcm, Aes256Gcm};
 use seal_crypto::schemes::symmetric::chacha20_poly1305::{ChaCha20Poly1305, XChaCha20Poly1305};
 use seal_crypto::zeroize::Zeroizing;
+#[cfg(feature = "kdf")]
+use {
+    crate::algorithms::kdf::key::KdfKeyAlgorithm, crate::wrappers::kdf::passwd::KdfPasswordWrapper,
+    seal_crypto::secrecy::SecretBox,
+};
 
 /// Macro for dispatching operations across different symmetric algorithms.
 ///
@@ -245,7 +244,6 @@ impl TypedSymmetricKey {
         let key = SymmetricKey::new(bytes.to_vec());
         key.into_typed(algorithm)
     }
-
     /// Returns the algorithm this key is bound to.
     ///
     /// 返回此密钥绑定到的算法。
@@ -415,6 +413,7 @@ impl<Context> bincode::Decode<Context> for SymmetricKey {
         Ok(Self(Zeroizing::new(bytes)))
     }
 }
+
 impl<'de, Context> bincode::BorrowDecode<'de, Context> for SymmetricKey {
     fn borrow_decode<D: bincode::de::BorrowDecoder<'de, Context = Context>>(
         decoder: &mut D,

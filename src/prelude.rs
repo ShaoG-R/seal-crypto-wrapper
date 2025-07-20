@@ -28,7 +28,11 @@
 //! 在启用任何非对称功能时可用。
 
 // Core asymmetric algorithm types | 核心非对称算法类型
-#[cfg(any(feature = "asymmetric-kem", feature = "asymmetric-signature", feature = "asymmetric-key-agreement"))]
+#[cfg(any(
+    feature = "asymmetric-kem",
+    feature = "asymmetric-signature",
+    feature = "asymmetric-key-agreement"
+))]
 mod asymmetric {
     /// Builder for asymmetric algorithms | 非对称算法构建器
     pub use crate::algorithms::asymmetric::AsymmetricAlgorithm;
@@ -37,19 +41,21 @@ mod asymmetric {
     pub use crate::keys::asymmetric::{AsymmetricPrivateKey, AsymmetricPublicKey};
 
     /// Core traits for typed asymmetric keys | 类型化非对称密钥的核心 trait
-    pub use crate::keys::asymmetric::{TypedAsymmetricKeyTrait, TypedAsymmetricPrivateKeyTrait, TypedAsymmetricPublicKeyTrait};
-    
+    pub use crate::keys::asymmetric::{
+        TypedAsymmetricKeyTrait, TypedAsymmetricPrivateKeyTrait, TypedAsymmetricPublicKeyTrait,
+    };
+
     // Key Encapsulation Mechanism (KEM) types | 密钥封装机制 (KEM) 类型
     #[cfg(feature = "asymmetric-kem")]
     pub(super) mod kem {
+        /// Encapsulated key result from KEM operations | KEM 操作产生的封装密钥结果
+        pub use crate::keys::asymmetric::kem::EncapsulatedKey;
         /// Typed KEM key pair | 类型化 KEM 密钥对
         pub use crate::keys::asymmetric::kem::TypedKemKeyPair;
         /// Typed KEM private key | 类型化 KEM 私钥
         pub use crate::keys::asymmetric::kem::TypedKemPrivateKey;
         /// Typed KEM public key | 类型化 KEM 公钥
         pub use crate::keys::asymmetric::kem::TypedKemPublicKey;
-        /// Encapsulated key result from KEM operations | KEM 操作产生的封装密钥结果
-        pub use crate::keys::asymmetric::kem::EncapsulatedKey;
     }
 
     // Digital signature types | 数字签名类型
@@ -75,7 +81,11 @@ mod asymmetric {
     }
 }
 
-#[cfg(any(feature = "asymmetric-kem", feature = "asymmetric-signature", feature = "asymmetric-key-agreement"))]
+#[cfg(any(
+    feature = "asymmetric-kem",
+    feature = "asymmetric-signature",
+    feature = "asymmetric-key-agreement"
+))]
 pub use asymmetric::*;
 
 #[cfg(feature = "asymmetric-kem")]
@@ -121,7 +131,6 @@ mod xof {
     /// Trait for XOF algorithms | XOF 算法 trait
     pub use crate::traits::XofAlgorithmTrait;
 }
-
 
 #[cfg(feature = "xof")]
 pub use xof::*;

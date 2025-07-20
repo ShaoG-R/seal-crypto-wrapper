@@ -541,34 +541,32 @@ impl KdfPasswordAlgorithm {
             Argon2Wrapper, Pbkdf2Sha256Wrapper, Pbkdf2Sha384Wrapper, Pbkdf2Sha512Wrapper,
         };
         match self {
-            KdfPasswordAlgorithm::Argon2(Some(params)) => {
-                KdfPasswordWrapper::new(Box::new(Argon2Wrapper::new(params.m_cost, params.t_cost, params.p_cost)))
-            }
+            KdfPasswordAlgorithm::Argon2(Some(params)) => KdfPasswordWrapper::new(Box::new(
+                Argon2Wrapper::new(params.m_cost, params.t_cost, params.p_cost),
+            )),
             KdfPasswordAlgorithm::Argon2(None) => {
                 KdfPasswordWrapper::new(Box::new(Argon2Wrapper::default()))
             }
-            KdfPasswordAlgorithm::Pbkdf2 { hash, c } => {
-                match (hash, c) {
-                    (HashAlgorithmEnum::Sha256, Some(c)) => {
-                        KdfPasswordWrapper::new(Box::new(Pbkdf2Sha256Wrapper::new(c)))
-                    }
-                    (HashAlgorithmEnum::Sha384, Some(c)) => {
-                        KdfPasswordWrapper::new(Box::new(Pbkdf2Sha384Wrapper::new(c)))
-                    }
-                    (HashAlgorithmEnum::Sha512, Some(c)) => {
-                        KdfPasswordWrapper::new(Box::new(Pbkdf2Sha512Wrapper::new(c)))
-                    }
-                    (HashAlgorithmEnum::Sha256, None) => {
-                        KdfPasswordWrapper::new(Box::new(Pbkdf2Sha256Wrapper::default()))
-                    }
-                    (HashAlgorithmEnum::Sha384, None) => {
-                        KdfPasswordWrapper::new(Box::new(Pbkdf2Sha384Wrapper::default()))
-                    }
-                    (HashAlgorithmEnum::Sha512, None) => {
-                        KdfPasswordWrapper::new(Box::new(Pbkdf2Sha512Wrapper::default()))
-                    }
+            KdfPasswordAlgorithm::Pbkdf2 { hash, c } => match (hash, c) {
+                (HashAlgorithmEnum::Sha256, Some(c)) => {
+                    KdfPasswordWrapper::new(Box::new(Pbkdf2Sha256Wrapper::new(c)))
                 }
-            }
+                (HashAlgorithmEnum::Sha384, Some(c)) => {
+                    KdfPasswordWrapper::new(Box::new(Pbkdf2Sha384Wrapper::new(c)))
+                }
+                (HashAlgorithmEnum::Sha512, Some(c)) => {
+                    KdfPasswordWrapper::new(Box::new(Pbkdf2Sha512Wrapper::new(c)))
+                }
+                (HashAlgorithmEnum::Sha256, None) => {
+                    KdfPasswordWrapper::new(Box::new(Pbkdf2Sha256Wrapper::default()))
+                }
+                (HashAlgorithmEnum::Sha384, None) => {
+                    KdfPasswordWrapper::new(Box::new(Pbkdf2Sha384Wrapper::default()))
+                }
+                (HashAlgorithmEnum::Sha512, None) => {
+                    KdfPasswordWrapper::new(Box::new(Pbkdf2Sha512Wrapper::default()))
+                }
+            },
         }
     }
 }

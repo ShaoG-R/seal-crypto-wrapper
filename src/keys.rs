@@ -111,7 +111,11 @@
 //! - **密钥轮换**: 实施定期密钥轮换策略
 
 // Asymmetric key types and management | 非对称密钥类型和管理
-#[cfg(any(feature = "asymmetric-kem", feature = "asymmetric-signature", feature = "asymmetric-key-agreement"))]
+#[cfg(any(
+    feature = "asymmetric-kem",
+    feature = "asymmetric-signature",
+    feature = "asymmetric-key-agreement"
+))]
 pub mod asymmetric;
 
 // Symmetric key types and management | 对称密钥类型和管理

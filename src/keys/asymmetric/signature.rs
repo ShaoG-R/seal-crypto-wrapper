@@ -1,4 +1,3 @@
-
 //! Digital signature key types and operations.
 //!
 //! 数字签名密钥类型和操作。
@@ -75,14 +74,13 @@
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 
-use crate::algorithms::asymmetric::signature::{ SignatureAlgorithm};
-use crate::error::Error;
-use crate::keys::asymmetric::{AsymmetricPrivateKey, AsymmetricPublicKey};
+use crate::algorithms::asymmetric::signature::SignatureAlgorithm;
 use crate::dispatch_signature;
-use seal_crypto::prelude::{Key, KeyGenerator};
-use crate::impl_typed_asymmetric_public_key;
+use crate::error::Error;
 use crate::impl_typed_asymmetric_private_key;
-
+use crate::impl_typed_asymmetric_public_key;
+use crate::keys::asymmetric::{AsymmetricPrivateKey, AsymmetricPublicKey};
+use seal_crypto::prelude::{Key, KeyGenerator};
 
 /// Algorithm-bound signature key pair for digital signature operations.
 ///
@@ -351,5 +349,3 @@ pub struct TypedSignaturePrivateKey {
 }
 
 impl_typed_asymmetric_private_key!(TypedSignaturePrivateKey, SignatureAlgorithm);
-
-

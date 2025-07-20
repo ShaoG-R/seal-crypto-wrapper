@@ -1,4 +1,3 @@
-
 //! Key Encapsulation Mechanism (KEM) key types and operations.
 //!
 //! 密钥封装机制 (KEM) 密钥类型和操作。
@@ -66,17 +65,21 @@
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 
-use crate::dispatch_kem;
 use crate::algorithms::asymmetric::kem::KemAlgorithm;
+use crate::dispatch_kem;
 use crate::error::Error;
-use seal_crypto::prelude::{Key, KeyGenerator};
-use crate::keys::asymmetric::{AsymmetricPrivateKey, AsymmetricPublicKey};
-use crate::impl_typed_asymmetric_public_key;
 use crate::impl_typed_asymmetric_private_key;
+use crate::impl_typed_asymmetric_public_key;
 use crate::keys::asymmetric::TypedAsymmetricKeyTrait;
+use crate::keys::asymmetric::{AsymmetricPrivateKey, AsymmetricPublicKey};
+use seal_crypto::prelude::{Key, KeyGenerator};
 use seal_crypto::zeroize::Zeroizing;
 
+#[cfg(feature = "symmetric")]
+use crate::prelude::{SymmetricAlgorithm, TypedSymmetricKey};
 
+#[cfg(feature = "kdf")]
+use crate::algorithms::kdf::key::KdfKeyAlgorithm;
 
 /// Algorithm-bound KEM key pair for secure key encapsulation operations.
 ///
@@ -341,6 +344,27 @@ impl_typed_asymmetric_private_key!(TypedKemPrivateKey, KemAlgorithm);
 /// 使用适当的密钥派生函数从此材料派生实际的加密密钥。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SharedSecret(pub Zeroizing<Vec<u8>>);
+
+impl SharedSecret {
+    #[cfg(all(feature = "kdf", feature = "symmetric"))]
+    pub fn derive_key(
+        &self,
+        kdf_algorithm: KdfKeyAlgorithm,
+        salt: Option<&[u8]>,
+        info: Option<&[u8]>,
+        algorithm: SymmetricAlgorithm,
+    ) -> Result<TypedSymmetricKey, Error> {
+        use crate::traits::KdfKeyAlgorithmTrait;
+
+        let derived_key_bytes = kdf_algorithm.into_kdf_key_wrapper().derive(
+            self.0.as_ref(),
+            salt,
+            info,
+            algorithm.into_symmetric_wrapper().key_size(),
+        )?;
+        TypedSymmetricKey::from_bytes(derived_key_bytes.as_slice(), algorithm)
+    }
+}
 
 /// Algorithm-bound encapsulated key for KEM operations.
 ///

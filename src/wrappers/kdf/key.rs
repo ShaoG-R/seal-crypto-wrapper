@@ -56,12 +56,12 @@
 
 use crate::algorithms::HashAlgorithmEnum;
 use crate::algorithms::kdf::key::KdfKeyAlgorithm;
+use crate::define_wrapper;
 use crate::error::{Error, Result};
 use crate::traits::KdfKeyAlgorithmTrait;
 use seal_crypto::prelude::KeyBasedDerivation;
 use seal_crypto::schemes::kdf::hkdf::{HkdfSha256, HkdfSha384, HkdfSha512};
 use seal_crypto::zeroize::Zeroizing;
-use crate::define_wrapper;
 use std::ops::Deref;
 
 /// Macro for implementing key-based KDF algorithm wrappers.
@@ -260,9 +260,15 @@ impl KdfKeyWrapper {
     /// ```
     pub fn from_enum(algorithm: KdfKeyAlgorithm) -> Self {
         let algorithm: Box<dyn KdfKeyAlgorithmTrait> = match algorithm {
-            KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha256) => Box::new(HkdfSha256Wrapper::default()),
-            KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha384) => Box::new(HkdfSha384Wrapper::default()),
-            KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha512) => Box::new(HkdfSha512Wrapper::default()),
+            KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha256) => {
+                Box::new(HkdfSha256Wrapper::default())
+            }
+            KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha384) => {
+                Box::new(HkdfSha384Wrapper::default())
+            }
+            KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha512) => {
+                Box::new(HkdfSha512Wrapper::default())
+            }
         };
         Self::new(algorithm)
     }

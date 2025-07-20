@@ -47,7 +47,7 @@
 //! - **资源受限**: 使用高迭代次数的 PBKDF2
 
 use crate::algorithms::HashAlgorithmEnum;
-use crate::algorithms::kdf::passwd::{KdfPasswordAlgorithm, Argon2Params};
+use crate::algorithms::kdf::passwd::{Argon2Params, KdfPasswordAlgorithm};
 use crate::error::{Error, Result};
 use crate::traits::KdfPasswordAlgorithmTrait;
 use seal_crypto::prelude::PasswordBasedDerivation;
@@ -58,7 +58,6 @@ use seal_crypto::schemes::kdf::{
 use seal_crypto::secrecy::SecretBox;
 use seal_crypto::zeroize::Zeroizing;
 use std::ops::Deref;
-
 
 /// Argon2 password hashing algorithm wrapper with memory-hard security.
 ///
@@ -256,7 +255,7 @@ macro_rules! impl_kdf_pbkdf_algorithm {
                 }
             }
         }
-        
+
         impl Default for $wrapper {
             fn default() -> Self {
                 Self {
@@ -282,7 +281,11 @@ macro_rules! impl_kdf_pbkdf_algorithm {
             fn algorithm(&self) -> KdfPasswordAlgorithm {
                 KdfPasswordAlgorithm::Pbkdf2 {
                     hash: $hash_enum,
-                    c: if self.is_default { None } else { Some(self.algorithm.iterations) },
+                    c: if self.is_default {
+                        None
+                    } else {
+                        Some(self.algorithm.iterations)
+                    },
                 }
             }
 

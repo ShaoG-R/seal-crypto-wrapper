@@ -33,9 +33,9 @@
 //! - **高性能**: Kyber-512 适用于大多数应用
 //! - **最大安全性**: Kyber-1024 用于长期保护
 
-use bincode::{Decode, Encode};
 use crate::algorithms::HashAlgorithmEnum;
 use crate::wrappers::asymmetric::kem::KemAlgorithmWrapper;
+use bincode::{Decode, Encode};
 
 /// Key Encapsulation Mechanism algorithm enumeration.
 ///
@@ -418,7 +418,11 @@ impl KemAlgorithm {
     /// ```
     pub fn into_asymmetric_wrapper(self) -> KemAlgorithmWrapper {
         use crate::algorithms::HashAlgorithmEnum;
-        use crate::wrappers::asymmetric::kem::{Kyber512Wrapper, Kyber768Wrapper, Kyber1024Wrapper, Rsa2048Sha256Wrapper, Rsa2048Sha384Wrapper, Rsa2048Sha512Wrapper, Rsa4096Sha256Wrapper, Rsa4096Sha384Wrapper, Rsa4096Sha512Wrapper, KemAlgorithmWrapper};
+        use crate::wrappers::asymmetric::kem::{
+            KemAlgorithmWrapper, Kyber512Wrapper, Kyber768Wrapper, Kyber1024Wrapper,
+            Rsa2048Sha256Wrapper, Rsa2048Sha384Wrapper, Rsa2048Sha512Wrapper, Rsa4096Sha256Wrapper,
+            Rsa4096Sha384Wrapper, Rsa4096Sha512Wrapper,
+        };
         match self {
             KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256) => {
                 KemAlgorithmWrapper::new(Box::new(Rsa2048Sha256Wrapper::default()))

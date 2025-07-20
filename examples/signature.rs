@@ -1,5 +1,5 @@
-use seal_crypto_wrapper::prelude::*;
 use seal_crypto_wrapper::error::Result;
+use seal_crypto_wrapper::prelude::*;
 
 fn main() -> Result<()> {
     // 1. Select a signature algorithm.

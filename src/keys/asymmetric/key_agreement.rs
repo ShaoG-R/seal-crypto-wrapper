@@ -72,13 +72,12 @@
 //! ```
 
 use crate::algorithms::asymmetric::key_agreement::KeyAgreementAlgorithm;
-use crate::error::Error;
-use crate::keys::asymmetric::{AsymmetricPrivateKey, AsymmetricPublicKey};
 use crate::dispatch_key_agreement;
-use seal_crypto::prelude::{Key, KeyGenerator};
-use crate::impl_typed_asymmetric_public_key;
+use crate::error::Error;
 use crate::impl_typed_asymmetric_private_key;
-
+use crate::impl_typed_asymmetric_public_key;
+use crate::keys::asymmetric::{AsymmetricPrivateKey, AsymmetricPublicKey};
+use seal_crypto::prelude::{Key, KeyGenerator};
 
 /// Algorithm-bound key agreement key pair for shared secret establishment.
 ///
@@ -342,5 +341,3 @@ pub struct TypedKeyAgreementPrivateKey {
 }
 
 impl_typed_asymmetric_private_key!(TypedKeyAgreementPrivateKey, KeyAgreementAlgorithm);
-
-

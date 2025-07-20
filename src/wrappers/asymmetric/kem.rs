@@ -43,20 +43,20 @@
 //! - **后量子安全**: Kyber 变体抵抗量子攻击
 
 use crate::algorithms::{
-    asymmetric::kem::{KemAlgorithm, KyberSecurityLevel, RsaBits},
     HashAlgorithmEnum,
+    asymmetric::kem::{KemAlgorithm, KyberSecurityLevel, RsaBits},
 };
+use crate::define_wrapper;
 use crate::error::{Error, FormatError, Result};
+use crate::keys::asymmetric::kem::{EncapsulatedKey, SharedSecret};
+use crate::keys::asymmetric::kem::{TypedKemKeyPair, TypedKemPrivateKey, TypedKemPublicKey};
+use crate::keys::asymmetric::{TypedAsymmetricPrivateKeyTrait, TypedAsymmetricPublicKeyTrait};
 use crate::traits::KemAlgorithmTrait;
 use seal_crypto::prelude::{AsymmetricKeySet, Kem, Key};
-use seal_crypto::schemes::asymmetric::post_quantum::kyber::{Kyber1024, Kyber512, Kyber768};
+use seal_crypto::schemes::asymmetric::post_quantum::kyber::{Kyber512, Kyber768, Kyber1024};
 use seal_crypto::schemes::asymmetric::traditional::rsa::{Rsa2048, Rsa4096};
 use seal_crypto::schemes::hash::{Sha256, Sha384, Sha512};
 use std::ops::Deref;
-use crate::keys::asymmetric::kem::{TypedKemKeyPair, TypedKemPrivateKey, TypedKemPublicKey};
-use crate::define_wrapper;
-use crate::keys::asymmetric::{TypedAsymmetricPrivateKeyTrait, TypedAsymmetricPublicKeyTrait};
-use crate::keys::asymmetric::kem::{SharedSecret, EncapsulatedKey};
 
 /// Macro for implementing KEM algorithm wrappers.
 ///
@@ -267,15 +267,9 @@ impl KemAlgorithmWrapper {
             KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512) => {
                 Box::new(Rsa4096Sha512Wrapper::new())
             }
-            KemAlgorithm::Kyber(KyberSecurityLevel::L512) => {
-                Box::new(Kyber512Wrapper::new())
-            }
-            KemAlgorithm::Kyber(KyberSecurityLevel::L768) => {
-                Box::new(Kyber768Wrapper::new())
-            }
-            KemAlgorithm::Kyber(KyberSecurityLevel::L1024) => {
-                Box::new(Kyber1024Wrapper::new())
-            }
+            KemAlgorithm::Kyber(KyberSecurityLevel::L512) => Box::new(Kyber512Wrapper::new()),
+            KemAlgorithm::Kyber(KyberSecurityLevel::L768) => Box::new(Kyber768Wrapper::new()),
+            KemAlgorithm::Kyber(KyberSecurityLevel::L1024) => Box::new(Kyber1024Wrapper::new()),
         };
         Self::new(algorithm)
     }

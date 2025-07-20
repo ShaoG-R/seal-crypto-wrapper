@@ -93,8 +93,8 @@ use seal_crypto::zeroize::{self, Zeroizing};
 
 #[cfg(feature = "asymmetric-kem")]
 use {
-    kem::{TypedKemPrivateKey, TypedKemPublicKey},
     crate::algorithms::asymmetric::kem::KemAlgorithm,
+    kem::{TypedKemPrivateKey, TypedKemPublicKey},
 };
 
 #[cfg(feature = "asymmetric-key-agreement")]
@@ -139,11 +139,13 @@ pub mod key_agreement;
 #[macro_export(local_inner_macros)]
 macro_rules! dispatch_kem {
     ($algorithm:expr, $action:ident) => {{
+        use crate::algorithms::HashAlgorithmEnum;
+        use crate::algorithms::asymmetric::kem::{KemAlgorithm, KyberSecurityLevel, RsaBits};
+        use ::seal_crypto::schemes::asymmetric::post_quantum::kyber::{
+            Kyber512, Kyber768, Kyber1024,
+        };
         use ::seal_crypto::schemes::asymmetric::traditional::rsa::{Rsa2048, Rsa4096};
         use ::seal_crypto::schemes::hash::{Sha256, Sha384, Sha512};
-        use ::seal_crypto::schemes::asymmetric::post_quantum::kyber::{Kyber1024, Kyber512, Kyber768};
-        use crate::algorithms::asymmetric::kem::{KemAlgorithm, KyberSecurityLevel, RsaBits};
-        use crate::algorithms::HashAlgorithmEnum;
         match $algorithm {
             KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256) => {
                 $action!(
@@ -182,22 +184,13 @@ macro_rules! dispatch_kem {
                 )
             }
             KemAlgorithm::Kyber(KyberSecurityLevel::L512) => {
-                $action!(
-                    Kyber512,
-                    KemAlgorithm::Kyber(KyberSecurityLevel::L512)
-                )
+                $action!(Kyber512, KemAlgorithm::Kyber(KyberSecurityLevel::L512))
             }
             KemAlgorithm::Kyber(KyberSecurityLevel::L768) => {
-                $action!(
-                    Kyber768,
-                    KemAlgorithm::Kyber(KyberSecurityLevel::L768)
-                )
+                $action!(Kyber768, KemAlgorithm::Kyber(KyberSecurityLevel::L768))
             }
             KemAlgorithm::Kyber(KyberSecurityLevel::L1024) => {
-                $action!(
-                    Kyber1024,
-                    KemAlgorithm::Kyber(KyberSecurityLevel::L1024)
-                )
+                $action!(Kyber1024, KemAlgorithm::Kyber(KyberSecurityLevel::L1024))
             }
         }
     }};
@@ -229,8 +222,10 @@ macro_rules! dispatch_kem {
 #[macro_export(local_inner_macros)]
 macro_rules! dispatch_signature {
     ($algorithm:expr, $action:ident) => {{
+        use crate::algorithms::asymmetric::signature::{
+            DilithiumSecurityLevel, SignatureAlgorithm,
+        };
         use ::seal_crypto::schemes::asymmetric::traditional::ecc::{EcdsaP256, Ed25519};
-        use crate::algorithms::asymmetric::signature::{DilithiumSecurityLevel, SignatureAlgorithm};
         match $algorithm {
             SignatureAlgorithm::Dilithium(DilithiumSecurityLevel::L2) => {
                 $action!(
@@ -280,8 +275,8 @@ macro_rules! dispatch_signature {
 #[macro_export(local_inner_macros)]
 macro_rules! dispatch_key_agreement {
     ($algorithm:expr, $action:ident) => {{
-        use ::seal_crypto::schemes::asymmetric::traditional::ecdh::EcdhP256;
         use crate::algorithms::asymmetric::key_agreement::KeyAgreementAlgorithm;
+        use ::seal_crypto::schemes::asymmetric::traditional::ecdh::EcdhP256;
         match $algorithm {
             KeyAgreementAlgorithm::EcdhP256 => {
                 $action!(EcdhP256, KeyAgreementAlgorithm::EcdhP256)
@@ -482,7 +477,7 @@ impl AsymmetricPrivateKey {
     /// ```rust
     /// use seal_crypto_wrapper::algorithms::asymmetric::AsymmetricAlgorithm;
     /// use seal_crypto_wrapper::keys::asymmetric::AsymmetricPrivateKey;
-    /// 
+    ///
     /// #[cfg(feature = "asymmetric-kem")]
     /// fn main() -> Result<(), Box<dyn std::error::Error>> {
     ///     // Generate a valid key pair first
@@ -501,13 +496,10 @@ impl AsymmetricPrivateKey {
     ///     println!("Successfully converted to typed KEM key");
     ///     Ok(())
     /// }
-    /// 
+    ///
     /// ```
     #[cfg(feature = "asymmetric-kem")]
-    pub fn into_kem_typed(
-        self,
-        algorithm: KemAlgorithm,
-    ) -> Result<TypedKemPrivateKey, Error> {
+    pub fn into_kem_typed(self, algorithm: KemAlgorithm) -> Result<TypedKemPrivateKey, Error> {
         macro_rules! into_typed_sk {
             ($key_type:ty, $alg_enum:expr) => {{
                 type KT = $key_type;
@@ -627,10 +619,7 @@ impl AsymmetricPublicKey {
     }
 
     #[cfg(feature = "asymmetric-kem")]
-    pub fn into_kem_typed(
-        self,
-        algorithm: KemAlgorithm,
-    ) -> Result<TypedKemPublicKey, Error> {
+    pub fn into_kem_typed(self, algorithm: KemAlgorithm) -> Result<TypedKemPublicKey, Error> {
         macro_rules! into_typed_pk {
             ($key_type:ty, $alg_enum:expr) => {{
                 type KT = $key_type;
@@ -688,7 +677,6 @@ impl AsymmetricPublicKey {
         dispatch_key_agreement!(algorithm, into_typed_pk)
     }
 }
-
 
 /// A trait for typed asymmetric keys.
 ///

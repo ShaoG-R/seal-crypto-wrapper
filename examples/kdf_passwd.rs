@@ -1,5 +1,5 @@
-use seal_crypto_wrapper::prelude::*;
 use seal_crypto_wrapper::error::Result;
+use seal_crypto_wrapper::prelude::*;
 
 fn main() -> Result<()> {
     // 1. Select a password-based KDF algorithm.
@@ -35,9 +35,9 @@ fn main() -> Result<()> {
     // 6. 验证派生的密钥是不同的。
     assert_ne!(key1, key2);
     println!("Successfully verified that the derived keys are different!");
-    
+
     println!("Key 1 (32 bytes): {:?}", key1);
     println!("Key 2 (32 bytes): {:?}", key2);
 
     Ok(())
-} 
+}

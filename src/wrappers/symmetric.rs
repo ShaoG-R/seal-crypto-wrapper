@@ -78,8 +78,8 @@ use crate::algorithms::symmetric::{AesKeySize, SymmetricAlgorithm};
 use crate::error::{Error, FormatError, Result};
 use crate::keys::symmetric::{SymmetricKey as UntypedSymmetricKey, TypedSymmetricKey};
 use crate::traits::SymmetricAlgorithmTrait;
-use rand::rngs::OsRng;
 use rand::TryRngCore;
+use rand::rngs::OsRng;
 use seal_crypto::prelude::{Key, SymmetricCipher, SymmetricDecryptor, SymmetricEncryptor};
 use seal_crypto::schemes::symmetric::aes_gcm::{Aes128Gcm, Aes256Gcm};
 use seal_crypto::schemes::symmetric::chacha20_poly1305::{ChaCha20Poly1305, XChaCha20Poly1305};
@@ -543,12 +543,12 @@ impl_symmetric_algorithm!(
 
 #[cfg(test)]
 mod tests {
+    use crate::keys::symmetric::SymmetricKey;
     #[cfg(feature = "kdf")]
     use crate::{
         algorithms::kdf::key::KdfKeyAlgorithm,
         wrappers::kdf::passwd::{KdfPasswordWrapper, Pbkdf2Sha256Wrapper},
     };
-    use crate::keys::symmetric::SymmetricKey;
     use seal_crypto::secrecy::SecretBox;
 
     #[test]

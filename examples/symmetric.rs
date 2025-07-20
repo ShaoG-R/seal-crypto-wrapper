@@ -1,5 +1,5 @@
-use seal_crypto_wrapper::prelude::*;
 use seal_crypto_wrapper::error::Result;
+use seal_crypto_wrapper::prelude::*;
 
 fn main() -> Result<()> {
     // 1. Select a symmetric algorithm.
@@ -45,4 +45,4 @@ fn main() -> Result<()> {
     println!("Successfully verified that the decrypted plaintext matches the original!");
 
     Ok(())
-} 
+}

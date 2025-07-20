@@ -63,18 +63,29 @@
 //! `impl_trait_for_box!` 宏自动为 `Box<dyn Trait>` 类型实现 trait，
 //! 使 trait 对象能够与具体类型使用相同的接口。
 
-#[cfg(feature = "kdf")]
-use {
-    crate::algorithms::kdf::key::KdfKeyAlgorithm,
-    crate::algorithms::kdf::passwd::KdfPasswordAlgorithm,
+#[cfg(feature = "asymmetric-key-agreement")]
+use crate::algorithms::asymmetric::key_agreement::KeyAgreementAlgorithm;
+#[cfg(feature = "asymmetric-signature")]
+use crate::algorithms::asymmetric::signature::SignatureAlgorithm;
+#[cfg(feature = "asymmetric-key-agreement")]
+use crate::keys::asymmetric::key_agreement::{
+    TypedKeyAgreementKeyPair, TypedKeyAgreementPrivateKey, TypedKeyAgreementPublicKey,
 };
 #[cfg(feature = "asymmetric-signature")]
 use crate::keys::asymmetric::signature::{
     TypedSignatureKeyPair, TypedSignaturePrivateKey, TypedSignaturePublicKey,
 };
-#[cfg(feature = "asymmetric-key-agreement")]
-use crate::keys::asymmetric::key_agreement::{
-    TypedKeyAgreementKeyPair, TypedKeyAgreementPrivateKey, TypedKeyAgreementPublicKey,
+#[cfg(feature = "asymmetric-kem")]
+use {
+    crate::algorithms::asymmetric::kem::KemAlgorithm,
+    crate::keys::asymmetric::kem::{
+        EncapsulatedKey, SharedSecret, TypedKemKeyPair, TypedKemPrivateKey, TypedKemPublicKey,
+    },
+};
+#[cfg(feature = "kdf")]
+use {
+    crate::algorithms::kdf::key::KdfKeyAlgorithm,
+    crate::algorithms::kdf::passwd::KdfPasswordAlgorithm,
 };
 #[cfg(feature = "symmetric")]
 use {
@@ -94,15 +105,6 @@ use {crate::algorithms::xof::XofAlgorithm, crate::wrappers::xof::XofReaderWrappe
 use {
     crate::error::Result,
     seal_crypto::{secrecy::SecretBox, zeroize::Zeroizing},
-};
-#[cfg(feature = "asymmetric-signature")]
-use crate::algorithms::asymmetric::signature::SignatureAlgorithm;
-#[cfg(feature = "asymmetric-key-agreement")]
-use crate::algorithms::asymmetric::key_agreement::KeyAgreementAlgorithm;
-#[cfg(feature = "asymmetric-kem")]
-use {
-    crate::keys::asymmetric::kem::{TypedKemKeyPair, TypedKemPrivateKey, TypedKemPublicKey, SharedSecret, EncapsulatedKey},
-    crate::algorithms::asymmetric::kem::KemAlgorithm,
 };
 
 /// Macro for automatically implementing traits for `Box<dyn Trait>` types.
@@ -595,7 +597,6 @@ impl_trait_for_box!(KemAlgorithmTrait {
     ref fn generate_keypair(&self,) -> Result<TypedKemKeyPair>;
     self fn into_asymmetric_boxed(self,) -> Box<dyn KemAlgorithmTrait>;
 }, clone_box_asymmetric);
-
 
 #[cfg(feature = "kdf")]
 pub trait KdfKeyAlgorithmTrait: Send + Sync + 'static {

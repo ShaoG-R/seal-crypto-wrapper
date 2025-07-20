@@ -45,17 +45,17 @@
 //! - **无认证**: 密钥协商本身不提供认证
 
 use crate::algorithms::asymmetric::key_agreement::KeyAgreementAlgorithm;
+use crate::define_wrapper;
 use crate::error::{Error, Result};
 use crate::keys::asymmetric::key_agreement::{
     TypedKeyAgreementKeyPair, TypedKeyAgreementPrivateKey, TypedKeyAgreementPublicKey,
 };
+use crate::keys::asymmetric::{TypedAsymmetricPrivateKeyTrait, TypedAsymmetricPublicKeyTrait};
 use crate::traits::KeyAgreementAlgorithmTrait;
 use seal_crypto::prelude::{AsymmetricKeySet, Key, KeyAgreement};
 use seal_crypto::schemes::asymmetric::traditional::ecdh::EcdhP256;
 use seal_crypto::zeroize::Zeroizing;
 use std::ops::Deref;
-use crate::define_wrapper;
-use crate::keys::asymmetric::{TypedAsymmetricPrivateKeyTrait, TypedAsymmetricPublicKeyTrait};
 
 /// Macro for implementing key agreement algorithm wrappers.
 ///

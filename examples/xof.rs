@@ -1,5 +1,5 @@
-use seal_crypto_wrapper::prelude::*;
 use seal_crypto_wrapper::error::Result;
+use seal_crypto_wrapper::prelude::*;
 use seal_crypto_wrapper::traits::XofAlgorithmTrait;
 
 fn main() -> Result<()> {
@@ -46,6 +46,6 @@ fn main() -> Result<()> {
 
     println!("Output 1 (32 bytes): {:?}", &output1);
     println!("Output 2 (64 bytes): {:?}", &output2);
-    
+
     Ok(())
-} 
+}

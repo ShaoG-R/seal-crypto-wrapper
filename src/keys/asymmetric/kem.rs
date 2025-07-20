@@ -75,14 +75,14 @@ use crate::keys::asymmetric::{AsymmetricPrivateKey, AsymmetricPublicKey};
 use seal_crypto::prelude::{Key, KeyGenerator};
 use seal_crypto::zeroize::Zeroizing;
 
-#[cfg(feature = "symmetric")]
-use crate::prelude::{SymmetricAlgorithm, TypedSymmetricKey};
+#[cfg(all(feature = "kdf", feature = "symmetric"))]
+use crate::{
+    prelude::{SymmetricAlgorithm, TypedSymmetricKey},
+    algorithms::kdf::key::KdfKeyAlgorithm
+};
 
-#[cfg(feature = "kdf")]
-use crate::algorithms::kdf::key::KdfKeyAlgorithm;
-
-#[cfg(feature = "xof")]
-use crate::algorithms::xof::XofAlgorithm;
+#[cfg(all(feature = "xof", feature = "symmetric"))]
+use crate::wrappers::xof::XofReaderWrapper;
 
 /// Algorithm-bound KEM key pair for secure key encapsulation operations.
 ///
@@ -387,21 +387,11 @@ impl SharedSecret {
     #[cfg(all(feature = "xof", feature = "symmetric"))]
     pub fn derive_key_xof(
         &self,
-        xof_algorithm: XofAlgorithm,
-        salt: Option<&[u8]>,
-        info: Option<&[u8]>,
+        xof_reader: &mut XofReaderWrapper,
         algorithm: SymmetricAlgorithm,
     ) -> Result<TypedSymmetricKey, Error> {
-        use crate::traits::XofAlgorithmTrait;
-
-        let mut reader = xof_algorithm.into_xof_wrapper().reader(
-            self.0.as_ref(),
-            salt,
-            info,
-        )?;
-
         let mut derived_key_bytes = vec![0u8; algorithm.into_symmetric_wrapper().key_size()];
-        reader.read(&mut derived_key_bytes);
+        xof_reader.read(&mut derived_key_bytes);
 
         TypedSymmetricKey::from_bytes(derived_key_bytes.as_slice(), algorithm)
     }

@@ -346,6 +346,14 @@ impl_typed_asymmetric_private_key!(TypedKemPrivateKey, KemAlgorithm);
 pub struct SharedSecret(pub Zeroizing<Vec<u8>>);
 
 impl SharedSecret {
+    /// Derives a symmetric key from the shared secret using a KDF algorithm.
+    ///
+    /// 使用 KDF 算法从共享密钥派生对称密钥。
+    ///
+    /// This method derives a symmetric key from the shared secret using a KDF algorithm.
+    /// The derived key is returned as a `TypedSymmetricKey` object.
+    ///
+    /// 此方法使用 KDF 算法从共享密钥派生对称密钥。派生的密钥作为 `TypedSymmetricKey` 对象返回。
     #[cfg(all(feature = "kdf", feature = "symmetric"))]
     pub fn derive_key(
         &self,
@@ -363,6 +371,49 @@ impl SharedSecret {
             algorithm.into_symmetric_wrapper().key_size(),
         )?;
         TypedSymmetricKey::from_bytes(derived_key_bytes.as_slice(), algorithm)
+    }
+
+    /// Consumes the shared secret and returns the raw bytes.
+    ///
+    /// 消费共享密钥并返回原始字节。
+    ///
+    /// This method takes ownership of the shared secret and returns
+    /// the underlying byte vector. Use this when you need to move the
+    pub fn into_bytes(self) -> Zeroizing<Vec<u8>> {
+        self.0
+    }
+
+    /// Returns a reference to the shared secret bytes.
+    ///
+    /// 返回共享密钥字节的引用。
+    ///
+    /// This method provides read-only access to the shared secret data without copying.
+    /// Prefer this over `into_bytes()` when you only need to read the data.
+    pub fn as_bytes(&self) -> &[u8] {
+        self.0.as_ref()
+    }
+
+    /// Returns a copy of the shared secret bytes.
+    ///
+    /// 返回共享密钥字节的副本。
+    ///
+    /// This method creates a new vector containing the shared secret data.
+    /// Use this when you need an owned copy of the shared secret.
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.0.to_vec()
+    }
+}
+
+impl AsRef<[u8]> for SharedSecret {
+    fn as_ref(&self) -> &[u8] {
+        self.0.as_ref()
+    }
+}
+
+impl std::ops::Deref for SharedSecret {
+    type Target = Zeroizing<Vec<u8>>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 

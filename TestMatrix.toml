@@ -1,0 +1,93 @@
+fast_fail = true
+
+# std tests
+[[cases]]
+name = "std-default"
+features = ""
+no_default_features = false
+allow_failure = []
+
+[[cases]]
+name = "std-symmetric"
+features = "symmetric"
+no_default_features = false
+allow_failure = []
+
+[[cases]]
+name = "std-asymmetric-kem"
+features = "asymmetric-kem"
+no_default_features = false
+allow_failure = []
+
+[[cases]]
+name = "std-asymmetric-signature"
+features = "asymmetric-signature"
+no_default_features = false
+allow_failure = []
+
+[[cases]]
+name = "std-asymmetric-key-agreement"
+features = "asymmetric-key-agreement"
+no_default_features = false
+allow_failure = []
+
+[[cases]]
+name = "std-asymmetric"
+features = "asymmetric"
+no_default_features = false
+allow_failure = []
+
+[[cases]]
+name = "std-kdf"
+features = "kdf"
+no_default_features = false
+allow_failure = []
+
+[[cases]]
+name = "std-xof"
+features = "xof"
+no_default_features = false
+allow_failure = []
+
+[[cases]]
+name = "std-full"
+features = "full"
+no_default_features = false
+allow_failure = []
+
+# Optimized tests
+[[cases]]
+name = "std-kem-avx2"
+features = "kem-avx2"
+no_default_features = false
+allow_failure = []
+arch = ["x86", "x86_64"]
+
+[[cases]]
+name = "std-signature-avx2"
+features = "signature-avx2"
+no_default_features = false
+allow_failure = []
+arch = ["x86", "x86_64"]
+
+# ASM tests
+[[cases]]
+name = "std-asymmetric-signature-sha2-asm"
+features = "asymmetric-signature, sha2-asm"
+no_default_features = false
+allow_failure = ["windows"]
+arch = ["x86", "x86_64"]
+
+[[cases]]
+name = "std-xof-asm"
+features = "xof, xof-asm"
+no_default_features = false
+allow_failure = ["windows"]
+arch = ["x86", "x86_64"]
+
+[[cases]]
+name = "std-full-optimized"
+features = "full, kem-avx2, signature-avx2, sha2-asm, xof-asm"
+no_default_features = false
+allow_failure = ["windows"]
+arch = ["x86", "x86_64"] 

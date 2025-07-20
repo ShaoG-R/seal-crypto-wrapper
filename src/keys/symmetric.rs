@@ -45,6 +45,8 @@
 //! ### Key Derivation | 密钥派生
 //!
 //! ```rust
+//! # #[cfg(feature = "kdf")]
+//! # {
 //! use seal_crypto_wrapper::keys::symmetric::SymmetricKey;
 //! use seal_crypto_wrapper::algorithms::kdf::key::KdfKeyAlgorithm;
 //!
@@ -58,16 +60,20 @@
 //!     32
 //! )?;
 //! # Ok::<(), Box<dyn std::error::Error>>(())
+//! # }
 //! ```
 
-use crate::algorithms::kdf::key::KdfKeyAlgorithm;
+#[cfg(feature = "kdf")]
+use {
+    crate::algorithms::kdf::key::KdfKeyAlgorithm,
+    crate::wrappers::kdf::passwd::KdfPasswordWrapper,
+    seal_crypto::secrecy::SecretBox,
+};
 use crate::algorithms::symmetric::{AesKeySize, SymmetricAlgorithm};
 use crate::error::Error;
-use crate::wrappers::kdf::passwd::KdfPasswordWrapper;
 use seal_crypto::prelude::{Key, SymmetricKeyGenerator, SymmetricKeySet};
 use seal_crypto::schemes::symmetric::aes_gcm::{Aes128Gcm, Aes256Gcm};
 use seal_crypto::schemes::symmetric::chacha20_poly1305::{ChaCha20Poly1305, XChaCha20Poly1305};
-use seal_crypto::secrecy::SecretBox;
 use seal_crypto::zeroize::Zeroizing;
 
 /// Macro for dispatching operations across different symmetric algorithms.
@@ -497,6 +503,7 @@ impl SymmetricKey {
     /// * `salt` - An optional salt. While optional in HKDF, providing a salt is highly recommended.
     /// * `info` - Optional context-specific information.
     /// * `output_len` - The desired length of the derived key in bytes.
+    #[cfg(feature = "kdf")]
     pub fn derive_key(
         &self,
         algorithm: KdfKeyAlgorithm,
@@ -529,6 +536,7 @@ impl SymmetricKey {
     /// * `deriver` - An instance of the password-based KDF scheme (e.g., `Pbkdf2Sha256::new(100_000)`).
     /// * `salt` - A salt. This is **required** for password-based derivation to be secure.
     /// * `output_len` - The desired length of the derived key in bytes.
+    #[cfg(feature = "kdf")]
     pub fn derive_from_password(
         password: &SecretBox<[u8]>,
         algorithm: KdfPasswordWrapper,

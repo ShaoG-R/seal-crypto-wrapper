@@ -1,0 +1,59 @@
+name: Rust CI
+
+on:
+  push:
+    branches: [ "pre-release" ]
+  pull_request:
+    branches: [ "master" ]
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Test on ${{ matrix.os }} (Shard ${{ matrix.shard }}/4)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        rust: [stable]
+        shard: [1, 2, 3, 4]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install NASM
+      if: runner.os == 'Windows'
+      uses: ilammy/setup-nasm@72793074d3c8cdda771dba85f6deafe00623038b # v1.5.2
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@b3b07ba8b418998c39fb20f53e8b695cdcc8de1b # master
+      with:
+        toolchain: ${{ matrix.rust }}
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-cargo-tests-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-tests-
+
+    - name: Install matrix-runner
+      run: cargo install --git "https://github.com/ShaoG-R/matrix-runner" --force
+
+    - name: Run test matrix shard
+      shell: bash
+      run: matrix-runner run --runner-index $((${{ matrix.shard }} - 1)) --total-runners 4
+      env:
+        CC_x86_64_pc_windows_msvc: clang-cl
+        CXX_x86_64_pc_windows_msvc: clang-cl 

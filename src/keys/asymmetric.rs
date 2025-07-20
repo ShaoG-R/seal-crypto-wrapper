@@ -58,29 +58,33 @@
 //! ```rust
 //! use seal_crypto_wrapper::algorithms::asymmetric::AsymmetricAlgorithm;
 //!
-//! let algorithm = AsymmetricAlgorithm::build().kem().kyber512();
-//! let kem = algorithm.into_asymmetric_wrapper();
-//! let keypair = kem.generate_keypair()?;
+//! #[cfg(feature = "asymmetric-kem")]
+//! fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     let algorithm = AsymmetricAlgorithm::build().kem().kyber512();
+//!     let kem = algorithm.into_asymmetric_wrapper();
+//!     let keypair = kem.generate_keypair()?;
 //!
-//! let (public_key, private_key) = keypair.into_keypair();
-//! let (shared_secret, ciphertext) = kem.encapsulate_key(&public_key)?;
-//! let recovered_secret = kem.decapsulate_key(&private_key, &ciphertext)?;
-//! # Ok::<(), Box<dyn std::error::Error>>(())
+//!     let (public_key, private_key) = keypair.into_keypair();
+//!     let (shared_secret, ciphertext) = kem.encapsulate_key(&public_key)?;
+//!     let recovered_secret = kem.decapsulate_key(&private_key, &ciphertext)?;
+//! }
 //! ```
 //!
 //! ### Digital Signatures | 数字签名
 //! ```rust
 //! use seal_crypto_wrapper::algorithms::asymmetric::AsymmetricAlgorithm;
-//!
-//! let algorithm = AsymmetricAlgorithm::build().signature().ed25519();
-//! let signer = algorithm.into_signature_wrapper();
-//! let keypair = signer.generate_keypair()?;
-//!
-//! let (public_key, private_key) = keypair.into_keypair();
-//! let message = b"Hello, World!";
-//! let signature = signer.sign(message, &private_key)?;
-//! signer.verify(message, &public_key, signature)?;
-//! # Ok::<(), Box<dyn std::error::Error>>(())
+//!#[cfg(feature = "asymmetric-signature")]
+//! fn main() -> Result< (), Box < dyn std::error::Error > > {
+//!     let algorithm = AsymmetricAlgorithm::build().signature().ed25519();
+//!     let signer = algorithm.into_signature_wrapper();
+//!     let keypair = signer.generate_keypair() ?;
+//!     
+//!     let (public_key, private_key) = keypair.into_keypair();
+//!     let message = b"Hello, World!";
+//!     let signature = signer.sign(message, & private_key) ?;
+//!     signer.verify(message, & public_key, signature) ?;
+//!     Ok::< (), Box < dyn std::error::Error > > (())
+//! }
 //! ```
 
 use crate::error::Error;
@@ -326,7 +330,7 @@ macro_rules! dispatch_key_agreement {
 /// ```rust
 /// use seal_crypto_wrapper::algorithms::asymmetric::AsymmetricAlgorithm;
 /// use seal_crypto_wrapper::keys::asymmetric::AsymmetricPrivateKey;
-///
+///  #[cfg(feature = "asymmetric-kem")]
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     // Generate a valid key pair first
 ///     use seal_crypto_wrapper::prelude::TypedAsymmetricPrivateKeyTrait;
@@ -478,7 +482,8 @@ impl AsymmetricPrivateKey {
     /// ```rust
     /// use seal_crypto_wrapper::algorithms::asymmetric::AsymmetricAlgorithm;
     /// use seal_crypto_wrapper::keys::asymmetric::AsymmetricPrivateKey;
-    ///
+    /// 
+    /// #[cfg(feature = "asymmetric-kem")]
     /// fn main() -> Result<(), Box<dyn std::error::Error>> {
     ///     // Generate a valid key pair first
     ///     use seal_crypto_wrapper::prelude::TypedAsymmetricPrivateKeyTrait;
@@ -496,6 +501,7 @@ impl AsymmetricPrivateKey {
     ///     println!("Successfully converted to typed KEM key");
     ///     Ok(())
     /// }
+    /// 
     /// ```
     #[cfg(feature = "asymmetric-kem")]
     pub fn into_kem_typed(
@@ -620,6 +626,7 @@ impl AsymmetricPublicKey {
         self.0
     }
 
+    #[cfg(feature = "asymmetric-kem")]
     pub fn into_kem_typed(
         self,
         algorithm: KemAlgorithm,

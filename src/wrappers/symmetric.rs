@@ -543,9 +543,12 @@ impl_symmetric_algorithm!(
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithms::kdf::key::KdfKeyAlgorithm;
+    #[cfg(feature = "kdf")]
+    use crate::{
+        algorithms::kdf::key::KdfKeyAlgorithm,
+        wrappers::kdf::passwd::{KdfPasswordWrapper, Pbkdf2Sha256Wrapper},
+    };
     use crate::keys::symmetric::SymmetricKey;
-    use crate::wrappers::kdf::passwd::{KdfPasswordWrapper, Pbkdf2Sha256Wrapper};
     use seal_crypto::secrecy::SecretBox;
 
     #[test]
@@ -575,6 +578,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "kdf")]
     fn test_symmetric_key_derive_key() {
         // 使用HKDF-SHA256进行密钥派生
         let master_key = SymmetricKey::new(vec![0u8; 32]);
@@ -619,6 +623,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "kdf")]
     fn test_symmetric_key_derive_from_password() {
         // 使用PBKDF2-SHA256从密码派生密钥
         let password = SecretBox::new(Box::from(b"my_secure_password".as_slice()));
@@ -654,6 +659,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "kdf")]
     fn test_key_derivation_output_length() {
         let master_key = SymmetricKey::new(vec![0u8; 32]);
         let deriver = KdfKeyAlgorithm::build().hkdf_sha256();

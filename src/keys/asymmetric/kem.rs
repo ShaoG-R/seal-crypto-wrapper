@@ -385,7 +385,7 @@ impl SharedSecret {
     ///
     /// 此方法使用 XOF 算法从共享密钥派生对称密钥。派生的密钥作为 `TypedSymmetricKey` 对象返回。
     #[cfg(all(feature = "xof", feature = "symmetric"))]
-    pub fn derive_key_xof(
+    pub fn derive_key_from_xof(
         &self,
         xof_reader: &mut XofReaderWrapper,
         algorithm: SymmetricAlgorithm,

@@ -49,7 +49,7 @@
 //! - **原像抗性**: 给定输出，找到输入在计算上不可行
 //! - **域分离**: 不同上下文产生独立的输出
 
-use bincode::{Decode, Encode};
+use crate::bincode::{Decode, Encode};
 
 /// Extendable Output Function algorithm enumeration.
 ///

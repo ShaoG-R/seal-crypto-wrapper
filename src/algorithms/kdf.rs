@@ -59,6 +59,7 @@ pub mod key;
 pub mod passwd;
 
 use self::{key::KdfKeyAlgorithm, passwd::KdfPasswordAlgorithm};
+use crate::bincode::{Decode, Encode};
 
 /// Key Derivation Function algorithm enumeration.
 ///
@@ -88,7 +89,9 @@ use self::{key::KdfKeyAlgorithm, passwd::KdfPasswordAlgorithm};
 /// let pbkdf2 = KdfAlgorithm::build().passwd().pbkdf2_sha256_with_params(10000);
 /// let argon2 = KdfAlgorithm::build().passwd().argon2_with_params(65536, 3, 4);
 /// ```
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode, serde::Serialize, serde::Deserialize,
+)]
 pub enum KdfAlgorithm {
     /// Key-based derivation functions for high-entropy inputs.
     ///

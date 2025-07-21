@@ -505,7 +505,7 @@ impl AsymmetricPrivateKey {
                 type KT = $key_type;
                 let sk = <KT as AsymmetricKeySet>::PrivateKey::from_bytes(self.as_bytes())?;
                 Ok(TypedKemPrivateKey {
-                    key: AsymmetricPrivateKey::new(sk.to_bytes()),
+                    key: AsymmetricPrivateKey::new(sk.to_bytes()?),
                     algorithm: $alg_enum,
                 })
             }};
@@ -527,7 +527,7 @@ impl AsymmetricPrivateKey {
                 type KT = $key_type;
                 let sk = <KT as AsymmetricKeySet>::PrivateKey::from_bytes(self.as_bytes())?;
                 Ok(TypedSignaturePrivateKey {
-                    key: AsymmetricPrivateKey::new(sk.to_bytes()),
+                    key: AsymmetricPrivateKey::new(sk.to_bytes()?),
                     algorithm: $alg_enum,
                 })
             }};
@@ -549,7 +549,7 @@ impl AsymmetricPrivateKey {
                 type KT = $key_type;
                 let sk = <KT as AsymmetricKeySet>::PrivateKey::from_bytes(self.as_bytes())?;
                 Ok(TypedKeyAgreementPrivateKey {
-                    key: AsymmetricPrivateKey::new(sk.to_bytes()),
+                    key: AsymmetricPrivateKey::new(sk.to_bytes()?),
                     algorithm: $alg_enum,
                 })
             }};
@@ -625,7 +625,7 @@ impl AsymmetricPublicKey {
                 type KT = $key_type;
                 let pk = <KT as AsymmetricKeySet>::PublicKey::from_bytes(self.as_bytes())?;
                 Ok(TypedKemPublicKey {
-                    key: AsymmetricPublicKey::new(pk.to_bytes()),
+                    key: AsymmetricPublicKey::new(pk.to_bytes()?),
                     algorithm: $alg_enum,
                 })
             }};
@@ -647,7 +647,7 @@ impl AsymmetricPublicKey {
                 type KT = $key_type;
                 let pk = <KT as AsymmetricKeySet>::PublicKey::from_bytes(self.as_bytes())?;
                 Ok(TypedSignaturePublicKey {
-                    key: AsymmetricPublicKey::new(pk.to_bytes()),
+                    key: AsymmetricPublicKey::new(pk.to_bytes()?),
                     algorithm: $alg_enum,
                 })
             }};
@@ -669,7 +669,7 @@ impl AsymmetricPublicKey {
                 type KT = $key_type;
                 let pk = <KT as AsymmetricKeySet>::PublicKey::from_bytes(self.as_bytes())?;
                 Ok(TypedKeyAgreementPublicKey {
-                    key: AsymmetricPublicKey::new(pk.to_bytes()),
+                    key: AsymmetricPublicKey::new(pk.to_bytes()?),
                     algorithm: $alg_enum,
                 })
             }};

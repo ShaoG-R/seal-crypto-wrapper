@@ -200,11 +200,11 @@ impl TypedSymmetricKey {
         macro_rules! generate_key {
             ($key_type:ty, $alg_enum:expr) => {
                 <$key_type>::generate_key()
-                    .map(|k| Self {
-                        key: SymmetricKey::new(k.to_bytes()),
-                        algorithm: $alg_enum,
-                    })
                     .map_err(Error::from)
+                    .and_then(|k| Ok(Self {
+                        key: SymmetricKey::new(k.to_bytes().map_err(Error::from)?),
+                        algorithm: $alg_enum,
+                    }))
             };
         }
         dispatch_symmetric!(algorithm, generate_key)
@@ -587,7 +587,7 @@ impl SymmetricKey {
             ($key_type:ty, $alg_enum:expr) => {{
                 let key = <$key_type as SymmetricKeySet>::Key::from_bytes(self.as_bytes())?;
                 Ok(TypedSymmetricKey {
-                    key: SymmetricKey::new(key.to_bytes()),
+                    key: SymmetricKey::new(key.to_bytes().map_err(Error::from)?),
                     algorithm: $alg_enum,
                 })
             }};

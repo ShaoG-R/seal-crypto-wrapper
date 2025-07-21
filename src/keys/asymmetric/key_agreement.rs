@@ -171,12 +171,12 @@ impl TypedKeyAgreementKeyPair {
         macro_rules! generate_keypair {
             ($key_type:ty, $alg_enum:expr) => {
                 <$key_type>::generate_keypair()
-                    .map(|(pk, sk)| Self {
-                        public_key: AsymmetricPublicKey::new(pk.to_bytes()),
-                        private_key: AsymmetricPrivateKey::new(sk.to_bytes()),
-                        algorithm: $alg_enum,
-                    })
                     .map_err(Error::from)
+                    .and_then(|(pk, sk)| Ok(Self {
+                        public_key: AsymmetricPublicKey::new(pk.to_bytes()?),
+                        private_key: AsymmetricPrivateKey::new(sk.to_bytes()?),
+                        algorithm: $alg_enum,
+                    }))
             };
         }
         dispatch_key_agreement!(algorithm, generate_keypair)

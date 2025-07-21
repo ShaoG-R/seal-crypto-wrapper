@@ -66,6 +66,7 @@ use seal_crypto::schemes::asymmetric::post_quantum::dilithium::{
     Dilithium2, Dilithium3, Dilithium5,
 };
 use seal_crypto::schemes::asymmetric::traditional::ecc::{EcdsaP256, Ed25519};
+use crate::bincode::{Decode, Encode};
 use std::ops::Deref;
 
 /// Macro for implementing signature algorithm wrappers.
@@ -108,28 +109,28 @@ macro_rules! impl_signature_algorithm {
                 $algo_enum
             }
 
-            fn sign(&self, message: &[u8], key: &TypedSignaturePrivateKey) -> Result<Vec<u8>> {
+            fn sign(&self, message: &[u8], key: &TypedSignaturePrivateKey) -> Result<SignatureWrapper> {
                 if key.algorithm != $algo_enum {
                     return Err(Error::FormatError(FormatError::InvalidKeyType));
                 }
                 type KT = $algo;
                 let sk = <KT as AsymmetricKeySet>::PrivateKey::from_bytes(&key.to_bytes())?;
                 let sig = KT::sign(&sk, message)?;
-                Ok(sig.0)
+                Ok(SignatureWrapper::new(sig))
             }
 
             fn verify(
                 &self,
                 message: &[u8],
                 key: &TypedSignaturePublicKey,
-                signature: Vec<u8>,
+                signature: &SignatureWrapper,
             ) -> Result<()> {
                 if key.algorithm != $algo_enum {
                     return Err(Error::FormatError(FormatError::InvalidKeyType));
                 }
                 type KT = $algo;
                 let pk = <KT as AsymmetricKeySet>::PublicKey::from_bytes(&key.to_bytes())?;
-                KT::verify(&pk, message, &Signature(signature))?;
+                KT::verify(&pk, message, signature)?;
                 Ok(())
             }
 
@@ -275,7 +276,7 @@ impl SignatureAlgorithmWrapper {
 }
 
 impl SignatureAlgorithmTrait for SignatureAlgorithmWrapper {
-    fn sign(&self, message: &[u8], key: &TypedSignaturePrivateKey) -> Result<Vec<u8>> {
+    fn sign(&self, message: &[u8], key: &TypedSignaturePrivateKey) -> Result<SignatureWrapper> {
         self.algorithm.sign(message, key)
     }
 
@@ -283,7 +284,7 @@ impl SignatureAlgorithmTrait for SignatureAlgorithmWrapper {
         &self,
         message: &[u8],
         key: &TypedSignaturePublicKey,
-        signature: Vec<u8>,
+        signature: &SignatureWrapper,
     ) -> Result<()> {
         self.algorithm.verify(message, key, signature)
     }
@@ -330,3 +331,26 @@ impl_signature_algorithm!(
 );
 impl_signature_algorithm!(Ed25519Wrapper, Ed25519, SignatureAlgorithm::Ed25519);
 impl_signature_algorithm!(EcdsaP256Wrapper, EcdsaP256, SignatureAlgorithm::EcdsaP256);
+
+#[derive(Clone, Debug, PartialEq, Eq, Decode, Encode, serde::Serialize, serde::Deserialize)]
+pub struct SignatureWrapper {
+    signature: Signature,
+}
+
+impl SignatureWrapper {
+    pub(crate) fn new(signature: Signature) -> Self {
+        Self { signature }
+    }
+
+    pub fn into_signature(self) -> Signature {
+        self.signature
+    }
+}
+
+impl Deref for SignatureWrapper {
+    type Target = Signature;
+
+    fn deref(&self) -> &Self::Target {
+        &self.signature
+    }
+}

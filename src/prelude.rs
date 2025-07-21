@@ -67,6 +67,8 @@ mod asymmetric {
         pub use crate::keys::asymmetric::signature::TypedSignaturePrivateKey;
         /// Typed signature public key | 类型化签名公钥
         pub use crate::keys::asymmetric::signature::TypedSignaturePublicKey;
+        /// Signature type | 签名类型
+        pub use seal_crypto::prelude::Signature;
     }
 
     // Key agreement types | 密钥协商类型

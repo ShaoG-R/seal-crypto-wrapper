@@ -30,7 +30,7 @@ fn main() -> Result<()> {
 
     // 6. Verify the signature with the public key.
     // 6. 使用公钥验证签名。
-    signature_scheme.verify(message, &public_key, signature)?;
+    signature_scheme.verify(message, &public_key, &signature)?;
     println!("Successfully verified the signature!");
 
     Ok(())

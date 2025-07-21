@@ -66,7 +66,7 @@
 #[cfg(feature = "asymmetric-key-agreement")]
 use crate::algorithms::asymmetric::key_agreement::KeyAgreementAlgorithm;
 #[cfg(feature = "asymmetric-signature")]
-use crate::algorithms::asymmetric::signature::SignatureAlgorithm;
+use crate::{algorithms::asymmetric::signature::SignatureAlgorithm, wrappers::asymmetric::signature::SignatureWrapper};
 #[cfg(feature = "asymmetric-key-agreement")]
 use crate::keys::asymmetric::key_agreement::{
     TypedKeyAgreementKeyPair, TypedKeyAgreementPrivateKey, TypedKeyAgreementPublicKey,
@@ -662,12 +662,12 @@ impl_trait_for_box!(XofAlgorithmTrait {
 
 #[cfg(feature = "asymmetric-signature")]
 pub trait SignatureAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
-    fn sign(&self, message: &[u8], key: &TypedSignaturePrivateKey) -> Result<Vec<u8>>;
+    fn sign(&self, message: &[u8], key: &TypedSignaturePrivateKey) -> Result<SignatureWrapper>;
     fn verify(
         &self,
         message: &[u8],
         key: &TypedSignaturePublicKey,
-        signature: Vec<u8>,
+        signature: &SignatureWrapper,
     ) -> Result<()>;
     fn generate_keypair(&self) -> Result<TypedSignatureKeyPair>;
     fn clone_box(&self) -> Box<dyn SignatureAlgorithmTrait>;
@@ -676,8 +676,8 @@ pub trait SignatureAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
 
 #[cfg(feature = "asymmetric-signature")]
 impl_trait_for_box!(SignatureAlgorithmTrait {
-    ref fn sign(&self, message: &[u8], key: &TypedSignaturePrivateKey) -> Result<Vec<u8>>;
-    ref fn verify(&self, message: &[u8], key: &TypedSignaturePublicKey, signature: Vec<u8>) -> Result<()>;
+    ref fn sign(&self, message: &[u8], key: &TypedSignaturePrivateKey) -> Result<SignatureWrapper>;
+    ref fn verify(&self, message: &[u8], key: &TypedSignaturePublicKey, signature: &SignatureWrapper) -> Result<()>;
     ref fn generate_keypair(&self,) -> Result<TypedSignatureKeyPair>;
     ref fn clone_box(&self,) -> Box<dyn SignatureAlgorithmTrait>;
     ref fn algorithm(&self,) -> SignatureAlgorithm;

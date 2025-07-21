@@ -188,7 +188,7 @@ macro_rules! impl_signature_algorithm {
 /// wrapper.verify(message, &public_key, signature)?;
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct SignatureAlgorithmWrapper {
     algorithm: Box<dyn SignatureAlgorithmTrait>,
 }

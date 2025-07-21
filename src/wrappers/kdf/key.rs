@@ -183,7 +183,7 @@ impl_kdf_key_algorithm!(
 /// let derived_key = wrapper.derive(master_key, salt, info, 32)?;
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct KdfKeyWrapper {
     algorithm: Box<dyn KdfKeyAlgorithmTrait>,
 }

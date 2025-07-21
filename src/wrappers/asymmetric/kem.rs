@@ -180,6 +180,7 @@ macro_rules! impl_kem_algorithm {
 /// let recovered_secret = wrapper.decapsulate_key(&private_key, &ciphertext)?;
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
+#[derive(Debug, Clone)]
 pub struct KemAlgorithmWrapper {
     pub(crate) algorithm: Box<dyn KemAlgorithmTrait>,
 }

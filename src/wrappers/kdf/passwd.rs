@@ -108,7 +108,7 @@ use std::ops::Deref;
 /// let derived_key = argon2.derive(&password, salt, 32)?;
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Argon2Wrapper {
     algorithm: Argon2,
     is_default: bool,
@@ -241,7 +241,7 @@ impl KdfPasswordAlgorithmTrait for Argon2Wrapper {
 
 macro_rules! impl_kdf_pbkdf_algorithm {
     ($wrapper:ident, $algo:ty, $hash_enum:expr, $kind:path) => {
-        #[derive(Clone)]
+        #[derive(Clone, Debug)]
         pub struct $wrapper {
             algorithm: $algo,
             is_default: bool,
@@ -357,7 +357,7 @@ impl_kdf_pbkdf_algorithm!(
 /// let derived_key = wrapper.derive(&password, salt, 32)?;
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct KdfPasswordWrapper {
     algorithm: Box<dyn KdfPasswordAlgorithmTrait>,
 }

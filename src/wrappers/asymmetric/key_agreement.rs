@@ -175,7 +175,7 @@ macro_rules! impl_key_agreement_algorithm {
 /// assert_eq!(alice_shared, bob_shared);
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct KeyAgreementAlgorithmWrapper {
     algorithm: Box<dyn KeyAgreementAlgorithmTrait>,
 }

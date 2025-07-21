@@ -555,7 +555,7 @@ impl_trait_for_box!(SymmetricAlgorithmTrait {
 /// 用于提供特定非对称算法详细信息的 trait。
 /// 该 trait 的实现者是算法方案本身。
 #[cfg(feature = "asymmetric-kem")]
-pub trait KemAlgorithmTrait: Send + Sync + 'static {
+pub trait KemAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     /// Returns the algorithm enum.
     ///
     /// 返回算法枚举。
@@ -599,7 +599,7 @@ impl_trait_for_box!(KemAlgorithmTrait {
 }, clone_box_asymmetric);
 
 #[cfg(feature = "kdf")]
-pub trait KdfKeyAlgorithmTrait: Send + Sync + 'static {
+pub trait KdfKeyAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     fn derive(
         &self,
         ikm: &[u8],
@@ -621,7 +621,7 @@ impl_trait_for_box!(KdfKeyAlgorithmTrait {
 }, clone_box);
 
 #[cfg(feature = "kdf")]
-pub trait KdfPasswordAlgorithmTrait: Send + Sync + 'static {
+pub trait KdfPasswordAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     fn derive(
         &self,
         password: &SecretBox<[u8]>,
@@ -642,7 +642,7 @@ impl_trait_for_box!(KdfPasswordAlgorithmTrait {
 }, clone_box);
 
 #[cfg(feature = "xof")]
-pub trait XofAlgorithmTrait: Send + Sync + 'static {
+pub trait XofAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     fn reader<'a>(
         &self,
         ikm: &'a [u8],
@@ -661,7 +661,7 @@ impl_trait_for_box!(XofAlgorithmTrait {
 }, clone_box);
 
 #[cfg(feature = "asymmetric-signature")]
-pub trait SignatureAlgorithmTrait: Send + Sync + 'static {
+pub trait SignatureAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     fn sign(&self, message: &[u8], key: &TypedSignaturePrivateKey) -> Result<Vec<u8>>;
     fn verify(
         &self,
@@ -684,7 +684,7 @@ impl_trait_for_box!(SignatureAlgorithmTrait {
 }, clone_box);
 
 #[cfg(feature = "asymmetric-key-agreement")]
-pub trait KeyAgreementAlgorithmTrait: Send + Sync + 'static {
+pub trait KeyAgreementAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     fn agree(
         &self,
         sk: &TypedKeyAgreementPrivateKey,

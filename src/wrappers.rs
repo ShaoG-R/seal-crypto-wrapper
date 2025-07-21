@@ -132,7 +132,7 @@ macro_rules! define_wrapper {
         { $(#[$new_meta:meta])* fn new($($new_args:tt)*) -> Self { $($new_body:tt)* } },
         { $($body:tt)* }
     ) => {
-        #[derive(Clone)]
+        #[derive(Clone, Debug)]
         pub struct $wrapper {
             algorithm: $algo,
         }
@@ -156,7 +156,7 @@ macro_rules! define_wrapper {
         $trait:path,
         { $($body:tt)* }
     ) => {
-        #[derive(Clone, Default)]
+        #[derive(Clone, Default, Debug)]
         pub struct $wrapper {
             algorithm: $algo,
         }

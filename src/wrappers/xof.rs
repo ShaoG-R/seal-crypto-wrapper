@@ -104,7 +104,7 @@ use seal_crypto::schemes::xof::shake::{Shake128, Shake256};
 /// suitable for applications that need to generate large amounts of output data.
 ///
 /// SHAKE-128 由于其更高的速率提供出色的性能，适用于需要生成大量输出数据的应用。
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Debug)]
 pub struct Shake128Wrapper {
     shake: Shake128,
 }
@@ -205,7 +205,7 @@ impl XofAlgorithmTrait for Shake128Wrapper {
 ///
 /// SHAKE-256 提供比 SHAKE-128 更高的安全边际，适用于需要长期安全
 /// 或处理高度敏感数据的应用。
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Debug)]
 pub struct Shake256Wrapper {
     shake: Shake256,
 }
@@ -290,6 +290,8 @@ impl XofAlgorithmTrait for Shake256Wrapper {
 /// let output2 = reader.read_boxed(64);
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
+
+#[derive(Clone, Debug)]
 pub struct XofWrapper {
     algorithm: Box<dyn XofAlgorithmTrait>,
 }

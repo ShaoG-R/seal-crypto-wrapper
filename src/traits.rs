@@ -318,7 +318,7 @@ macro_rules! impl_trait_for_box {
 /// - 为 nonce 使用密码学安全的随机数生成
 /// - 考虑使用关联数据进行上下文绑定
 #[cfg(feature = "symmetric")]
-pub trait SymmetricAlgorithmTrait: Send + Sync + 'static {
+pub trait SymmetricAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     /// Encrypts plaintext with optional associated data.
     ///
     /// 使用可选关联数据加密明文。

@@ -275,7 +275,7 @@ macro_rules! impl_symmetric_algorithm {
 /// let ciphertext = wrapper.encrypt(plaintext, &key, &nonce, None)?;
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct SymmetricAlgorithmWrapper {
     pub(crate) algorithm: Box<dyn SymmetricAlgorithmTrait>,
 }

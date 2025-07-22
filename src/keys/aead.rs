@@ -1,18 +1,18 @@
-//! Symmetric key types with algorithm binding and secure memory management.
+//! Aead key types with algorithm binding and secure memory management.
 //!
 //! 具有算法绑定和安全内存管理的对称密钥类型。
 //!
 //! ## Overview | 概述
 //!
-//! This module provides two main types for symmetric key management:
+//! This module provides two main types for aead key management:
 //!
 //! 此模块为对称密钥管理提供两种主要类型：
 //!
-//! - **`SymmetricKey`**: Untyped key material for flexible usage
-//! - **`TypedSymmetricKey`**: Algorithm-bound keys for type-safe operations
+//! - **`AeadKey`**: Untyped key material for flexible usage
+//! - **`TypedAeadKey`**: Algorithm-bound keys for type-safe operations
 //!
-//! - **`SymmetricKey`**: 用于灵活使用的非类型化密钥材料
-//! - **`TypedSymmetricKey`**: 用于类型安全操作的算法绑定密钥
+//! - **`AeadKey`**: 用于灵活使用的非类型化密钥材料
+//! - **`TypedAeadKey`**: 用于类型安全操作的算法绑定密钥
 //!
 //! ## Key Features | 关键特性
 //!
@@ -33,12 +33,12 @@
 //! ### Direct Key Generation | 直接密钥生成
 //!
 //! ```rust
-//! use seal_crypto_wrapper::keys::symmetric::TypedSymmetricKey;
-//! use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
+//! use seal_crypto_wrapper::keys::symmetric::TypedAeadKey;
+//! use seal_crypto_wrapper::algorithms::aead::AeadAlgorithm;
 //!
 //! // Generate algorithm-specific key
-//! let algorithm = SymmetricAlgorithm::build().aes256_gcm();
-//! let key = TypedSymmetricKey::generate(algorithm)?;
+//! let algorithm = AeadAlgorithm::build().aes256_gcm();
+//! let key = TypedAeadKey::generate(algorithm)?;
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 //!
@@ -47,11 +47,11 @@
 //! ```rust
 //! # #[cfg(feature = "kdf")]
 //! # {
-//! use seal_crypto_wrapper::keys::symmetric::SymmetricKey;
+//! use seal_crypto_wrapper::keys::symmetric::AeadKey;
 //! use seal_crypto_wrapper::algorithms::kdf::key::KdfKeyAlgorithm;
 //!
 //! // Derive key from master key
-//! let master_key = SymmetricKey::generate(32)?;
+//! let master_key = AeadKey::generate(32)?;
 //! let kdf = KdfKeyAlgorithm::build().hkdf_sha256();
 //! let derived_key = master_key.derive_key(
 //!     kdf,
@@ -63,8 +63,10 @@
 //! # }
 //! ```
 
-use crate::algorithms::symmetric::{AesKeySize, SymmetricAlgorithm};
+use crate::algorithms::aead::{AeadAlgorithm, AesKeySize};
 use crate::error::Error;
+#[cfg(feature = "xof")]
+use crate::wrappers::xof::XofReaderWrapper;
 use seal_crypto::prelude::{Key, SymmetricKeyGenerator, SymmetricKeySet};
 use seal_crypto::schemes::symmetric::aes_gcm::{Aes128Gcm, Aes256Gcm};
 use seal_crypto::schemes::symmetric::chacha20_poly1305::{ChaCha20Poly1305, XChaCha20Poly1305};
@@ -74,10 +76,8 @@ use {
     crate::algorithms::kdf::key::KdfKeyAlgorithm, crate::wrappers::kdf::passwd::KdfPasswordWrapper,
     seal_crypto::secrecy::SecretBox,
 };
-#[cfg(feature = "xof")]
-use crate::wrappers::xof::XofReaderWrapper;
 
-/// Macro for dispatching operations across different symmetric algorithms.
+/// Macro for dispatching operations across different aead algorithms.
 ///
 /// 用于在不同对称算法间分发操作的宏。
 ///
@@ -86,26 +86,26 @@ use crate::wrappers::xof::XofReaderWrapper;
 ///
 /// 此内部宏提供了一种统一的方式来处理需要与不同具体算法类型一起工作
 /// 同时保持类型安全的操作。
-macro_rules! dispatch_symmetric {
+macro_rules! dispatch_aead {
     ($algorithm:expr, $action:ident) => {
         match $algorithm {
-            SymmetricAlgorithm::AesGcm(AesKeySize::K128) => {
-                $action!(Aes128Gcm, SymmetricAlgorithm::AesGcm(AesKeySize::K128))
+            AeadAlgorithm::AesGcm(AesKeySize::K128) => {
+                $action!(Aes128Gcm, AeadAlgorithm::AesGcm(AesKeySize::K128))
             }
-            SymmetricAlgorithm::AesGcm(AesKeySize::K256) => {
-                $action!(Aes256Gcm, SymmetricAlgorithm::AesGcm(AesKeySize::K256))
+            AeadAlgorithm::AesGcm(AesKeySize::K256) => {
+                $action!(Aes256Gcm, AeadAlgorithm::AesGcm(AesKeySize::K256))
             }
-            SymmetricAlgorithm::XChaCha20Poly1305 => {
-                $action!(XChaCha20Poly1305, SymmetricAlgorithm::XChaCha20Poly1305)
+            AeadAlgorithm::XChaCha20Poly1305 => {
+                $action!(XChaCha20Poly1305, AeadAlgorithm::XChaCha20Poly1305)
             }
-            SymmetricAlgorithm::ChaCha20Poly1305 => {
-                $action!(ChaCha20Poly1305, SymmetricAlgorithm::ChaCha20Poly1305)
+            AeadAlgorithm::ChaCha20Poly1305 => {
+                $action!(ChaCha20Poly1305, AeadAlgorithm::ChaCha20Poly1305)
             }
         }
     };
 }
 
-/// Algorithm-bound symmetric key with type safety guarantees.
+/// Algorithm-bound aead key with type safety guarantees.
 ///
 /// 具有类型安全保证的算法绑定对称密钥。
 ///
@@ -133,29 +133,29 @@ macro_rules! dispatch_symmetric {
 /// ## Examples | 示例
 ///
 /// ```rust
-/// use seal_crypto_wrapper::keys::symmetric::TypedSymmetricKey;
-/// use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
+/// use seal_crypto_wrapper::keys::aead::TypedAeadKey;
+/// use seal_crypto_wrapper::algorithms::aead::AeadAlgorithm;
 ///
 /// // Generate a new algorithm-bound key
-/// let algorithm = SymmetricAlgorithm::build().aes256_gcm();
-/// let key = TypedSymmetricKey::generate(algorithm)?;
+/// let algorithm = AeadAlgorithm::build().aes256_gcm();
+/// let key = TypedAeadKey::generate(algorithm)?;
 ///
 /// // The key remembers its algorithm
 /// assert_eq!(key.algorithm(), algorithm);
 ///
 /// // Can be serialized with algorithm information
 /// let serialized = serde_json::to_string(&key)?;
-/// let deserialized: TypedSymmetricKey = serde_json::from_str(&serialized)?;
+/// let deserialized: TypedAeadKey = serde_json::from_str(&serialized)?;
 /// assert_eq!(deserialized.algorithm(), algorithm);
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, bincode::Encode, bincode::Decode)]
-pub struct TypedSymmetricKey {
-    key: SymmetricKey,
-    algorithm: SymmetricAlgorithm,
+pub struct TypedAeadKey {
+    key: AeadKey,
+    algorithm: AeadAlgorithm,
 }
 
-impl TypedSymmetricKey {
+impl TypedAeadKey {
     /// Generates a new cryptographically secure key for the specified algorithm.
     ///
     /// 为指定算法生成新的密码学安全密钥。
@@ -171,43 +171,45 @@ impl TypedSymmetricKey {
     ///
     /// ## Arguments | 参数
     ///
-    /// * `algorithm` - The symmetric algorithm to generate a key for
+    /// * `algorithm` - The aead algorithm to generate a key for
     ///
     /// * `algorithm` - 要为其生成密钥的对称算法
     ///
     /// ## Returns | 返回值
     ///
-    /// A new `TypedSymmetricKey` bound to the specified algorithm.
+    /// A new `TypedAeadKey` bound to the specified algorithm.
     ///
-    /// 绑定到指定算法的新 `TypedSymmetricKey`。
+    /// 绑定到指定算法的新 `TypedAeadKey`。
     ///
     /// ## Examples | 示例
     ///
     /// ```rust
-    /// use seal_crypto_wrapper::keys::symmetric::TypedSymmetricKey;
-    /// use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
+    /// use seal_crypto_wrapper::keys::aead::TypedAeadKey;
+    /// use seal_crypto_wrapper::algorithms::aead::AeadAlgorithm;
     ///
-    /// let aes_key = TypedSymmetricKey::generate(
-    ///     SymmetricAlgorithm::build().aes256_gcm()
+    /// let aes_key = TypedAeadKey::generate(
+    ///     AeadAlgorithm::build().aes256_gcm()
     /// )?;
     ///
-    /// let chacha_key = TypedSymmetricKey::generate(
-    ///     SymmetricAlgorithm::build().chacha20_poly1305()
+    /// let chacha_key = TypedAeadKey::generate(
+    ///     AeadAlgorithm::build().chacha20_poly1305()
     /// )?;
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn generate(algorithm: SymmetricAlgorithm) -> Result<Self, Error> {
+    pub fn generate(algorithm: AeadAlgorithm) -> Result<Self, Error> {
         macro_rules! generate_key {
             ($key_type:ty, $alg_enum:expr) => {
                 <$key_type>::generate_key()
                     .map_err(Error::from)
-                    .and_then(|k| Ok(Self {
-                        key: SymmetricKey::new(k.to_bytes().map_err(Error::from)?),
-                        algorithm: $alg_enum,
-                    }))
+                    .and_then(|k| {
+                        Ok(Self {
+                            key: AeadKey::new(k.to_bytes().map_err(Error::from)?),
+                            algorithm: $alg_enum,
+                        })
+                    })
             };
         }
-        dispatch_symmetric!(algorithm, generate_key)
+        dispatch_aead!(algorithm, generate_key)
     }
 
     /// Creates a typed key from raw bytes and algorithm specification.
@@ -234,20 +236,20 @@ impl TypedSymmetricKey {
     /// ## Examples | 示例
     ///
     /// ```rust
-    /// use seal_crypto_wrapper::keys::symmetric::TypedSymmetricKey;
-    /// use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
+    /// use seal_crypto_wrapper::keys::aead::TypedAeadKey;
+    /// use seal_crypto_wrapper::algorithms::aead::AeadAlgorithm;
     ///
     /// let key_bytes = [0u8; 32]; // 32 bytes for AES-256
-    /// let algorithm = SymmetricAlgorithm::build().aes256_gcm();
-    /// let key = TypedSymmetricKey::from_bytes(&key_bytes, algorithm)?;
+    /// let algorithm = AeadAlgorithm::build().aes256_gcm();
+    /// let key = TypedAeadKey::from_bytes(&key_bytes, algorithm)?;
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn from_bytes(bytes: &[u8], algorithm: SymmetricAlgorithm) -> Result<Self, Error> {
-        let key = SymmetricKey::new(bytes.to_vec());
+    pub fn from_bytes(bytes: &[u8], algorithm: AeadAlgorithm) -> Result<Self, Error> {
+        let key = AeadKey::new(bytes.to_vec());
         key.into_typed(algorithm)
     }
 
-     /// Derives a new symmetric key from the current key using a specified key-based KDF.
+    /// Derives a new aead key from the current key using a specified key-based KDF.
     ///
     /// 从当前密钥派生一个新的对称密钥。
     ///
@@ -279,18 +281,23 @@ impl TypedSymmetricKey {
         kdf_algorithm: KdfKeyAlgorithm,
         salt: Option<&[u8]>,
         info: Option<&[u8]>,
-        symmetric_algorithm: SymmetricAlgorithm,
+        symmetric_algorithm: AeadAlgorithm,
     ) -> Result<Self, Error> {
         use crate::traits::KdfKeyAlgorithmTrait;
 
-        let derived_key_bytes =
-            kdf_algorithm
-                .into_wrapper()
-                .derive(bytes, salt, info, symmetric_algorithm.into_wrapper().key_size())?;
-        Ok(TypedSymmetricKey::from_bytes(derived_key_bytes.as_slice(), symmetric_algorithm)?)
+        let derived_key_bytes = kdf_algorithm.into_wrapper().derive(
+            bytes,
+            salt,
+            info,
+            symmetric_algorithm.into_wrapper().key_size(),
+        )?;
+        Ok(TypedAeadKey::from_bytes(
+            derived_key_bytes.as_slice(),
+            symmetric_algorithm,
+        )?)
     }
 
-    /// Derives a symmetric key from a XOF reader.
+    /// Derives a aead key from a XOF reader.
     ///
     /// 从 XOF 读取器派生对称密钥。
     ///
@@ -309,14 +316,17 @@ impl TypedSymmetricKey {
     #[cfg(feature = "xof")]
     pub fn derive_from_xof(
         xof_reader: &mut XofReaderWrapper,
-        symmetric_algorithm: SymmetricAlgorithm,
+        symmetric_algorithm: AeadAlgorithm,
     ) -> Result<Self, Error> {
         let mut derived_key_bytes = vec![0u8; symmetric_algorithm.into_wrapper().key_size()];
         xof_reader.read(&mut derived_key_bytes);
-        Ok(TypedSymmetricKey::from_bytes(derived_key_bytes.as_slice(), symmetric_algorithm)?)
+        Ok(TypedAeadKey::from_bytes(
+            derived_key_bytes.as_slice(),
+            symmetric_algorithm,
+        )?)
     }
 
-    /// Derives a symmetric key from a password using a specified password-based KDF.
+    /// Derives a aead key from a password using a specified password-based KDF.
     ///
     /// 从密码派生对称密钥。
     ///
@@ -345,11 +355,18 @@ impl TypedSymmetricKey {
         password: &SecretBox<[u8]>,
         algorithm: KdfPasswordWrapper,
         salt: &[u8],
-        symmetric_algorithm: SymmetricAlgorithm,
+        symmetric_algorithm: AeadAlgorithm,
     ) -> Result<Self, Error> {
         use crate::traits::KdfPasswordAlgorithmTrait;
-        let derived_key_bytes = algorithm.derive(password, salt, symmetric_algorithm.into_wrapper().key_size())?;
-        Ok(TypedSymmetricKey::from_bytes(derived_key_bytes.as_slice(), symmetric_algorithm)?)
+        let derived_key_bytes = algorithm.derive(
+            password,
+            salt,
+            symmetric_algorithm.into_wrapper().key_size(),
+        )?;
+        Ok(TypedAeadKey::from_bytes(
+            derived_key_bytes.as_slice(),
+            symmetric_algorithm,
+        )?)
     }
 
     /// Returns the algorithm this key is bound to.
@@ -360,7 +377,7 @@ impl TypedSymmetricKey {
     /// is only used with its intended algorithm.
     ///
     /// 此信息用于运行时验证，确保密钥仅与其预期算法一起使用。
-    pub fn algorithm(&self) -> SymmetricAlgorithm {
+    pub fn algorithm(&self) -> AeadAlgorithm {
         self.algorithm
     }
 
@@ -385,7 +402,7 @@ impl TypedSymmetricKey {
     ///
     /// 返回的非类型化密钥失去算法绑定信息。
     /// 谨慎使用以避免算法误用。
-    pub fn untyped(&self) -> SymmetricKey {
+    pub fn untyped(&self) -> AeadKey {
         self.key.clone()
     }
 
@@ -433,13 +450,13 @@ impl TypedSymmetricKey {
     }
 }
 
-impl AsRef<[u8]> for TypedSymmetricKey {
+impl AsRef<[u8]> for TypedAeadKey {
     fn as_ref(&self) -> &[u8] {
         self.key.as_bytes()
     }
 }
 
-/// Untyped symmetric key for flexible cryptographic operations.
+/// Untyped aead key for flexible cryptographic operations.
 ///
 /// 用于灵活密码操作的非类型化对称密钥。
 ///
@@ -479,14 +496,14 @@ impl AsRef<[u8]> for TypedSymmetricKey {
 /// ## Examples | 示例
 ///
 /// ```rust
-/// use seal_crypto_wrapper::keys::symmetric::SymmetricKey;
-/// use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
+/// use seal_crypto_wrapper::keys::aead::AeadKey;
+/// use seal_crypto_wrapper::algorithms::aead::AeadAlgorithm;
 ///
 /// // Generate a random key
-/// let key = SymmetricKey::generate(32)?;
+/// let key = AeadKey::generate(32)?;
 ///
 /// // Convert to typed key when algorithm is known
-/// let algorithm = SymmetricAlgorithm::build().aes256_gcm();
+/// let algorithm = AeadAlgorithm::build().aes256_gcm();
 /// let typed_key = key.into_typed(algorithm)?;
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
@@ -500,9 +517,9 @@ impl AsRef<[u8]> for TypedSymmetricKey {
 /// 密钥材料存储在 `Zeroizing<Vec<u8>>` 中，当密钥被丢弃时自动清零内存，
 /// 防止敏感数据在使用后仍留在内存中。
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct SymmetricKey(pub Zeroizing<Vec<u8>>);
+pub struct AeadKey(pub Zeroizing<Vec<u8>>);
 
-impl bincode::Encode for SymmetricKey {
+impl bincode::Encode for AeadKey {
     fn encode<E: bincode::enc::Encoder>(
         &self,
         encoder: &mut E,
@@ -513,7 +530,7 @@ impl bincode::Encode for SymmetricKey {
     }
 }
 
-impl<Context> bincode::Decode<Context> for SymmetricKey {
+impl<Context> bincode::Decode<Context> for AeadKey {
     fn decode<D: bincode::de::Decoder<Context = Context>>(
         decoder: &mut D,
     ) -> core::result::Result<Self, bincode::error::DecodeError> {
@@ -522,7 +539,7 @@ impl<Context> bincode::Decode<Context> for SymmetricKey {
     }
 }
 
-impl<'de, Context> bincode::BorrowDecode<'de, Context> for SymmetricKey {
+impl<'de, Context> bincode::BorrowDecode<'de, Context> for AeadKey {
     fn borrow_decode<D: bincode::de::BorrowDecoder<'de, Context = Context>>(
         decoder: &mut D,
     ) -> core::result::Result<Self, bincode::error::DecodeError> {
@@ -531,15 +548,15 @@ impl<'de, Context> bincode::BorrowDecode<'de, Context> for SymmetricKey {
     }
 }
 
-impl SymmetricKey {
-    /// Create a new symmetric key from bytes
+impl AeadKey {
+    /// Create a new aead key from bytes
     ///
     /// 从字节创建一个新的对称密钥
     pub fn new(bytes: impl Into<Zeroizing<Vec<u8>>>) -> Self {
         Self(bytes.into())
     }
 
-    /// Generates a new random symmetric key of the specified length.
+    /// Generates a new random aead key of the specified length.
     ///
     /// This is useful for creating new keys for encryption or for key rotation.
     /// It uses the operating system's cryptographically secure random number generator.
@@ -579,21 +596,19 @@ impl SymmetricKey {
         self.0
     }
 
-    /// Converts the raw key bytes into a typed symmetric key enum.
+    /// Converts the raw key bytes into a typed aead key enum.
     ///
     /// 将原始密钥字节转换为类型化的对称密钥枚举。
-    pub fn into_typed(self, algorithm: SymmetricAlgorithm) -> Result<TypedSymmetricKey, Error> {
+    pub fn into_typed(self, algorithm: AeadAlgorithm) -> Result<TypedAeadKey, Error> {
         macro_rules! into_typed_key {
             ($key_type:ty, $alg_enum:expr) => {{
                 let key = <$key_type as SymmetricKeySet>::Key::from_bytes(self.as_bytes())?;
-                Ok(TypedSymmetricKey {
-                    key: SymmetricKey::new(key.to_bytes().map_err(Error::from)?),
+                Ok(TypedAeadKey {
+                    key: AeadKey::new(key.to_bytes().map_err(Error::from)?),
                     algorithm: $alg_enum,
                 })
             }};
         }
-        dispatch_symmetric!(algorithm, into_typed_key)
+        dispatch_aead!(algorithm, into_typed_key)
     }
-
-   
 }

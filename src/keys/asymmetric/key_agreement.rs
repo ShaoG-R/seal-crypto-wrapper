@@ -6,7 +6,7 @@
 //!
 //! This module provides type-safe key management for key agreement protocols,
 //! which allow two or more parties to establish a shared secret over an insecure
-//! communication channel. The shared secret can then be used for symmetric encryption
+//! communication channel. The shared secret can then be used for aead encryption
 //! or other cryptographic operations.
 //!
 //! 此模块为密钥协商协议提供类型安全的密钥管理，
@@ -328,7 +328,7 @@ impl_typed_asymmetric_public_key!(TypedKeyAgreementPublicKey, KeyAgreementAlgori
 /// - **Shared Secret Derivation**: Combine with others' public keys
 /// - **Forward Secrecy**: Use ephemeral keys for each session
 /// - **Perfect Forward Secrecy**: Delete after use to prevent future compromise
-/// - **Key Derivation**: Use derived secrets for symmetric encryption
+/// - **Key Derivation**: Use derived secrets for aead encryption
 ///
 /// - **共享密钥派生**: 与他人的公钥结合
 /// - **前向保密**: 为每个会话使用临时密钥

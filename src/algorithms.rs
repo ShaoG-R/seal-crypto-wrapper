@@ -13,7 +13,7 @@
 //!
 //! ## Algorithm Categories | 算法分类
 //!
-//! ### Symmetric Cryptography | 对称密码学
+//! ### Aead Cryptography | 对称密码学
 //! - **AES-GCM**: Advanced Encryption Standard with Galois/Counter Mode
 //! - **ChaCha20-Poly1305**: ChaCha20 stream cipher with Poly1305 authenticator
 //! - **XChaCha20-Poly1305**: Extended nonce variant of ChaCha20-Poly1305
@@ -55,9 +55,9 @@ pub mod asymmetric;
 #[cfg(feature = "kdf")]
 pub mod kdf;
 
-// Symmetric encryption algorithms | 对称加密算法
-#[cfg(feature = "symmetric")]
-pub mod symmetric;
+// Aead encryption algorithms | 对称加密算法
+#[cfg(feature = "aead")]
+pub mod aead;
 
 // Extendable output functions | 可扩展输出函数
 #[cfg(feature = "xof")]

@@ -6,7 +6,7 @@
 //!
 //! This module provides concrete implementations of key agreement algorithms that
 //! allow two or more parties to establish a shared secret over an insecure channel.
-//! The shared secret can then be used for symmetric encryption or other cryptographic
+//! The shared secret can then be used for aead encryption or other cryptographic
 //! operations requiring a common key.
 //!
 //! 此模块提供密钥协商算法的具体实现，允许两方或多方通过不安全通道建立共享密钥。

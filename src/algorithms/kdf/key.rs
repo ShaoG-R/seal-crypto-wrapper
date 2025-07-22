@@ -172,7 +172,7 @@ impl KdfKeyAlgorithmBuilder {
     /// ## Use Cases | 使用场景
     /// - General-purpose key derivation
     /// - TLS/SSL key derivation
-    /// - Symmetric key expansion
+    /// - Aead key expansion
     /// - Protocol key derivation
     ///
     /// - 通用密钥派生

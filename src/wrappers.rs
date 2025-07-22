@@ -17,13 +17,13 @@
 //! ### Wrapper Pattern | 包装器模式
 //!
 //! Each cryptographic algorithm is wrapped in a struct that:
-//! - Implements the appropriate trait (e.g., `SymmetricAlgorithmTrait`)
+//! - Implements the appropriate trait (e.g., `AeadAlgorithmTrait`)
 //! - Provides algorithm-specific functionality
 //! - Ensures type safety and prevents misuse
 //! - Handles error conversion and validation
 //!
 //! 每个密码算法都包装在一个结构体中，该结构体：
-//! - 实现适当的 trait（例如 `SymmetricAlgorithmTrait`）
+//! - 实现适当的 trait（例如 `AeadAlgorithmTrait`）
 //! - 提供算法特定的功能
 //! - 确保类型安全并防止误用
 //! - 处理错误转换和验证
@@ -179,9 +179,9 @@ pub mod asymmetric;
 #[cfg(feature = "kdf")]
 pub mod kdf;
 
-// Symmetric algorithm wrappers | 对称算法包装器
-#[cfg(feature = "symmetric")]
-pub mod symmetric;
+// Aead algorithm wrappers | 对称算法包装器
+#[cfg(feature = "aead")]
+pub mod aead;
 
 // Extendable output function wrappers | 可扩展输出函数包装器
 #[cfg(feature = "xof")]

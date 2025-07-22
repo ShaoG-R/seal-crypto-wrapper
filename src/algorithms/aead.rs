@@ -1,10 +1,10 @@
-//! Symmetric encryption algorithms with Authenticated Encryption with Associated Data (AEAD).
+//! Aead encryption algorithms with Authenticated Encryption with Associated Data (AEAD).
 //!
 //! 带关联数据认证加密 (AEAD) 的对称加密算法。
 //!
 //! ## Overview | 概述
 //!
-//! This module provides symmetric encryption algorithms that combine confidentiality
+//! This module provides aead encryption algorithms that combine confidentiality
 //! and authenticity in a single operation. All algorithms implement AEAD (Authenticated
 //! Encryption with Associated Data), providing both encryption and authentication.
 //!
@@ -46,7 +46,7 @@
 
 use bincode::{Decode, Encode};
 
-/// Symmetric encryption algorithm enumeration.
+/// Aead encryption algorithm enumeration.
 ///
 /// 对称加密算法枚举。
 ///
@@ -68,7 +68,7 @@ use bincode::{Decode, Encode};
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, Decode, Encode, serde::Serialize, serde::Deserialize,
 )]
-pub enum SymmetricAlgorithm {
+pub enum AeadAlgorithm {
     /// AES in Galois/Counter Mode with configurable key size.
     ///
     /// 具有可配置密钥大小的 Galois/Counter 模式 AES。
@@ -140,24 +140,24 @@ pub enum AesKeySize {
     K256,
 }
 
-impl SymmetricAlgorithm {
-    /// Creates a new symmetric algorithm builder.
+impl AeadAlgorithm {
+    /// Creates a new aead algorithm builder.
     ///
     /// 创建新的对称算法构建器。
     ///
     /// # Examples | 示例
     ///
     /// ```rust
-    /// use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
+    /// use seal_crypto_wrapper::algorithms::aead::AeadAlgorithm;
     ///
-    /// let algorithm = SymmetricAlgorithm::build().aes256_gcm();
+    /// let algorithm = AeadAlgorithm::build().aes256_gcm();
     /// ```
-    pub fn build() -> SymmetricAlgorithmBuilder {
-        SymmetricAlgorithmBuilder
+    pub fn build() -> AeadAlgorithmBuilder {
+        AeadAlgorithmBuilder
     }
 }
 
-/// Builder for constructing symmetric algorithm instances.
+/// Builder for constructing aead algorithm instances.
 ///
 /// 用于构建对称算法实例的构建器。
 ///
@@ -168,20 +168,20 @@ impl SymmetricAlgorithm {
 /// 构建器为算法选择提供流畅的接口：
 ///
 /// ```rust
-/// use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
+/// use seal_crypto_wrapper::algorithms::aead::AeadAlgorithm;
 ///
 /// // High performance with hardware acceleration
-/// let aes = SymmetricAlgorithm::build().aes256_gcm();
+/// let aes = AeadAlgorithm::build().aes256_gcm();
 ///
 /// // Software-optimized
-/// let chacha = SymmetricAlgorithm::build().chacha20_poly1305();
+/// let chacha = AeadAlgorithm::build().chacha20_poly1305();
 ///
 /// // Extended nonce support
-/// let xchacha = SymmetricAlgorithm::build().xchacha20_poly1305();
+/// let xchacha = AeadAlgorithm::build().xchacha20_poly1305();
 /// ```
-pub struct SymmetricAlgorithmBuilder;
+pub struct AeadAlgorithmBuilder;
 
-impl SymmetricAlgorithmBuilder {
+impl AeadAlgorithmBuilder {
     /// Selects AES-128-GCM algorithm.
     ///
     /// 选择 AES-128-GCM 算法。
@@ -195,8 +195,8 @@ impl SymmetricAlgorithmBuilder {
     /// ## Performance | 性能
     /// Excellent with AES-NI hardware acceleration.
     /// 在 AES-NI 硬件加速下表现出色。
-    pub fn aes128_gcm(self) -> SymmetricAlgorithm {
-        SymmetricAlgorithm::AesGcm(AesKeySize::K128)
+    pub fn aes128_gcm(self) -> AeadAlgorithm {
+        AeadAlgorithm::AesGcm(AesKeySize::K128)
     }
 
     /// Selects AES-256-GCM algorithm.
@@ -212,8 +212,8 @@ impl SymmetricAlgorithmBuilder {
     /// ## Use Cases | 使用场景
     /// Recommended for high-security applications and long-term data protection.
     /// 推荐用于高安全性应用和长期数据保护。
-    pub fn aes256_gcm(self) -> SymmetricAlgorithm {
-        SymmetricAlgorithm::AesGcm(AesKeySize::K256)
+    pub fn aes256_gcm(self) -> AeadAlgorithm {
+        AeadAlgorithm::AesGcm(AesKeySize::K256)
     }
 
     /// Selects ChaCha20-Poly1305 algorithm.
@@ -233,8 +233,8 @@ impl SymmetricAlgorithmBuilder {
     /// - 常数时间实现
     /// - 无时序侧信道
     /// - 出色的软件性能
-    pub fn chacha20_poly1305(self) -> SymmetricAlgorithm {
-        SymmetricAlgorithm::ChaCha20Poly1305
+    pub fn chacha20_poly1305(self) -> AeadAlgorithm {
+        AeadAlgorithm::ChaCha20Poly1305
     }
 
     /// Selects XChaCha20-Poly1305 algorithm.
@@ -250,14 +250,14 @@ impl SymmetricAlgorithmBuilder {
     /// ## Key Feature | 关键特性
     /// Extended 192-bit nonce eliminates nonce collision concerns.
     /// 扩展的 192 位 nonce 消除了 nonce 碰撞的担忧。
-    pub fn xchacha20_poly1305(self) -> SymmetricAlgorithm {
-        SymmetricAlgorithm::XChaCha20Poly1305
+    pub fn xchacha20_poly1305(self) -> AeadAlgorithm {
+        AeadAlgorithm::XChaCha20Poly1305
     }
 }
 
-use crate::wrappers::symmetric::SymmetricAlgorithmWrapper;
+use crate::wrappers::aead::AeadAlgorithmWrapper;
 
-impl SymmetricAlgorithm {
+impl AeadAlgorithm {
     /// Converts the algorithm enum into a concrete wrapper implementation.
     ///
     /// 将算法枚举转换为具体的包装器实现。
@@ -265,7 +265,7 @@ impl SymmetricAlgorithm {
     /// ## Purpose | 目的
     ///
     /// This method bridges the gap between algorithm selection and actual cryptographic
-    /// operations. It returns a wrapper that implements the symmetric algorithm trait,
+    /// operations. It returns a wrapper that implements the aead algorithm trait,
     /// enabling type-safe encryption and decryption operations.
     ///
     /// 此方法在算法选择和实际密码操作之间架起桥梁。
@@ -273,13 +273,13 @@ impl SymmetricAlgorithm {
     ///
     /// ## Returns | 返回值
     ///
-    /// A `SymmetricAlgorithmWrapper` that can perform:
+    /// A `AeadAlgorithmWrapper` that can perform:
     /// - Key generation
     /// - Encryption with authentication
     /// - Decryption with verification
     /// - Algorithm introspection
     ///
-    /// 可以执行以下操作的 `SymmetricAlgorithmWrapper`：
+    /// 可以执行以下操作的 `AeadAlgorithmWrapper`：
     /// - 密钥生成
     /// - 带认证的加密
     /// - 带验证的解密
@@ -288,31 +288,31 @@ impl SymmetricAlgorithm {
     /// ## Examples | 示例
     ///
     /// ```rust
-    /// use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
+    /// use seal_crypto_wrapper::algorithms::aead::AeadAlgorithm;
     ///
-    /// let algorithm = SymmetricAlgorithm::build().aes256_gcm();
+    /// let algorithm = AeadAlgorithm::build().aes256_gcm();
     /// let cipher = algorithm.into_wrapper();
     ///
     /// // Now you can use the cipher for encryption/decryption
     /// let key = cipher.generate_typed_key()?;
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn into_wrapper(self) -> SymmetricAlgorithmWrapper {
-        use crate::wrappers::symmetric::{
+    pub fn into_wrapper(self) -> AeadAlgorithmWrapper {
+        use crate::wrappers::aead::{
             Aes128GcmWrapper, Aes256GcmWrapper, ChaCha20Poly1305Wrapper, XChaCha20Poly1305Wrapper,
         };
         match self {
-            SymmetricAlgorithm::AesGcm(AesKeySize::K128) => {
-                SymmetricAlgorithmWrapper::new(Box::new(Aes128GcmWrapper::default()))
+            AeadAlgorithm::AesGcm(AesKeySize::K128) => {
+                AeadAlgorithmWrapper::new(Box::new(Aes128GcmWrapper::default()))
             }
-            SymmetricAlgorithm::AesGcm(AesKeySize::K256) => {
-                SymmetricAlgorithmWrapper::new(Box::new(Aes256GcmWrapper::default()))
+            AeadAlgorithm::AesGcm(AesKeySize::K256) => {
+                AeadAlgorithmWrapper::new(Box::new(Aes256GcmWrapper::default()))
             }
-            SymmetricAlgorithm::ChaCha20Poly1305 => {
-                SymmetricAlgorithmWrapper::new(Box::new(ChaCha20Poly1305Wrapper::default()))
+            AeadAlgorithm::ChaCha20Poly1305 => {
+                AeadAlgorithmWrapper::new(Box::new(ChaCha20Poly1305Wrapper::default()))
             }
-            SymmetricAlgorithm::XChaCha20Poly1305 => {
-                SymmetricAlgorithmWrapper::new(Box::new(XChaCha20Poly1305Wrapper::default()))
+            AeadAlgorithm::XChaCha20Poly1305 => {
+                AeadAlgorithmWrapper::new(Box::new(XChaCha20Poly1305Wrapper::default()))
             }
         }
     }

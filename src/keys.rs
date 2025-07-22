@@ -48,7 +48,7 @@
 //!
 //! ## Key Categories | 密钥分类
 //!
-//! ### Symmetric Keys | 对称密钥
+//! ### Aead Keys | 对称密钥
 //! - **Untyped**: Raw key material without algorithm binding
 //! - **Typed**: Algorithm-bound keys for AEAD ciphers
 //!
@@ -64,10 +64,10 @@
 //! ```rust
 //! use seal_crypto_wrapper::prelude::*;
 //!
-//! // Generate algorithm-bound symmetric key
-//! #[cfg(feature = "symmetric")]
+//! // Generate algorithm-bound aead key
+//! #[cfg(feature = "aead")]
 //! {
-//!     let algorithm = SymmetricAlgorithm::build().aes256_gcm();
+//!     let algorithm = AeadAlgorithm::build().aes256_gcm();
 //!     let cipher = algorithm.into_wrapper();
 //!     let key = cipher.generate_typed_key()?;
 //! }
@@ -118,6 +118,6 @@
 ))]
 pub mod asymmetric;
 
-// Symmetric key types and management | 对称密钥类型和管理
-#[cfg(feature = "symmetric")]
-pub mod symmetric;
+// Aead key types and management | 对称密钥类型和管理
+#[cfg(feature = "aead")]
+pub mod aead;

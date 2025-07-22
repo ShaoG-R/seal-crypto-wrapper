@@ -6,7 +6,7 @@
 //!
 //! Key agreement algorithms allow two or more parties to establish a shared secret
 //! over an insecure communication channel without prior shared information. The
-//! shared secret can then be used for symmetric encryption or other cryptographic
+//! shared secret can then be used for aead encryption or other cryptographic
 //! operations requiring a common key.
 //!
 //! 密钥协商算法允许两方或多方在没有事先共享信息的情况下，

@@ -2,15 +2,15 @@ use seal_crypto_wrapper::error::Result;
 use seal_crypto_wrapper::prelude::*;
 
 fn main() -> Result<()> {
-    // 1. Select a symmetric algorithm.
+    // 1. Select a aead algorithm.
     // 1. 选择一个对称加密算法。
-    let algorithm = SymmetricAlgorithm::build().aes256_gcm();
-    println!("Selected symmetric algorithm: {:?}", algorithm);
+    let algorithm = AeadAlgorithm::build().aes256_gcm();
+    println!("Selected aead algorithm: {:?}", algorithm);
 
     // 2. Get the algorithm wrapper.
     // 2. 获取算法包装器。
     let cipher = algorithm.into_wrapper();
-    println!("Got symmetric cipher wrapper.");
+    println!("Got aead cipher wrapper.");
 
     // 3. Generate a key.
     // 3. 生成一个密钥。

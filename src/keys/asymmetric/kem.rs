@@ -50,7 +50,7 @@
 //!
 //! // Generate KEM key pair
 //! let algorithm = AsymmetricAlgorithm::build().kem().kyber512();
-//! let kem = algorithm.into_asymmetric_wrapper();
+//! let kem = algorithm.into_wrapper();
 //! let keypair = kem.generate_keypair()?;
 //!
 //! // Separate keys
@@ -75,13 +75,13 @@ use crate::keys::asymmetric::{AsymmetricPrivateKey, AsymmetricPublicKey};
 use seal_crypto::prelude::{Key, KeyGenerator};
 use seal_crypto::zeroize::Zeroizing;
 
-#[cfg(all(feature = "kdf", feature = "symmetric"))]
+#[cfg(all(feature = "kdf", feature = "aead"))]
 use crate::{
-    prelude::{SymmetricAlgorithm, TypedSymmetricKey},
-    algorithms::kdf::key::KdfKeyAlgorithm
+    algorithms::kdf::key::KdfKeyAlgorithm,
+    prelude::{AeadAlgorithm, TypedAeadKey},
 };
 
-#[cfg(all(feature = "xof", feature = "symmetric"))]
+#[cfg(all(feature = "xof", feature = "aead"))]
 use crate::wrappers::xof::XofReaderWrapper;
 
 /// Algorithm-bound KEM key pair for secure key encapsulation operations.
@@ -182,11 +182,13 @@ impl TypedKemKeyPair {
             ($key_type:ty, $alg_enum:expr) => {
                 <$key_type>::generate_keypair()
                     .map_err(Error::from)
-                    .and_then(|(pk, sk)| Ok(Self {
-                        public_key: AsymmetricPublicKey::new(pk.to_bytes()?),
-                        private_key: AsymmetricPrivateKey::new(sk.to_bytes()?),
-                        algorithm: $alg_enum,
-                    }))
+                    .and_then(|(pk, sk)| {
+                        Ok(Self {
+                            public_key: AsymmetricPublicKey::new(pk.to_bytes()?),
+                            private_key: AsymmetricPrivateKey::new(sk.to_bytes()?),
+                            algorithm: $alg_enum,
+                        })
+                    })
             };
         }
         dispatch_kem!(algorithm, generate_keypair)
@@ -349,22 +351,22 @@ impl_typed_asymmetric_private_key!(TypedKemPrivateKey, KemAlgorithm);
 pub struct SharedSecret(pub Zeroizing<Vec<u8>>);
 
 impl SharedSecret {
-    /// Derives a symmetric key from the shared secret using a KDF algorithm.
+    /// Derives a aead key from the shared secret using a KDF algorithm.
     ///
     /// 使用 KDF 算法从共享密钥派生对称密钥。
     ///
-    /// This method derives a symmetric key from the shared secret using a KDF algorithm.
-    /// The derived key is returned as a `TypedSymmetricKey` object.
+    /// This method derives a aead key from the shared secret using a KDF algorithm.
+    /// The derived key is returned as a `TypedAeadKey` object.
     ///
-    /// 此方法使用 KDF 算法从共享密钥派生对称密钥。派生的密钥作为 `TypedSymmetricKey` 对象返回。
-    #[cfg(all(feature = "kdf", feature = "symmetric"))]
+    /// 此方法使用 KDF 算法从共享密钥派生对称密钥。派生的密钥作为 `TypedAeadKey` 对象返回。
+    #[cfg(all(feature = "kdf", feature = "aead"))]
     pub fn derive_key(
         &self,
         kdf_algorithm: KdfKeyAlgorithm,
         salt: Option<&[u8]>,
         info: Option<&[u8]>,
-        algorithm: SymmetricAlgorithm,
-    ) -> Result<TypedSymmetricKey, Error> {
+        algorithm: AeadAlgorithm,
+    ) -> Result<TypedAeadKey, Error> {
         use crate::traits::KdfKeyAlgorithmTrait;
 
         let derived_key_bytes = kdf_algorithm.into_wrapper().derive(
@@ -373,27 +375,27 @@ impl SharedSecret {
             info,
             algorithm.into_wrapper().key_size(),
         )?;
-        TypedSymmetricKey::from_bytes(derived_key_bytes.as_slice(), algorithm)
+        TypedAeadKey::from_bytes(derived_key_bytes.as_slice(), algorithm)
     }
 
-    /// Derives a symmetric key from the shared secret using a XOF algorithm.
+    /// Derives a aead key from the shared secret using a XOF algorithm.
     ///
     /// 使用 XOF 算法从共享密钥派生对称密钥。
     ///
-    /// This method derives a symmetric key from the shared secret using a XOF algorithm.
-    /// The derived key is returned as a `TypedSymmetricKey` object.
+    /// This method derives a aead key from the shared secret using a XOF algorithm.
+    /// The derived key is returned as a `TypedAeadKey` object.
     ///
-    /// 此方法使用 XOF 算法从共享密钥派生对称密钥。派生的密钥作为 `TypedSymmetricKey` 对象返回。
-    #[cfg(all(feature = "xof", feature = "symmetric"))]
+    /// 此方法使用 XOF 算法从共享密钥派生对称密钥。派生的密钥作为 `TypedAeadKey` 对象返回。
+    #[cfg(all(feature = "xof", feature = "aead"))]
     pub fn derive_key_from_xof(
         &self,
         xof_reader: &mut XofReaderWrapper,
-        algorithm: SymmetricAlgorithm,
-    ) -> Result<TypedSymmetricKey, Error> {
+        algorithm: AeadAlgorithm,
+    ) -> Result<TypedAeadKey, Error> {
         let mut derived_key_bytes = vec![0u8; algorithm.into_wrapper().key_size()];
         xof_reader.read(&mut derived_key_bytes);
 
-        TypedSymmetricKey::from_bytes(derived_key_bytes.as_slice(), algorithm)
+        TypedAeadKey::from_bytes(derived_key_bytes.as_slice(), algorithm)
     }
 
     /// Consumes the shared secret and returns the raw bytes.

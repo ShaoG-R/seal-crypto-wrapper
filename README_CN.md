@@ -6,8 +6,8 @@
 
 在直接使用底层加密库时，开发者需要自行管理密钥和使用该密钥的算法，这可能导致误用（例如，将为 AES-128-GCM 生成的密钥用在 AES-256-GCM 算法中）。`seal-crypto-wrapper` 通过以下设计来解决这个问题：
 
-- **类型化密钥**：为每种加密原语（对称加密、签名、KEM 等）提供专属的密钥类型，例如 `TypedSymmetricKey` 和 `TypedSignatureKeyPair`。
-- **算法绑定**：每个类型化的密钥都强制性地绑定了创建它时所用的具体算法信息（例如 `SymmetricAlgorithm::Aes128Gcm`）。
+- **类型化密钥**：为每种加密原语（对称加密、签名、KEM 等）提供专属的密钥类型，例如 `TypedAeadKey` 和 `TypedSignatureKeyPair`。
+- **算法绑定**：每个类型化的密钥都强制性地绑定了创建它时所用的具体算法信息（例如 `AeadAlgorithm::Aes128Gcm`）。
 - **运行时安全检查**：在执行任何加密操作（如加密、签名）之前，库会自动检查传入密钥所绑定的算法是否与当前操作的算法实例匹配。如果不匹配，操作将返回错误，从而防止密钥的误用。
 - **便捷的序列化**：密钥结构体可以直接使用 `serde` 进行序列化和反序列化，方便存储和传输。反序列化后，算法信息会自动恢复，无需额外步骤。
 - **统一的构建器 API**：提供流畅的链式调用 API 来选择和构建所需的算法实例。
@@ -51,7 +51,7 @@ use seal_crypto_wrapper::error::Result;
 
 fn main() -> Result<()> {
     // 1. 选择一个对称加密算法。
-    let algorithm = SymmetricAlgorithm::build().aes256_gcm();
+    let algorithm = AeadAlgorithm::build().aes256_gcm();
 
     // 2. 获取算法包装器。
     let cipher = algorithm.into_wrapper();
@@ -72,7 +72,7 @@ fn main() -> Result<()> {
 
     // 7. 验证解密后的明文与原始明文匹配。
     assert_eq!(plaintext.as_ref(), decrypted_plaintext.as_slice());
-    println!("Symmetric encryption/decryption successful!");
+    println!("Aead encryption/decryption successful!");
     
     Ok(())
 }

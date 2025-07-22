@@ -111,19 +111,19 @@ mod kdf {
 #[cfg(feature = "kdf")]
 pub use kdf::*;
 
-#[cfg(feature = "symmetric")]
-// Symmetric cryptography types | 对称密码学类型
-mod symmetric {
-    /// Symmetric algorithm builder | 对称算法构建器
-    pub use crate::algorithms::symmetric::SymmetricAlgorithm;
-    /// Untyped symmetric key | 非类型化对称密钥
-    pub use crate::keys::symmetric::SymmetricKey;
-    /// Typed symmetric key with algorithm binding | 带算法绑定的类型化对称密钥
-    pub use crate::keys::symmetric::TypedSymmetricKey;
+#[cfg(feature = "aead")]
+// Aead cryptography types | 对称密码学类型
+mod aead {
+    /// Aead algorithm builder | 对称算法构建器
+    pub use crate::algorithms::aead::AeadAlgorithm;
+    /// Untyped aead key | 非类型化对称密钥
+    pub use crate::keys::aead::AeadKey;
+    /// Typed aead key with algorithm binding | 带算法绑定的类型化对称密钥
+    pub use crate::keys::aead::TypedAeadKey;
 }
 
-#[cfg(feature = "symmetric")]
-pub use symmetric::*;
+#[cfg(feature = "aead")]
+pub use aead::*;
 
 // Extendable Output Function (XOF) types | 可扩展输出函数 (XOF) 类型
 #[cfg(feature = "xof")]

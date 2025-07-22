@@ -8,8 +8,9 @@ A Chinese version of this document is available [here (中文)](README_CN.md).
 
 When using a low-level crypto library directly, developers must manage keys and their corresponding algorithms separately. This can lead to misuse, such as using a key generated for AES-128-GCM with an AES-256-GCM cipher. `seal-crypto-wrapper` addresses this issue with the following design:
 
-- **Typed Keys**: Provides dedicated key types for each cryptographic primitive (e.g., symmetric encryption, signatures, KEM), such as `TypedSymmetricKey` and `TypedSignatureKeyPair`.
-- **Algorithm Binding**: Every typed key is mandatorily bound to the specific algorithm information used to create it (e.g., `SymmetricAlgorithm::Aes128Gcm`).
+- **Typed Keys**: Provides dedicated key types for each cryptographic primitive (e.g., aead encryption, signatures,
+  KEM), such as `TypedAeadKey` and `TypedSignatureKeyPair`.
+- **Algorithm Binding**: Every typed key is mandatorily bound to the specific algorithm information used to create it (e.g., `AeadAlgorithm::Aes128Gcm`).
 - **Runtime Safety Checks**: Before performing any cryptographic operation (like encryption or signing), the library automatically checks if the algorithm bound to the provided key matches the current operation's algorithm instance. If they don't match, the operation returns an error, preventing key misuse.
 - **Convenient Serialization**: Key structs can be directly serialized and deserialized using `serde`, simplifying storage and transmission. Upon deserialization, the algorithm information is automatically restored without extra steps.
 - **Unified Builder API**: Offers a fluent, chainable API to select and construct the required algorithm instances.
@@ -18,7 +19,7 @@ When using a low-level crypto library directly, developers must manage keys and 
 
 This library wraps the core functionalities of `seal-crypto`, including:
 
-- **Symmetric Ciphers**:
+- **Aead Ciphers**:
   - AES-GCM (128, 256-bit)
   - ChaCha20Poly1305
   - XChaCha20Poly1305
@@ -45,15 +46,15 @@ seal-crypto-wrapper = "0.1.2" # Please use the latest version
 
 Here are some examples for common use cases.
 
-### Symmetric Encryption
+### Aead Encryption
 
 ```rust
 use seal_crypto_wrapper::prelude::*;
 use seal_crypto_wrapper::error::Result;
 
 fn main() -> Result<()> {
-    // 1. Select a symmetric algorithm.
-    let algorithm = SymmetricAlgorithm::build().aes256_gcm();
+    // 1. Select a aead algorithm.
+    let algorithm = AeadAlgorithm::build().aes256_gcm();
 
     // 2. Get the algorithm wrapper.
     let cipher = algorithm.into_wrapper();
@@ -74,7 +75,7 @@ fn main() -> Result<()> {
 
     // 7. Verify the decrypted plaintext matches the original.
     assert_eq!(plaintext.as_ref(), decrypted_plaintext.as_slice());
-    println!("Symmetric encryption/decryption successful!");
+    println!("Aead encryption/decryption successful!");
     
     Ok(())
 }

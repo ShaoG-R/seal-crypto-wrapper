@@ -18,14 +18,14 @@
 //!
 //! ### Type Safety | 类型安全
 //!
-//! - **Typed Keys**: Each cryptographic primitive (symmetric encryption, signatures, KEM, etc.)
-//!   has dedicated key types like `TypedSymmetricKey` and `TypedSignatureKeyPair`.
+//! - **Typed Keys**: Each cryptographic primitive (aead encryption, signatures, KEM, etc.)
+//!   has dedicated key types like `TypedAeadKey` and `TypedSignatureKeyPair`.
 //! - **Algorithm Binding**: Every typed key is bound to the specific algorithm used to create it.
 //! - **Runtime Verification**: Before any cryptographic operation, the library automatically
 //!   verifies that the key's bound algorithm matches the current operation's algorithm.
 //!
 //! - **类型化密钥**：每种加密原语（对称加密、签名、KEM 等）都有专用的密钥类型，
-//!   如 `TypedSymmetricKey` 和 `TypedSignatureKeyPair`。
+//!   如 `TypedAeadKey` 和 `TypedSignatureKeyPair`。
 //! - **算法绑定**：每个类型化密钥都绑定到用于创建它的特定算法。
 //! - **运行时验证**：在任何加密操作之前，库会自动验证密钥绑定的算法是否与当前操作的算法匹配。
 //!
@@ -48,17 +48,17 @@
 //! seal-crypto-wrapper = { version = "0.1", features = ["full"] }
 //! ```
 //!
-//! ### Symmetric Encryption Example | 对称加密示例
+//! ### Aead Encryption Example | 对称加密示例
 //!
 //! ```rust
-//! # #[cfg(feature = "symmetric")]
+//! # #[cfg(feature = "aead")]
 //! # {
 //! use seal_crypto_wrapper::prelude::*;
 //! use seal_crypto_wrapper::error::Result;
 //!
 //! fn main() -> Result<()> {
-//!     // 1. Select a symmetric algorithm | 选择对称算法
-//!     let algorithm = SymmetricAlgorithm::build().aes256_gcm();
+//!     // 1. Select a aead algorithm | 选择对称算法
+//!     let algorithm = AeadAlgorithm::build().aes256_gcm();
 //!
 //!     // 2. Get the algorithm wrapper | 获取算法包装器
 //!     let cipher = algorithm.into_wrapper();
@@ -118,7 +118,7 @@
 //!
 //! 本库使用功能标志来启用特定的加密算法：
 //!
-//! - `symmetric` - Symmetric encryption algorithms (AES-GCM, ChaCha20-Poly1305)
+//! - `aead` - Aead encryption algorithms (AES-GCM, ChaCha20-Poly1305)
 //! - `asymmetric-kem` - Key Encapsulation Mechanisms (RSA, Kyber)
 //! - `asymmetric-signature` - Digital signatures (Ed25519, ECDSA, Dilithium)
 //! - `asymmetric-key-agreement` - Key agreement protocols (ECDH)

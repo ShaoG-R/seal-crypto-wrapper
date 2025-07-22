@@ -8,8 +8,8 @@ no_default_features = false
 allow_failure = []
 
 [[cases]]
-name = "std-symmetric"
-features = "symmetric"
+name = "std-aead"
+features = "aead"
 no_default_features = false
 allow_failure = []
 

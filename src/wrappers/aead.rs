@@ -1,16 +1,16 @@
-//! Symmetric encryption algorithm wrappers with AEAD support.
+//! Aead encryption algorithm wrappers with AEAD support.
 //!
 //! 支持 AEAD 的对称加密算法包装器。
 //!
 //! ## Overview | 概述
 //!
-//! This module provides concrete implementations of symmetric encryption algorithms
+//! This module provides concrete implementations of aead encryption algorithms
 //! that support Authenticated Encryption with Associated Data (AEAD). Each wrapper
-//! implements the `SymmetricAlgorithmTrait` and provides type-safe access to the
+//! implements the `AeadAlgorithmTrait` and provides type-safe access to the
 //! underlying cryptographic operations.
 //!
 //! 此模块提供支持带关联数据认证加密 (AEAD) 的对称加密算法的具体实现。
-//! 每个包装器都实现 `SymmetricAlgorithmTrait` 并提供对底层密码操作的类型安全访问。
+//! 每个包装器都实现 `AeadAlgorithmTrait` 并提供对底层密码操作的类型安全访问。
 //!
 //! ## Supported Algorithms | 支持的算法
 //!
@@ -42,9 +42,9 @@
 //! ### Basic Encryption | 基本加密
 //!
 //! ```rust
-//! use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
+//! use seal_crypto_wrapper::algorithms::aead::AeadAlgorithm;
 //!
-//! let algorithm = SymmetricAlgorithm::build().aes256_gcm();
+//! let algorithm = AeadAlgorithm::build().aes256_gcm();
 //! let cipher = algorithm.into_wrapper();
 //! let key = cipher.generate_typed_key()?;
 //!
@@ -60,9 +60,9 @@
 //! ### With Associated Data | 使用关联数据
 //!
 //! ```rust
-//! use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
+//! use seal_crypto_wrapper::algorithms::aead::AeadAlgorithm;
 //!
-//! let cipher = SymmetricAlgorithm::build().chacha20_poly1305().into_wrapper();
+//! let cipher = AeadAlgorithm::build().chacha20_poly1305().into_wrapper();
 //! let key = cipher.generate_typed_key()?;
 //!
 //! let plaintext = b"Secret message";
@@ -74,10 +74,10 @@
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 
-use crate::algorithms::symmetric::{AesKeySize, SymmetricAlgorithm};
+use crate::algorithms::aead::{AeadAlgorithm, AesKeySize};
 use crate::error::{Error, FormatError, Result};
-use crate::keys::symmetric::{SymmetricKey as UntypedSymmetricKey, TypedSymmetricKey};
-use crate::traits::SymmetricAlgorithmTrait;
+use crate::keys::aead::{AeadKey as UntypedAeadKey, TypedAeadKey};
+use crate::traits::AeadAlgorithmTrait;
 use rand::TryRngCore;
 use rand::rngs::OsRng;
 use seal_crypto::prelude::{Key, SymmetricCipher, SymmetricDecryptor, SymmetricEncryptor};
@@ -85,11 +85,11 @@ use seal_crypto::schemes::symmetric::aes_gcm::{Aes128Gcm, Aes256Gcm};
 use seal_crypto::schemes::symmetric::chacha20_poly1305::{ChaCha20Poly1305, XChaCha20Poly1305};
 use std::ops::Deref;
 
-/// Macro for implementing symmetric algorithm wrappers.
+/// Macro for implementing aead algorithm wrappers.
 ///
 /// 用于实现对称算法包装器的宏。
 ///
-/// This macro generates a complete wrapper implementation for a symmetric algorithm,
+/// This macro generates a complete wrapper implementation for a aead algorithm,
 /// including all required trait methods, key validation, and error handling.
 ///
 /// 此宏为对称算法生成完整的包装器实现，
@@ -104,9 +104,9 @@ use std::ops::Deref;
 /// - `$wrapper`: 要生成的包装器结构体名称
 /// - `$algo`: 来自 seal-crypto 的底层算法类型
 /// - `$algo_enum`: 对应的算法枚举变体
-macro_rules! impl_symmetric_algorithm {
+macro_rules! impl_aead_algorithm {
     ($wrapper:ident, $algo:ty, $algo_enum:expr) => {
-        /// Wrapper implementation for a specific symmetric algorithm.
+        /// Wrapper implementation for a specific aead algorithm.
         ///
         /// 特定对称算法的包装器实现。
         ///
@@ -125,17 +125,17 @@ macro_rules! impl_symmetric_algorithm {
             }
         }
 
-        impl From<$wrapper> for Box<dyn SymmetricAlgorithmTrait> {
+        impl From<$wrapper> for Box<dyn AeadAlgorithmTrait> {
             fn from(wrapper: $wrapper) -> Self {
                 Box::new(wrapper)
             }
         }
 
-        impl SymmetricAlgorithmTrait for $wrapper {
+        impl AeadAlgorithmTrait for $wrapper {
             fn encrypt(
                 &self,
                 plaintext: &[u8],
-                key: &TypedSymmetricKey,
+                key: &TypedAeadKey,
                 nonce: &[u8],
                 aad: Option<&[u8]>,
             ) -> Result<Vec<u8>> {
@@ -152,7 +152,7 @@ macro_rules! impl_symmetric_algorithm {
                 &self,
                 plaintext: &[u8],
                 output: &mut [u8],
-                key: &TypedSymmetricKey,
+                key: &TypedAeadKey,
                 nonce: &[u8],
                 aad: Option<&[u8]>,
             ) -> Result<usize> {
@@ -168,7 +168,7 @@ macro_rules! impl_symmetric_algorithm {
             fn decrypt(
                 &self,
                 ciphertext: &[u8],
-                key: &TypedSymmetricKey,
+                key: &TypedAeadKey,
                 nonce: &[u8],
                 aad: Option<&[u8]>,
             ) -> Result<Vec<u8>> {
@@ -185,7 +185,7 @@ macro_rules! impl_symmetric_algorithm {
                 &self,
                 ciphertext: &[u8],
                 output: &mut [u8],
-                key: &TypedSymmetricKey,
+                key: &TypedAeadKey,
                 nonce: &[u8],
                 aad: Option<&[u8]>,
             ) -> Result<usize> {
@@ -198,11 +198,11 @@ macro_rules! impl_symmetric_algorithm {
                 KT::decrypt_to_buffer(&key, nonce, ciphertext, output, aad).map_err(Error::from)
             }
 
-            fn clone_box(&self) -> Box<dyn SymmetricAlgorithmTrait> {
+            fn clone_box(&self) -> Box<dyn AeadAlgorithmTrait> {
                 Box::new(self.clone())
             }
 
-            fn algorithm(&self) -> SymmetricAlgorithm {
+            fn algorithm(&self) -> AeadAlgorithm {
                 $algo_enum
             }
 
@@ -218,28 +218,28 @@ macro_rules! impl_symmetric_algorithm {
                 <$algo>::TAG_SIZE
             }
 
-            fn generate_typed_key(&self) -> Result<TypedSymmetricKey> {
-                TypedSymmetricKey::generate($algo_enum)
+            fn generate_typed_key(&self) -> Result<TypedAeadKey> {
+                TypedAeadKey::generate($algo_enum)
             }
 
-            fn generate_untyped_key(&self) -> Result<UntypedSymmetricKey> {
+            fn generate_untyped_key(&self) -> Result<UntypedAeadKey> {
                 self.generate_typed_key().map(|k| k.untyped())
             }
 
-            fn into_boxed(self) -> Box<dyn SymmetricAlgorithmTrait> {
+            fn into_boxed(self) -> Box<dyn AeadAlgorithmTrait> {
                 Box::new(self)
             }
         }
     };
 }
 
-/// Universal wrapper for symmetric encryption algorithms.
+/// Universal wrapper for aead encryption algorithms.
 ///
 /// 对称加密算法的通用包装器。
 ///
 /// ## Purpose | 目的
 ///
-/// This wrapper provides a unified interface for all symmetric encryption algorithms,
+/// This wrapper provides a unified interface for all aead encryption algorithms,
 /// allowing runtime algorithm selection while maintaining type safety. It acts as
 /// a bridge between algorithm enums and concrete implementations.
 ///
@@ -250,7 +250,7 @@ macro_rules! impl_symmetric_algorithm {
 ///
 /// - **Runtime Polymorphism**: Switch between algorithms at runtime
 /// - **Type Safety**: Maintains algorithm-key binding verification
-/// - **Unified Interface**: Same API for all symmetric algorithms
+/// - **Unified Interface**: Same API for all aead algorithms
 /// - **Performance**: Zero-cost abstractions where possible
 ///
 /// - **运行时多态性**: 在运行时切换算法
@@ -261,12 +261,12 @@ macro_rules! impl_symmetric_algorithm {
 /// ## Examples | 示例
 ///
 /// ```rust
-/// use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
-/// use seal_crypto_wrapper::wrappers::symmetric::SymmetricAlgorithmWrapper;
+/// use seal_crypto_wrapper::algorithms::aead::AeadAlgorithm;
+/// use seal_crypto_wrapper::wrappers::aead::AeadAlgorithmWrapper;
 ///
 /// // Create from algorithm enum
-/// let algorithm = SymmetricAlgorithm::build().aes256_gcm();
-/// let wrapper = SymmetricAlgorithmWrapper::from_enum(algorithm);
+/// let algorithm = AeadAlgorithm::build().aes256_gcm();
+/// let wrapper = AeadAlgorithmWrapper::from_enum(algorithm);
 ///
 /// // Use unified interface
 /// let key = wrapper.generate_typed_key()?;
@@ -276,45 +276,45 @@ macro_rules! impl_symmetric_algorithm {
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[derive(Clone, Debug)]
-pub struct SymmetricAlgorithmWrapper {
-    pub(crate) algorithm: Box<dyn SymmetricAlgorithmTrait>,
+pub struct AeadAlgorithmWrapper {
+    pub(crate) algorithm: Box<dyn AeadAlgorithmTrait>,
 }
 
-impl Deref for SymmetricAlgorithmWrapper {
-    type Target = Box<dyn SymmetricAlgorithmTrait>;
+impl Deref for AeadAlgorithmWrapper {
+    type Target = Box<dyn AeadAlgorithmTrait>;
 
     fn deref(&self) -> &Self::Target {
         &self.algorithm
     }
 }
 
-impl Into<Box<dyn SymmetricAlgorithmTrait>> for SymmetricAlgorithmWrapper {
-    fn into(self) -> Box<dyn SymmetricAlgorithmTrait> {
+impl Into<Box<dyn AeadAlgorithmTrait>> for AeadAlgorithmWrapper {
+    fn into(self) -> Box<dyn AeadAlgorithmTrait> {
         self.algorithm
     }
 }
 
-impl SymmetricAlgorithmWrapper {
+impl AeadAlgorithmWrapper {
     /// Creates a new wrapper from a boxed trait object.
     ///
     /// 从 boxed trait 对象创建新的包装器。
     ///
     /// This constructor allows you to wrap any implementation of
-    /// `SymmetricAlgorithmTrait` in the universal wrapper interface.
+    /// `AeadAlgorithmTrait` in the universal wrapper interface.
     ///
-    /// 此构造函数允许您将 `SymmetricAlgorithmTrait` 的任何实现
+    /// 此构造函数允许您将 `AeadAlgorithmTrait` 的任何实现
     /// 包装在通用包装器接口中。
     ///
     /// ## Arguments | 参数
     ///
-    /// * `algorithm` - A boxed trait object implementing the symmetric algorithm
+    /// * `algorithm` - A boxed trait object implementing the aead algorithm
     ///
     /// * `algorithm` - 实现对称算法的 boxed trait 对象
-    pub fn new(algorithm: Box<dyn SymmetricAlgorithmTrait>) -> Self {
+    pub fn new(algorithm: Box<dyn AeadAlgorithmTrait>) -> Self {
         Self { algorithm }
     }
 
-    /// Creates a wrapper from a symmetric algorithm enum.
+    /// Creates a wrapper from a aead algorithm enum.
     ///
     /// 从对称算法枚举创建包装器。
     ///
@@ -325,30 +325,30 @@ impl SymmetricAlgorithmWrapper {
     ///
     /// ## Arguments | 参数
     ///
-    /// * `algorithm` - The symmetric algorithm enum variant
+    /// * `algorithm` - The aead algorithm enum variant
     ///
     /// * `algorithm` - 对称算法枚举变体
     ///
     /// ## Examples | 示例
     ///
     /// ```rust
-    /// use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
-    /// use seal_crypto_wrapper::wrappers::symmetric::SymmetricAlgorithmWrapper;
+    /// use seal_crypto_wrapper::algorithms::aead::AeadAlgorithm;
+    /// use seal_crypto_wrapper::wrappers::aead::AeadAlgorithmWrapper;
     ///
-    /// let aes = SymmetricAlgorithmWrapper::from_enum(
-    ///     SymmetricAlgorithm::build().aes256_gcm()
+    /// let aes = AeadAlgorithmWrapper::from_enum(
+    ///     AeadAlgorithm::build().aes256_gcm()
     /// );
     ///
-    /// let chacha = SymmetricAlgorithmWrapper::from_enum(
-    ///     SymmetricAlgorithm::build().chacha20_poly1305()
+    /// let chacha = AeadAlgorithmWrapper::from_enum(
+    ///     AeadAlgorithm::build().chacha20_poly1305()
     /// );
     /// ```
-    pub fn from_enum(algorithm: SymmetricAlgorithm) -> Self {
-        let algorithm: Box<dyn SymmetricAlgorithmTrait> = match algorithm {
-            SymmetricAlgorithm::AesGcm(AesKeySize::K128) => Box::new(Aes128GcmWrapper::new()),
-            SymmetricAlgorithm::AesGcm(AesKeySize::K256) => Box::new(Aes256GcmWrapper::new()),
-            SymmetricAlgorithm::ChaCha20Poly1305 => Box::new(ChaCha20Poly1305Wrapper::new()),
-            SymmetricAlgorithm::XChaCha20Poly1305 => Box::new(XChaCha20Poly1305Wrapper::new()),
+    pub fn from_enum(algorithm: AeadAlgorithm) -> Self {
+        let algorithm: Box<dyn AeadAlgorithmTrait> = match algorithm {
+            AeadAlgorithm::AesGcm(AesKeySize::K128) => Box::new(Aes128GcmWrapper::new()),
+            AeadAlgorithm::AesGcm(AesKeySize::K256) => Box::new(Aes256GcmWrapper::new()),
+            AeadAlgorithm::ChaCha20Poly1305 => Box::new(ChaCha20Poly1305Wrapper::new()),
+            AeadAlgorithm::XChaCha20Poly1305 => Box::new(XChaCha20Poly1305Wrapper::new()),
         };
         Self::new(algorithm)
     }
@@ -365,23 +365,23 @@ impl SymmetricAlgorithmWrapper {
     ///
     /// ## Returns | 返回值
     ///
-    /// A new `TypedSymmetricKey` that can only be used with this algorithm.
+    /// A new `TypedAeadKey` that can only be used with this algorithm.
     ///
-    /// 只能与此算法一起使用的新 `TypedSymmetricKey`。
+    /// 只能与此算法一起使用的新 `TypedAeadKey`。
     ///
     /// ## Examples | 示例
     ///
     /// ```rust
-    /// use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
+    /// use seal_crypto_wrapper::algorithms::aead::AeadAlgorithm;
     ///
-    /// let cipher = SymmetricAlgorithm::build().aes256_gcm().into_wrapper();
+    /// let cipher = AeadAlgorithm::build().aes256_gcm().into_wrapper();
     /// let key = cipher.generate_typed_key()?;
     ///
     /// // Key is bound to AES-256-GCM
-    /// assert_eq!(key.algorithm(), SymmetricAlgorithm::build().aes256_gcm());
+    /// assert_eq!(key.algorithm(), AeadAlgorithm::build().aes256_gcm());
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn generate_typed_key(&self) -> Result<TypedSymmetricKey> {
+    pub fn generate_typed_key(&self) -> Result<TypedAeadKey> {
         self.algorithm.generate_typed_key()
     }
 
@@ -402,7 +402,7 @@ impl SymmetricAlgorithmWrapper {
     ///
     /// 非类型化密钥失去算法绑定信息。尽可能使用 `generate_typed_key()`
     /// 以保持类型安全。
-    pub fn generate_untyped_key(&self) -> Result<UntypedSymmetricKey> {
+    pub fn generate_untyped_key(&self) -> Result<UntypedAeadKey> {
         self.algorithm.generate_untyped_key()
     }
 
@@ -410,13 +410,13 @@ impl SymmetricAlgorithmWrapper {
     ///
     /// 生成新的 nonce。
     ///
-    /// This method generates a random nonce for the symmetric algorithm.
+    /// This method generates a random nonce for the aead algorithm.
     ///
     /// 此方法生成对称算法的随机 nonce。
     ///
     /// ## Returns | 返回值
     ///
-    /// A new nonce for the symmetric algorithm.
+    /// A new nonce for the aead algorithm.
     ///
     /// 对称算法的新的 nonce。
     ///
@@ -427,11 +427,11 @@ impl SymmetricAlgorithmWrapper {
     }
 }
 
-impl SymmetricAlgorithmTrait for SymmetricAlgorithmWrapper {
+impl AeadAlgorithmTrait for AeadAlgorithmWrapper {
     fn encrypt(
         &self,
         plaintext: &[u8],
-        key: &TypedSymmetricKey,
+        key: &TypedAeadKey,
         nonce: &[u8],
         aad: Option<&[u8]>,
     ) -> Result<Vec<u8>> {
@@ -442,7 +442,7 @@ impl SymmetricAlgorithmTrait for SymmetricAlgorithmWrapper {
         &self,
         plaintext: &[u8],
         output: &mut [u8],
-        key: &TypedSymmetricKey,
+        key: &TypedAeadKey,
         nonce: &[u8],
         aad: Option<&[u8]>,
     ) -> Result<usize> {
@@ -453,7 +453,7 @@ impl SymmetricAlgorithmTrait for SymmetricAlgorithmWrapper {
     fn decrypt(
         &self,
         ciphertext: &[u8],
-        key: &TypedSymmetricKey,
+        key: &TypedAeadKey,
         nonce: &[u8],
         aad: Option<&[u8]>,
     ) -> Result<Vec<u8>> {
@@ -464,7 +464,7 @@ impl SymmetricAlgorithmTrait for SymmetricAlgorithmWrapper {
         &self,
         ciphertext: &[u8],
         output: &mut [u8],
-        key: &TypedSymmetricKey,
+        key: &TypedAeadKey,
         nonce: &[u8],
         aad: Option<&[u8]>,
     ) -> Result<usize> {
@@ -472,15 +472,15 @@ impl SymmetricAlgorithmTrait for SymmetricAlgorithmWrapper {
             .decrypt_to_buffer(ciphertext, output, key, nonce, aad)
     }
 
-    fn generate_typed_key(&self) -> Result<TypedSymmetricKey> {
+    fn generate_typed_key(&self) -> Result<TypedAeadKey> {
         self.algorithm.generate_typed_key()
     }
 
-    fn generate_untyped_key(&self) -> Result<UntypedSymmetricKey> {
+    fn generate_untyped_key(&self) -> Result<UntypedAeadKey> {
         self.algorithm.generate_untyped_key()
     }
 
-    fn algorithm(&self) -> SymmetricAlgorithm {
+    fn algorithm(&self) -> AeadAlgorithm {
         self.algorithm.algorithm()
     }
 
@@ -496,69 +496,67 @@ impl SymmetricAlgorithmTrait for SymmetricAlgorithmWrapper {
         self.algorithm.tag_size()
     }
 
-    fn into_boxed(self) -> Box<dyn SymmetricAlgorithmTrait> {
+    fn into_boxed(self) -> Box<dyn AeadAlgorithmTrait> {
         self.algorithm
     }
 
-    fn clone_box(&self) -> Box<dyn SymmetricAlgorithmTrait> {
+    fn clone_box(&self) -> Box<dyn AeadAlgorithmTrait> {
         Box::new(self.clone())
     }
 }
 
-impl From<SymmetricAlgorithm> for SymmetricAlgorithmWrapper {
-    fn from(algorithm: SymmetricAlgorithm) -> Self {
+impl From<AeadAlgorithm> for AeadAlgorithmWrapper {
+    fn from(algorithm: AeadAlgorithm) -> Self {
         Self::from_enum(algorithm)
     }
 }
 
-impl From<Box<dyn SymmetricAlgorithmTrait>> for SymmetricAlgorithmWrapper {
-    fn from(algorithm: Box<dyn SymmetricAlgorithmTrait>) -> Self {
+impl From<Box<dyn AeadAlgorithmTrait>> for AeadAlgorithmWrapper {
+    fn from(algorithm: Box<dyn AeadAlgorithmTrait>) -> Self {
         Self::new(algorithm)
     }
 }
 
-impl_symmetric_algorithm!(
+impl_aead_algorithm!(
     Aes128GcmWrapper,
     Aes128Gcm,
-    SymmetricAlgorithm::AesGcm(AesKeySize::K128)
+    AeadAlgorithm::AesGcm(AesKeySize::K128)
 );
 
-impl_symmetric_algorithm!(
+impl_aead_algorithm!(
     Aes256GcmWrapper,
     Aes256Gcm,
-    SymmetricAlgorithm::AesGcm(AesKeySize::K256)
+    AeadAlgorithm::AesGcm(AesKeySize::K256)
 );
 
-impl_symmetric_algorithm!(
+impl_aead_algorithm!(
     ChaCha20Poly1305Wrapper,
     ChaCha20Poly1305,
-    SymmetricAlgorithm::ChaCha20Poly1305
+    AeadAlgorithm::ChaCha20Poly1305
 );
 
-impl_symmetric_algorithm!(
+impl_aead_algorithm!(
     XChaCha20Poly1305Wrapper,
     XChaCha20Poly1305,
-    SymmetricAlgorithm::XChaCha20Poly1305
+    AeadAlgorithm::XChaCha20Poly1305
 );
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithms::symmetric::SymmetricAlgorithm;
-    use crate::keys::symmetric::{SymmetricKey, TypedSymmetricKey};
     #[cfg(feature = "kdf")]
     use crate::algorithms::kdf::{key::KdfKeyAlgorithm, passwd::KdfPasswordAlgorithm};
-    use seal_crypto::secrecy::SecretBox;
     #[cfg(feature = "xof")]
     use crate::algorithms::xof::XofAlgorithm;
+    use crate::keys::aead::AeadKey;
 
     #[test]
     fn test_symmetric_key_generate() {
-        use crate::keys::symmetric::SymmetricKey;
+        use crate::keys::aead::AeadKey;
         use seal_crypto::{prelude::SymmetricCipher, schemes::symmetric::aes_gcm::Aes256Gcm};
 
         let key_len = <Aes256Gcm as SymmetricCipher>::KEY_SIZE;
-        let key1 = SymmetricKey::generate(key_len).unwrap();
-        let key2 = SymmetricKey::generate(key_len).unwrap();
+        let key1 = AeadKey::generate(key_len).unwrap();
+        let key2 = AeadKey::generate(key_len).unwrap();
 
         assert_eq!(key1.as_bytes().len(), key_len);
         assert_eq!(key2.as_bytes().len(), key_len);
@@ -572,7 +570,7 @@ mod tests {
     #[test]
     fn test_symmetric_key_from_bytes() {
         let key_bytes = vec![0u8; 32];
-        let key = SymmetricKey::new(key_bytes.clone());
+        let key = AeadKey::new(key_bytes.clone());
 
         assert_eq!(key.as_bytes(), key_bytes.as_slice());
     }
@@ -588,9 +586,9 @@ mod tests {
         let info1 = b"encryption_key";
         let info2 = b"signing_key";
         let kdf_algorithm = KdfKeyAlgorithm::build().hkdf_sha256();
-        let symmetric_algorithm = SymmetricAlgorithm::build().aes256_gcm();
+        let symmetric_algorithm = AeadAlgorithm::build().aes256_gcm();
 
-        let derived_key1 = TypedSymmetricKey::derive_from_kdf(
+        let derived_key1 = TypedAeadKey::derive_from_kdf(
             &master_key_bytes,
             kdf_algorithm.clone(),
             Some(salt),
@@ -599,7 +597,7 @@ mod tests {
         )
         .unwrap();
 
-        let derived_key2 = TypedSymmetricKey::derive_from_kdf(
+        let derived_key2 = TypedAeadKey::derive_from_kdf(
             &master_key_bytes,
             kdf_algorithm.clone(),
             Some(salt),
@@ -609,7 +607,7 @@ mod tests {
         .unwrap();
 
         // 相同的主密钥和参数应该产生相同的派生密钥
-        let derived_key1_again = TypedSymmetricKey::derive_from_kdf(
+        let derived_key1_again = TypedAeadKey::derive_from_kdf(
             &master_key_bytes,
             kdf_algorithm.clone(),
             Some(salt),
@@ -633,26 +631,35 @@ mod tests {
         // 使用PBKDF2-SHA256从密码派生密钥
         let password = SecretBox::new(Box::from(b"my_secure_password".as_slice()));
         let salt = b"random_salt_value";
-        let symmetric_algorithm = SymmetricAlgorithm::build().aes256_gcm();
+        let symmetric_algorithm = AeadAlgorithm::build().aes256_gcm();
 
         // 设置较少的迭代次数以加速测试（实际应用中应使用更多迭代）
-        let deriver =
-            KdfPasswordAlgorithm::build().pbkdf2_sha256_with_params(1000).into_wrapper();
+        let deriver = KdfPasswordAlgorithm::build()
+            .pbkdf2_sha256_with_params(1000)
+            .into_wrapper();
 
-        let derived_key1 =
-            TypedSymmetricKey::derive_from_password(&password, deriver.clone(), salt, symmetric_algorithm)
-                .unwrap();
+        let derived_key1 = TypedAeadKey::derive_from_password(
+            &password,
+            deriver.clone(),
+            salt,
+            symmetric_algorithm,
+        )
+        .unwrap();
 
         // 相同的密码、盐和迭代次数应该产生相同的密钥
-        let derived_key2 =
-            TypedSymmetricKey::derive_from_password(&password, deriver.clone(), salt, symmetric_algorithm)
-                .unwrap();
+        let derived_key2 = TypedAeadKey::derive_from_password(
+            &password,
+            deriver.clone(),
+            salt,
+            symmetric_algorithm,
+        )
+        .unwrap();
 
         assert_eq!(derived_key1.as_bytes(), derived_key2.as_bytes());
 
         // 不同的密码应该产生不同的密钥
         let different_password = SecretBox::new(Box::from(b"different_password".as_slice()));
-        let derived_key3 = TypedSymmetricKey::derive_from_password(
+        let derived_key3 = TypedAeadKey::derive_from_password(
             &different_password,
             deriver.clone(),
             salt,
@@ -664,7 +671,7 @@ mod tests {
 
         // 不同的盐应该产生不同的密钥
         let different_salt = b"different_salt_value";
-        let derived_key4 = TypedSymmetricKey::derive_from_password(
+        let derived_key4 = TypedAeadKey::derive_from_password(
             &password,
             deriver.clone(),
             different_salt,
@@ -683,16 +690,17 @@ mod tests {
         use crate::traits::XofAlgorithmTrait;
 
         let seed = [0u8; 32];
-        let symmetric_algo_1 = SymmetricAlgorithm::build().aes128_gcm();
-        let symmetric_algo_2 = SymmetricAlgorithm::build().aes256_gcm();
+        let symmetric_algo_1 = AeadAlgorithm::build().aes128_gcm();
+        let symmetric_algo_2 = AeadAlgorithm::build().aes256_gcm();
 
         let mut reader = XofAlgorithm::build()
             .shake128()
             .into_wrapper()
-            .reader(&seed, None, None).unwrap();
+            .reader(&seed, None, None)
+            .unwrap();
 
-        let key1 = TypedSymmetricKey::derive_from_xof(&mut reader, symmetric_algo_1).unwrap();
-        let key2 = TypedSymmetricKey::derive_from_xof(&mut reader, symmetric_algo_2).unwrap();
+        let key1 = TypedAeadKey::derive_from_xof(&mut reader, symmetric_algo_1).unwrap();
+        let key2 = TypedAeadKey::derive_from_xof(&mut reader, symmetric_algo_2).unwrap();
 
         // Keys derived from the same reader should be different
         assert_ne!(key1.as_bytes(), key2.as_bytes());
@@ -713,11 +721,11 @@ mod tests {
         let salt = b"salt";
         let info = b"info";
 
-        let sym_alg_128 = SymmetricAlgorithm::build().aes128_gcm();
-        let sym_alg_256 = SymmetricAlgorithm::build().aes256_gcm();
+        let sym_alg_128 = AeadAlgorithm::build().aes128_gcm();
+        let sym_alg_256 = AeadAlgorithm::build().aes256_gcm();
 
         // 测试不同长度的输出
-        let key_128 = TypedSymmetricKey::derive_from_kdf(
+        let key_128 = TypedAeadKey::derive_from_kdf(
             &master_key_bytes,
             kdf_algorithm.clone(),
             Some(salt),
@@ -725,7 +733,7 @@ mod tests {
             sym_alg_128,
         )
         .unwrap();
-        let key_256 = TypedSymmetricKey::derive_from_kdf(
+        let key_256 = TypedAeadKey::derive_from_kdf(
             &master_key_bytes,
             kdf_algorithm.clone(),
             Some(salt),

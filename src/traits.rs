@@ -41,14 +41,14 @@
 //!
 //! ## Trait Categories | Trait 分类
 //!
-//! - **Symmetric Cryptography**: `SymmetricAlgorithmTrait` for AEAD ciphers
+//! - **Aead Cryptography**: `AeadAlgorithmTrait` for AEAD ciphers
 //! - **Asymmetric KEM**: `KemAlgorithmTrait` for key encapsulation mechanisms
 //! - **Digital Signatures**: `SignatureAlgorithmTrait` for signing and verification
 //! - **Key Agreement**: `KeyAgreementAlgorithmTrait` for shared secret derivation
 //! - **Key Derivation**: `KdfKeyAlgorithmTrait`, `KdfPasswordAlgorithmTrait` for key derivation
 //! - **Extendable Output**: `XofAlgorithmTrait` for variable-length output functions
 //!
-//! - **对称密码学**: `SymmetricAlgorithmTrait` 用于 AEAD 密码
+//! - **对称密码学**: `AeadAlgorithmTrait` 用于 AEAD 密码
 //! - **非对称 KEM**: `KemAlgorithmTrait` 用于密钥封装机制
 //! - **数字签名**: `SignatureAlgorithmTrait` 用于签名和验证
 //! - **密钥协商**: `KeyAgreementAlgorithmTrait` 用于共享密钥派生
@@ -65,8 +65,15 @@
 
 #[cfg(feature = "asymmetric-key-agreement")]
 use crate::algorithms::asymmetric::key_agreement::KeyAgreementAlgorithm;
-#[cfg(feature = "asymmetric-signature")]
-use crate::{algorithms::asymmetric::signature::SignatureAlgorithm, wrappers::asymmetric::signature::SignatureWrapper};
+#[cfg(any(
+    feature = "aead",
+    feature = "asymmetric-kem",
+    feature = "kdf",
+    feature = "xof",
+    feature = "asymmetric-signature",
+    feature = "asymmetric-key-agreement"
+))]
+use crate::error::Result;
 #[cfg(feature = "asymmetric-key-agreement")]
 use crate::keys::asymmetric::key_agreement::{
     TypedKeyAgreementKeyPair, TypedKeyAgreementPrivateKey, TypedKeyAgreementPublicKey,
@@ -74,6 +81,16 @@ use crate::keys::asymmetric::key_agreement::{
 #[cfg(feature = "asymmetric-signature")]
 use crate::keys::asymmetric::signature::{
     TypedSignatureKeyPair, TypedSignaturePrivateKey, TypedSignaturePublicKey,
+};
+#[cfg(feature = "asymmetric-signature")]
+use crate::{
+    algorithms::asymmetric::signature::SignatureAlgorithm,
+    wrappers::asymmetric::signature::SignatureWrapper,
+};
+#[cfg(feature = "aead")]
+use {
+    crate::algorithms::aead::AeadAlgorithm,
+    crate::keys::aead::{AeadKey as UntypedAeadKey, TypedAeadKey},
 };
 #[cfg(feature = "asymmetric-kem")]
 use {
@@ -87,25 +104,8 @@ use {
     crate::algorithms::kdf::key::KdfKeyAlgorithm,
     crate::algorithms::kdf::passwd::KdfPasswordAlgorithm,
 };
-#[cfg(feature = "symmetric")]
-use {
-    crate::algorithms::symmetric::SymmetricAlgorithm,
-    crate::keys::symmetric::{SymmetricKey as UntypedSymmetricKey, TypedSymmetricKey},
-};
 #[cfg(feature = "xof")]
 use {crate::algorithms::xof::XofAlgorithm, crate::wrappers::xof::XofReaderWrapper};
-#[cfg(any(
-    feature = "symmetric",
-    feature = "asymmetric-kem",
-    feature = "kdf",
-    feature = "xof",
-    feature = "asymmetric-signature",
-    feature = "asymmetric-key-agreement"
-))]
-use {
-    crate::error::Result,
-    seal_crypto::{secrecy::SecretBox, zeroize::Zeroizing},
-};
 
 /// Macro for automatically implementing traits for `Box<dyn Trait>` types.
 ///
@@ -140,7 +140,7 @@ use {
 /// ## Examples | 示例
 ///
 /// ```ignore
-/// impl_trait_for_box!(SymmetricAlgorithmTrait {
+/// impl_trait_for_box!(AeadAlgorithmTrait {
 ///     ref fn encrypt(&self, key: &Key, data: &[u8]) -> Result<Vec<u8>>;
 ///     ref fn decrypt(&self, key: &Key, data: &[u8]) -> Result<Vec<u8>>;
 /// }, clone_box_symmetric);
@@ -278,13 +278,13 @@ macro_rules! impl_trait_for_box {
     };
 }
 
-/// Trait for symmetric encryption algorithms with Authenticated Encryption with Associated Data (AEAD).
+/// Trait for aead encryption algorithms with Authenticated Encryption with Associated Data (AEAD).
 ///
 /// 用于带关联数据认证加密 (AEAD) 的对称加密算法 trait。
 ///
 /// ## Overview | 概述
 ///
-/// This trait provides a unified interface for symmetric encryption algorithms that support
+/// This trait provides a unified interface for aead encryption algorithms that support
 /// AEAD (Authenticated Encryption with Associated Data). All methods are object-safe,
 /// allowing the trait to be used as a trait object.
 ///
@@ -317,15 +317,15 @@ macro_rules! impl_trait_for_box {
 /// - 永远不要重复使用 nonce-密钥对
 /// - 为 nonce 使用密码学安全的随机数生成
 /// - 考虑使用关联数据进行上下文绑定
-#[cfg(feature = "symmetric")]
-pub trait SymmetricAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
+#[cfg(feature = "aead")]
+pub trait AeadAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     /// Encrypts plaintext with optional associated data.
     ///
     /// 使用可选关联数据加密明文。
     ///
     /// # Arguments | 参数
     ///
-    /// * `key` - Typed symmetric key bound to this algorithm | 绑定到此算法的类型化对称密钥
+    /// * `key` - Typed aead key bound to this algorithm | 绑定到此算法的类型化对称密钥
     /// * `plaintext` - Data to encrypt | 要加密的数据
     /// * `nonce` - Unique number used once (must be unique per key) | 一次性使用的唯一数字（每个密钥必须唯一）
     /// * `aad` - Optional associated data to authenticate | 要认证的可选关联数据
@@ -352,7 +352,7 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     fn encrypt(
         &self,
         plaintext: &[u8],
-        key: &TypedSymmetricKey,
+        key: &TypedAeadKey,
         nonce: &[u8],
         aad: Option<&[u8]>,
     ) -> Result<Vec<u8>>;
@@ -379,7 +379,7 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
         &self,
         plaintext: &[u8],
         output: &mut [u8],
-        key: &TypedSymmetricKey,
+        key: &TypedAeadKey,
         nonce: &[u8],
         aad: Option<&[u8]>,
     ) -> Result<usize>;
@@ -390,7 +390,7 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     ///
     /// # Arguments | 参数
     /// * `ciphertext` - Encrypted data with authentication tag | 带认证标签的加密数据
-    /// * `key` - Typed symmetric key bound to this algorithm | 绑定到此算法的类型化对称密钥
+    /// * `key` - Typed aead key bound to this algorithm | 绑定到此算法的类型化对称密钥
     /// * `nonce` - Same nonce used for encryption | 用于加密的相同 nonce
     /// * `aad` - Same associated data used for encryption | 用于加密的相同关联数据
     ///
@@ -416,7 +416,7 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     fn decrypt(
         &self,
         ciphertext: &[u8],
-        key: &TypedSymmetricKey,
+        key: &TypedAeadKey,
         nonce: &[u8],
         aad: Option<&[u8]>,
     ) -> Result<Vec<u8>>;
@@ -438,12 +438,12 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
         &self,
         ciphertext: &[u8],
         output: &mut [u8],
-        key: &TypedSymmetricKey,
+        key: &TypedAeadKey,
         nonce: &[u8],
         aad: Option<&[u8]>,
     ) -> Result<usize>;
 
-    /// Generates a new typed symmetric key for this algorithm.
+    /// Generates a new typed aead key for this algorithm.
     ///
     /// 为此算法生成新的类型化对称密钥。
     ///
@@ -454,12 +454,12 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     ///
     /// # Returns | 返回值
     ///
-    /// A new typed symmetric key with proper algorithm binding.
+    /// A new typed aead key with proper algorithm binding.
     ///
     /// 具有正确算法绑定的新类型化对称密钥。
-    fn generate_typed_key(&self) -> Result<TypedSymmetricKey>;
+    fn generate_typed_key(&self) -> Result<TypedAeadKey>;
 
-    /// Generates a new untyped symmetric key.
+    /// Generates a new untyped aead key.
     ///
     /// 生成新的非类型化对称密钥。
     ///
@@ -468,7 +468,7 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     ///
     /// 这生成没有算法绑定的原始密钥材料。
     /// 使用 `generate_typed_key` 进行类型安全操作。
-    fn generate_untyped_key(&self) -> Result<UntypedSymmetricKey>;
+    fn generate_untyped_key(&self) -> Result<UntypedAeadKey>;
 
     /// Returns the algorithm identifier.
     ///
@@ -477,7 +477,7 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     /// Used for runtime algorithm verification and key compatibility checking.
     ///
     /// 用于运行时算法验证和密钥兼容性检查。
-    fn algorithm(&self) -> SymmetricAlgorithm;
+    fn algorithm(&self) -> AeadAlgorithm;
 
     /// Returns the key size in bytes for this algorithm.
     ///
@@ -519,34 +519,34 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     ///
     /// 消费 `self` 并返回堆分配的 trait 对象。
     /// 用于在集合中存储不同的算法类型。
-    fn into_boxed(self) -> Box<dyn SymmetricAlgorithmTrait>;
+    fn into_boxed(self) -> Box<dyn AeadAlgorithmTrait>;
 
     /// Creates a cloned boxed trait object.
     ///
     /// 创建克隆的 boxed trait 对象。
     ///
     /// Returns a new heap-allocated trait object with the same algorithm.
-    /// Required for implementing `Clone` on `Box<dyn SymmetricAlgorithmTrait>`.
+    /// Required for implementing `Clone` on `Box<dyn AeadAlgorithmTrait>`.
     ///
     /// 返回具有相同算法的新堆分配 trait 对象。
-    /// 在 `Box<dyn SymmetricAlgorithmTrait>` 上实现 `Clone` 所必需的。
-    fn clone_box(&self) -> Box<dyn SymmetricAlgorithmTrait>;
+    /// 在 `Box<dyn AeadAlgorithmTrait>` 上实现 `Clone` 所必需的。
+    fn clone_box(&self) -> Box<dyn AeadAlgorithmTrait>;
 }
 
-#[cfg(feature = "symmetric")]
-impl_trait_for_box!(SymmetricAlgorithmTrait {
-    ref fn encrypt(&self, plaintext: &[u8], key: &TypedSymmetricKey, nonce: &[u8], aad: Option<&[u8]>) -> Result<Vec<u8>>;
-    ref fn encrypt_to_buffer(&self, plaintext: &[u8], output: &mut [u8], key: &TypedSymmetricKey, nonce: &[u8], aad: Option<&[u8]>) -> Result<usize>;
-    ref fn decrypt(&self, ciphertext: &[u8], key: &TypedSymmetricKey, nonce: &[u8], aad: Option<&[u8]>) -> Result<Vec<u8>>;
-    ref fn decrypt_to_buffer(&self, ciphertext: &[u8], output: &mut [u8], key: &TypedSymmetricKey, nonce: &[u8], aad: Option<&[u8]>) -> Result<usize>;
-    ref fn generate_typed_key(&self,) -> Result<TypedSymmetricKey>;
-    ref fn generate_untyped_key(&self,) -> Result<UntypedSymmetricKey>;
-    ref fn algorithm(&self,) -> SymmetricAlgorithm;
+#[cfg(feature = "aead")]
+impl_trait_for_box!(AeadAlgorithmTrait {
+    ref fn encrypt(&self, plaintext: &[u8], key: &TypedAeadKey, nonce: &[u8], aad: Option<&[u8]>) -> Result<Vec<u8>>;
+    ref fn encrypt_to_buffer(&self, plaintext: &[u8], output: &mut [u8], key: &TypedAeadKey, nonce: &[u8], aad: Option<&[u8]>) -> Result<usize>;
+    ref fn decrypt(&self, ciphertext: &[u8], key: &TypedAeadKey, nonce: &[u8], aad: Option<&[u8]>) -> Result<Vec<u8>>;
+    ref fn decrypt_to_buffer(&self, ciphertext: &[u8], output: &mut [u8], key: &TypedAeadKey, nonce: &[u8], aad: Option<&[u8]>) -> Result<usize>;
+    ref fn generate_typed_key(&self,) -> Result<TypedAeadKey>;
+    ref fn generate_untyped_key(&self,) -> Result<UntypedAeadKey>;
+    ref fn algorithm(&self,) -> AeadAlgorithm;
     ref fn key_size(&self,) -> usize;
     ref fn nonce_size(&self,) -> usize;
     ref fn tag_size(&self,) -> usize;
-    self fn into_boxed(self,) -> Box<dyn SymmetricAlgorithmTrait>;
-    ref fn clone_box(&self,) -> Box<dyn SymmetricAlgorithmTrait>;
+    self fn into_boxed(self,) -> Box<dyn AeadAlgorithmTrait>;
+    ref fn clone_box(&self,) -> Box<dyn AeadAlgorithmTrait>;
 }, clone_box);
 
 /// Trait to provide the details for a specific asymmetric algorithm.

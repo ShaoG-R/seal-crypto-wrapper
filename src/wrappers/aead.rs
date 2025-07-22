@@ -80,9 +80,9 @@ use crate::keys::aead::{AeadKey as UntypedAeadKey, TypedAeadKey};
 use crate::traits::AeadAlgorithmTrait;
 use rand::TryRngCore;
 use rand::rngs::OsRng;
-use seal_crypto::prelude::{Key, SymmetricCipher, SymmetricDecryptor, SymmetricEncryptor};
-use seal_crypto::schemes::symmetric::aes_gcm::{Aes128Gcm, Aes256Gcm};
-use seal_crypto::schemes::symmetric::chacha20_poly1305::{ChaCha20Poly1305, XChaCha20Poly1305};
+use seal_crypto::prelude::{Key, AeadCipher, AeadDecryptor, AeadEncryptor};
+use seal_crypto::schemes::aead::aes_gcm::{Aes128Gcm, Aes256Gcm};
+use seal_crypto::schemes::aead::chacha20_poly1305::{ChaCha20Poly1305, XChaCha20Poly1305};
 use std::ops::Deref;
 
 /// Macro for implementing aead algorithm wrappers.
@@ -554,9 +554,9 @@ mod tests {
     #[test]
     fn test_symmetric_key_generate() {
         use crate::keys::aead::AeadKey;
-        use seal_crypto::{prelude::SymmetricCipher, schemes::symmetric::aes_gcm::Aes256Gcm};
+        use seal_crypto::{prelude::AeadCipher, schemes::aead::aes_gcm::Aes256Gcm};
 
-        let key_len = <Aes256Gcm as SymmetricCipher>::KEY_SIZE;
+        let key_len = <Aes256Gcm as AeadCipher>::KEY_SIZE;
         let key1 = AeadKey::generate(key_len).unwrap();
         let key2 = AeadKey::generate(key_len).unwrap();
 

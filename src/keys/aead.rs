@@ -68,8 +68,8 @@ use crate::error::Error;
 #[cfg(feature = "xof")]
 use crate::wrappers::xof::XofReaderWrapper;
 use seal_crypto::prelude::{Key, SymmetricKeyGenerator, SymmetricKeySet};
-use seal_crypto::schemes::symmetric::aes_gcm::{Aes128Gcm, Aes256Gcm};
-use seal_crypto::schemes::symmetric::chacha20_poly1305::{ChaCha20Poly1305, XChaCha20Poly1305};
+use seal_crypto::schemes::aead::aes_gcm::{Aes128Gcm, Aes256Gcm};
+use seal_crypto::schemes::aead::chacha20_poly1305::{ChaCha20Poly1305, XChaCha20Poly1305};
 use seal_crypto::zeroize::Zeroizing;
 #[cfg(feature = "kdf")]
 use {

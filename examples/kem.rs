@@ -9,7 +9,7 @@ fn main() -> Result<()> {
 
     // 2. Get the algorithm wrapper.
     // 2. 获取算法包装器。
-    let kem = algorithm.into_asymmetric_wrapper();
+    let kem = algorithm.into_kem_wrapper();
     println!("Got KEM wrapper.");
 
     // 3. Generate a key pair.

@@ -118,6 +118,10 @@ macro_rules! impl_kdf_key_algorithm {
             fn clone_box(&self) -> Box<dyn KdfKeyAlgorithmTrait> {
                 Box::new(self.clone())
             }
+
+            fn into_boxed(self) -> Box<dyn KdfKeyAlgorithmTrait> {
+                Box::new(self)
+            }
         });
     };
 }
@@ -205,6 +209,10 @@ impl KdfKeyAlgorithmTrait for KdfKeyWrapper {
 
     fn clone_box(&self) -> Box<dyn KdfKeyAlgorithmTrait> {
         self.algorithm.clone_box()
+    }
+
+    fn into_boxed(self) -> Box<dyn KdfKeyAlgorithmTrait> {
+        Box::new(self)
     }
 }
 

@@ -123,6 +123,10 @@ macro_rules! impl_key_agreement_algorithm {
             fn clone_box(&self) -> Box<dyn KeyAgreementAlgorithmTrait> {
                 Box::new(self.clone())
             }
+
+            fn into_boxed(self) -> Box<dyn KeyAgreementAlgorithmTrait> {
+                Box::new(self)
+            }
         });
     };
 }
@@ -265,6 +269,10 @@ impl KeyAgreementAlgorithmTrait for KeyAgreementAlgorithmWrapper {
 
     fn algorithm(&self) -> KeyAgreementAlgorithm {
         self.algorithm.algorithm()
+    }
+
+    fn into_boxed(self) -> Box<dyn KeyAgreementAlgorithmTrait> {
+        Box::new(self)
     }
 }
 

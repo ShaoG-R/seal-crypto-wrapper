@@ -141,6 +141,10 @@ macro_rules! impl_signature_algorithm {
             fn clone_box(&self) -> Box<dyn SignatureAlgorithmTrait> {
                 Box::new(self.clone())
             }
+
+            fn into_boxed(self) -> Box<dyn SignatureAlgorithmTrait> {
+                Box::new(self)
+            }
         });
     };
 }
@@ -299,6 +303,10 @@ impl SignatureAlgorithmTrait for SignatureAlgorithmWrapper {
 
     fn algorithm(&self) -> SignatureAlgorithm {
         self.algorithm.algorithm()
+    }
+
+    fn into_boxed(self) -> Box<dyn SignatureAlgorithmTrait> {
+        Box::new(self)
     }
 }
 

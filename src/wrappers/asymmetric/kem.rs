@@ -127,11 +127,11 @@ macro_rules! impl_kem_algorithm {
                 TypedKemKeyPair::generate($algo_enum)
             }
 
-            fn clone_box_asymmetric(&self) -> Box<dyn KemAlgorithmTrait> {
+            fn clone_box(&self) -> Box<dyn KemAlgorithmTrait> {
                 Box::new(self.clone())
             }
 
-            fn into_asymmetric_boxed(self) -> Box<dyn KemAlgorithmTrait> {
+            fn into_boxed(self) -> Box<dyn KemAlgorithmTrait> {
                 Box::new(self)
             }
         });
@@ -305,11 +305,11 @@ impl KemAlgorithmTrait for KemAlgorithmWrapper {
         self.algorithm.generate_keypair()
     }
 
-    fn clone_box_asymmetric(&self) -> Box<dyn KemAlgorithmTrait> {
-        self.algorithm.clone_box_asymmetric()
+    fn clone_box(&self) -> Box<dyn KemAlgorithmTrait> {
+        self.algorithm.clone_box()
     }
 
-    fn into_asymmetric_boxed(self) -> Box<dyn KemAlgorithmTrait> {
+    fn into_boxed(self) -> Box<dyn KemAlgorithmTrait> {
         self.algorithm
     }
 }

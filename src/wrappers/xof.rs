@@ -171,6 +171,10 @@ impl XofAlgorithmTrait for Shake128Wrapper {
     fn algorithm(&self) -> XofAlgorithm {
         XofAlgorithm::Shake(ShakeVariant::V128)
     }
+
+    fn into_boxed(self) -> Box<dyn XofAlgorithmTrait> {
+        Box::new(self)
+    }
 }
 
 /// SHAKE-256 algorithm wrapper providing 256-bit security level.
@@ -246,6 +250,10 @@ impl XofAlgorithmTrait for Shake256Wrapper {
 
     fn algorithm(&self) -> XofAlgorithm {
         XofAlgorithm::Shake(ShakeVariant::V256)
+    }
+
+    fn into_boxed(self) -> Box<dyn XofAlgorithmTrait> {
+        Box::new(self)
     }
 }
 
@@ -327,6 +335,10 @@ impl XofAlgorithmTrait for XofWrapper {
 
     fn algorithm(&self) -> XofAlgorithm {
         self.algorithm.algorithm()
+    }
+
+    fn into_boxed(self) -> Box<dyn XofAlgorithmTrait> {
+        Box::new(self)
     }
 }
 

@@ -519,7 +519,7 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     ///
     /// 消费 `self` 并返回堆分配的 trait 对象。
     /// 用于在集合中存储不同的算法类型。
-    fn into_symmetric_boxed(self) -> Box<dyn SymmetricAlgorithmTrait>;
+    fn into_boxed(self) -> Box<dyn SymmetricAlgorithmTrait>;
 
     /// Creates a cloned boxed trait object.
     ///
@@ -530,7 +530,7 @@ pub trait SymmetricAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     ///
     /// 返回具有相同算法的新堆分配 trait 对象。
     /// 在 `Box<dyn SymmetricAlgorithmTrait>` 上实现 `Clone` 所必需的。
-    fn clone_box_symmetric(&self) -> Box<dyn SymmetricAlgorithmTrait>;
+    fn clone_box(&self) -> Box<dyn SymmetricAlgorithmTrait>;
 }
 
 #[cfg(feature = "symmetric")]
@@ -545,9 +545,9 @@ impl_trait_for_box!(SymmetricAlgorithmTrait {
     ref fn key_size(&self,) -> usize;
     ref fn nonce_size(&self,) -> usize;
     ref fn tag_size(&self,) -> usize;
-    self fn into_symmetric_boxed(self,) -> Box<dyn SymmetricAlgorithmTrait>;
-    ref fn clone_box_symmetric(&self,) -> Box<dyn SymmetricAlgorithmTrait>;
-}, clone_box_symmetric);
+    self fn into_boxed(self,) -> Box<dyn SymmetricAlgorithmTrait>;
+    ref fn clone_box(&self,) -> Box<dyn SymmetricAlgorithmTrait>;
+}, clone_box);
 
 /// Trait to provide the details for a specific asymmetric algorithm.
 /// The implementor of this trait is the scheme itself.
@@ -583,20 +583,20 @@ pub trait KemAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     /// Clones the algorithm.
     ///
     /// 克隆算法。
-    fn clone_box_asymmetric(&self) -> Box<dyn KemAlgorithmTrait>;
+    fn clone_box(&self) -> Box<dyn KemAlgorithmTrait>;
 
-    fn into_asymmetric_boxed(self) -> Box<dyn KemAlgorithmTrait>;
+    fn into_boxed(self) -> Box<dyn KemAlgorithmTrait>;
 }
 
 #[cfg(feature = "asymmetric-kem")]
 impl_trait_for_box!(KemAlgorithmTrait {
-    ref fn clone_box_asymmetric(&self,) -> Box<dyn KemAlgorithmTrait>;
+    ref fn clone_box(&self,) -> Box<dyn KemAlgorithmTrait>;
     ref fn algorithm(&self,) -> KemAlgorithm;
     ref fn encapsulate_key(&self, public_key: &TypedKemPublicKey) -> Result<(SharedSecret, EncapsulatedKey)>;
     ref fn decapsulate_key(&self, private_key: &TypedKemPrivateKey, encapsulated_key: &EncapsulatedKey) -> Result<SharedSecret>;
     ref fn generate_keypair(&self,) -> Result<TypedKemKeyPair>;
-    self fn into_asymmetric_boxed(self,) -> Box<dyn KemAlgorithmTrait>;
-}, clone_box_asymmetric);
+    self fn into_boxed(self,) -> Box<dyn KemAlgorithmTrait>;
+}, clone_box);
 
 #[cfg(feature = "kdf")]
 pub trait KdfKeyAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
@@ -611,6 +611,8 @@ pub trait KdfKeyAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     fn algorithm(&self) -> KdfKeyAlgorithm;
 
     fn clone_box(&self) -> Box<dyn KdfKeyAlgorithmTrait>;
+
+    fn into_boxed(self) -> Box<dyn KdfKeyAlgorithmTrait>;
 }
 
 #[cfg(feature = "kdf")]
@@ -618,6 +620,7 @@ impl_trait_for_box!(KdfKeyAlgorithmTrait {
     ref fn clone_box(&self,) -> Box<dyn KdfKeyAlgorithmTrait>;
     ref fn derive(&self, ikm: &[u8], salt: Option<&[u8]>, info: Option<&[u8]>, output_len: usize) -> Result<Zeroizing<Vec<u8>>>;
     ref fn algorithm(&self,) -> KdfKeyAlgorithm;
+    self fn into_boxed(self,) -> Box<dyn KdfKeyAlgorithmTrait>;
 }, clone_box);
 
 #[cfg(feature = "kdf")]
@@ -632,6 +635,8 @@ pub trait KdfPasswordAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     fn algorithm(&self) -> KdfPasswordAlgorithm;
 
     fn clone_box(&self) -> Box<dyn KdfPasswordAlgorithmTrait>;
+
+    fn into_boxed(self) -> Box<dyn KdfPasswordAlgorithmTrait>;
 }
 
 #[cfg(feature = "kdf")]
@@ -639,6 +644,7 @@ impl_trait_for_box!(KdfPasswordAlgorithmTrait {
     ref fn clone_box(&self,) -> Box<dyn KdfPasswordAlgorithmTrait>;
     ref fn derive(&self, password: &SecretBox<[u8]>, salt: &[u8], output_len: usize) -> Result<Zeroizing<Vec<u8>>>;
     ref fn algorithm(&self,) -> KdfPasswordAlgorithm;
+    self fn into_boxed(self,) -> Box<dyn KdfPasswordAlgorithmTrait>;
 }, clone_box);
 
 #[cfg(feature = "xof")]
@@ -651,6 +657,8 @@ pub trait XofAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     ) -> Result<XofReaderWrapper<'a>>;
     fn clone_box(&self) -> Box<dyn XofAlgorithmTrait>;
     fn algorithm(&self) -> XofAlgorithm;
+
+    fn into_boxed(self) -> Box<dyn XofAlgorithmTrait>;
 }
 
 #[cfg(feature = "xof")]
@@ -658,6 +666,7 @@ impl_trait_for_box!(XofAlgorithmTrait {
     ref fn reader<'a>(&self, ikm: &'a [u8], salt: Option<&'a [u8]>, info: Option<&'a [u8]>) -> Result<XofReaderWrapper<'a>>;
     ref fn algorithm(&self,) -> XofAlgorithm;
     ref fn clone_box(&self,) -> Box<dyn XofAlgorithmTrait>;
+    self fn into_boxed(self,) -> Box<dyn XofAlgorithmTrait>;
 }, clone_box);
 
 #[cfg(feature = "asymmetric-signature")]
@@ -672,6 +681,8 @@ pub trait SignatureAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     fn generate_keypair(&self) -> Result<TypedSignatureKeyPair>;
     fn clone_box(&self) -> Box<dyn SignatureAlgorithmTrait>;
     fn algorithm(&self) -> SignatureAlgorithm;
+
+    fn into_boxed(self) -> Box<dyn SignatureAlgorithmTrait>;
 }
 
 #[cfg(feature = "asymmetric-signature")]
@@ -681,6 +692,7 @@ impl_trait_for_box!(SignatureAlgorithmTrait {
     ref fn generate_keypair(&self,) -> Result<TypedSignatureKeyPair>;
     ref fn clone_box(&self,) -> Box<dyn SignatureAlgorithmTrait>;
     ref fn algorithm(&self,) -> SignatureAlgorithm;
+    self fn into_boxed(self,) -> Box<dyn SignatureAlgorithmTrait>;
 }, clone_box);
 
 #[cfg(feature = "asymmetric-key-agreement")]
@@ -693,6 +705,8 @@ pub trait KeyAgreementAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
     fn generate_keypair(&self) -> Result<TypedKeyAgreementKeyPair>;
     fn clone_box(&self) -> Box<dyn KeyAgreementAlgorithmTrait>;
     fn algorithm(&self) -> KeyAgreementAlgorithm;
+
+    fn into_boxed(self) -> Box<dyn KeyAgreementAlgorithmTrait>;
 }
 
 #[cfg(feature = "asymmetric-key-agreement")]
@@ -701,4 +715,5 @@ impl_trait_for_box!(KeyAgreementAlgorithmTrait {
     ref fn generate_keypair(&self,) -> Result<TypedKeyAgreementKeyPair>;
     ref fn clone_box(&self,) -> Box<dyn KeyAgreementAlgorithmTrait>;
     ref fn algorithm(&self,) -> KeyAgreementAlgorithm;
+    self fn into_boxed(self,) -> Box<dyn KeyAgreementAlgorithmTrait>;
 }, clone_box);

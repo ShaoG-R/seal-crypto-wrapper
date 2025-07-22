@@ -198,7 +198,7 @@ macro_rules! impl_symmetric_algorithm {
                 KT::decrypt_to_buffer(&key, nonce, ciphertext, output, aad).map_err(Error::from)
             }
 
-            fn clone_box_symmetric(&self) -> Box<dyn SymmetricAlgorithmTrait> {
+            fn clone_box(&self) -> Box<dyn SymmetricAlgorithmTrait> {
                 Box::new(self.clone())
             }
 
@@ -226,7 +226,7 @@ macro_rules! impl_symmetric_algorithm {
                 self.generate_typed_key().map(|k| k.untyped())
             }
 
-            fn into_symmetric_boxed(self) -> Box<dyn SymmetricAlgorithmTrait> {
+            fn into_boxed(self) -> Box<dyn SymmetricAlgorithmTrait> {
                 Box::new(self)
             }
         }
@@ -496,11 +496,11 @@ impl SymmetricAlgorithmTrait for SymmetricAlgorithmWrapper {
         self.algorithm.tag_size()
     }
 
-    fn into_symmetric_boxed(self) -> Box<dyn SymmetricAlgorithmTrait> {
+    fn into_boxed(self) -> Box<dyn SymmetricAlgorithmTrait> {
         self.algorithm
     }
 
-    fn clone_box_symmetric(&self) -> Box<dyn SymmetricAlgorithmTrait> {
+    fn clone_box(&self) -> Box<dyn SymmetricAlgorithmTrait> {
         Box::new(self.clone())
     }
 }

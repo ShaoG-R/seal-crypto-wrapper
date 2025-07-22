@@ -237,6 +237,10 @@ impl KdfPasswordAlgorithmTrait for Argon2Wrapper {
     fn clone_box(&self) -> Box<dyn KdfPasswordAlgorithmTrait> {
         Box::new(self.clone())
     }
+
+    fn into_boxed(self) -> Box<dyn KdfPasswordAlgorithmTrait> {
+        Box::new(self)
+    }
 }
 
 macro_rules! impl_kdf_pbkdf_algorithm {
@@ -291,6 +295,10 @@ macro_rules! impl_kdf_pbkdf_algorithm {
 
             fn clone_box(&self) -> Box<dyn KdfPasswordAlgorithmTrait> {
                 Box::new(self.clone())
+            }
+
+            fn into_boxed(self) -> Box<dyn KdfPasswordAlgorithmTrait> {
+                Box::new(self)
             }
         }
     };
@@ -392,6 +400,10 @@ impl KdfPasswordAlgorithmTrait for KdfPasswordWrapper {
 
     fn clone_box(&self) -> Box<dyn KdfPasswordAlgorithmTrait> {
         self.algorithm.clone_box()
+    }
+
+    fn into_boxed(self) -> Box<dyn KdfPasswordAlgorithmTrait> {
+        Box::new(self)
     }
 }
 

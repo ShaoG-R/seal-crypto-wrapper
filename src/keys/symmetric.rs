@@ -285,8 +285,8 @@ impl TypedSymmetricKey {
 
         let derived_key_bytes =
             kdf_algorithm
-                .into_kdf_key_wrapper()
-                .derive(bytes, salt, info, symmetric_algorithm.into_symmetric_wrapper().key_size())?;
+                .into_wrapper()
+                .derive(bytes, salt, info, symmetric_algorithm.into_wrapper().key_size())?;
         Ok(TypedSymmetricKey::from_bytes(derived_key_bytes.as_slice(), symmetric_algorithm)?)
     }
 
@@ -311,7 +311,7 @@ impl TypedSymmetricKey {
         xof_reader: &mut XofReaderWrapper,
         symmetric_algorithm: SymmetricAlgorithm,
     ) -> Result<Self, Error> {
-        let mut derived_key_bytes = vec![0u8; symmetric_algorithm.into_symmetric_wrapper().key_size()];
+        let mut derived_key_bytes = vec![0u8; symmetric_algorithm.into_wrapper().key_size()];
         xof_reader.read(&mut derived_key_bytes);
         Ok(TypedSymmetricKey::from_bytes(derived_key_bytes.as_slice(), symmetric_algorithm)?)
     }
@@ -348,7 +348,7 @@ impl TypedSymmetricKey {
         symmetric_algorithm: SymmetricAlgorithm,
     ) -> Result<Self, Error> {
         use crate::traits::KdfPasswordAlgorithmTrait;
-        let derived_key_bytes = algorithm.derive(password, salt, symmetric_algorithm.into_symmetric_wrapper().key_size())?;
+        let derived_key_bytes = algorithm.derive(password, salt, symmetric_algorithm.into_wrapper().key_size())?;
         Ok(TypedSymmetricKey::from_bytes(derived_key_bytes.as_slice(), symmetric_algorithm)?)
     }
 

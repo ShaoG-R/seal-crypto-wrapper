@@ -9,7 +9,7 @@ fn main() -> Result<()> {
 
     // 2. Get the algorithm wrapper.
     // 2. 获取算法包装器。
-    let cipher = algorithm.into_symmetric_wrapper();
+    let cipher = algorithm.into_wrapper();
     println!("Got symmetric cipher wrapper.");
 
     // 3. Generate a key.

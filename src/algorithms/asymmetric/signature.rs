@@ -405,7 +405,7 @@ impl SignatureAlgorithm {
     /// use seal_crypto_wrapper::algorithms::asymmetric::signature::SignatureAlgorithm;
     ///
     /// let algorithm = SignatureAlgorithm::build().ed25519();
-    /// let signer = algorithm.into_signature_wrapper();
+    /// let signer = algorithm.into_wrapper();
     ///
     /// // Generate key pair
     /// let keypair = signer.generate_keypair()?;
@@ -443,7 +443,7 @@ impl SignatureAlgorithm {
     /// - **Ed25519**: 确定性签名，不需要额外的随机性
     /// - **ECDSA P-256**: 每个签名都需要高质量的随机性
     /// - **Dilithium**: 后量子安全，更大的密钥和签名
-    pub fn into_signature_wrapper(self) -> SignatureAlgorithmWrapper {
+    pub fn into_wrapper(self) -> SignatureAlgorithmWrapper {
         use crate::wrappers::asymmetric::signature::{
             Dilithium2Wrapper, Dilithium3Wrapper, Dilithium5Wrapper, EcdsaP256Wrapper,
             Ed25519Wrapper,

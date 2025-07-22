@@ -56,7 +56,7 @@ fn main() -> Result<()> {
     let algorithm = SymmetricAlgorithm::build().aes256_gcm();
 
     // 2. Get the algorithm wrapper.
-    let cipher = algorithm.into_symmetric_wrapper();
+    let cipher = algorithm.into_wrapper();
 
     // 3. Generate a key (the key is already bound to the algorithm info).
     let key = cipher.generate_typed_key()?;
@@ -91,7 +91,7 @@ fn main() -> Result<()> {
     let algorithm = AsymmetricAlgorithm::build().signature().ed25519();
 
     // 2. Get the algorithm wrapper.
-    let signature_scheme = algorithm.into_signature_wrapper();
+    let signature_scheme = algorithm.into_wrapper();
 
     // 3. Generate a key pair.
     let key_pair = signature_scheme.generate_keypair()?;
@@ -153,7 +153,7 @@ fn main() -> Result<()> {
     let algorithm = AsymmetricAlgorithm::build().key_agreement().ecdh_p256();
 
     // 2. Get the algorithm wrapper.
-    let key_agreement = algorithm.into_key_agreement_wrapper();
+    let key_agreement = algorithm.into_wrapper();
 
     // 3. Party 1 and Party 2 generate their own key pairs.
     let key_pair_1 = key_agreement.generate_keypair()?;
@@ -187,7 +187,7 @@ fn main() -> Result<()> {
     let algorithm = XofAlgorithm::build().shake128();
 
     // 2. Get the algorithm wrapper.
-    let xof = algorithm.into_xof_wrapper();
+    let xof = algorithm.into_wrapper();
 
     // 3. Define the input keying material, salt, and info.
     let ikm = b"input keying material";
@@ -224,7 +224,7 @@ fn main() -> Result<()> {
     let algorithm = KdfAlgorithm::build().key().hkdf_sha256();
 
     // 2. Get the algorithm wrapper.
-    let kdf = algorithm.into_kdf_key_wrapper();
+    let kdf = algorithm.into_wrapper();
 
     // 3. Define the input keying material, salt, and different infos.
     let ikm = b"input keying material";
@@ -257,7 +257,7 @@ fn main() -> Result<()> {
     let algorithm = KdfAlgorithm::build().passwd().pbkdf2_sha256_default();
 
     // 2. Get the algorithm wrapper.
-    let kdf = algorithm.into_kdf_password_wrapper();
+    let kdf = algorithm.into_wrapper();
 
     // 3. Define the password and different salts.
     let password = SecretBox::new(Box::from(b"my-secret-password".as_slice()));

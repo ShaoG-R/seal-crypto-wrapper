@@ -42,7 +42,7 @@
 //! use seal_crypto_wrapper::algorithms::xof::XofAlgorithm;
 //! use seal_crypto_wrapper::prelude::XofAlgorithmTrait;
 //!
-//! let xof = XofAlgorithm::build().shake256().into_xof_wrapper();
+//! let xof = XofAlgorithm::build().shake256().into_wrapper();
 //! let mut reader = xof.reader(b"input_key_material", None, None)?;
 //!
 //! // Generate different sized keys
@@ -57,7 +57,7 @@
 //! use seal_crypto_wrapper::algorithms::xof::XofAlgorithm;
 //! use seal_crypto_wrapper::prelude::XofAlgorithmTrait;
 //!
-//! let xof = XofAlgorithm::build().shake128().into_xof_wrapper();
+//! let xof = XofAlgorithm::build().shake128().into_wrapper();
 //! let mut reader = xof.reader(
 //!     b"master_key",
 //!     Some(b"unique_salt"),
@@ -290,7 +290,7 @@ impl XofAlgorithmTrait for Shake256Wrapper {
 ///
 /// // Create from algorithm enum
 /// let algorithm = XofAlgorithm::build().shake256();
-/// let wrapper = algorithm.into_xof_wrapper();
+/// let wrapper = algorithm.into_wrapper();
 ///
 /// // Generate variable-length output
 /// let mut reader = wrapper.reader(b"input", None, None)?;
@@ -373,7 +373,7 @@ impl XofAlgorithmTrait for XofWrapper {
 /// use seal_crypto_wrapper::algorithms::xof::XofAlgorithm;
 /// use seal_crypto_wrapper::prelude::XofAlgorithmTrait;
 ///
-/// let xof = XofAlgorithm::build().shake128().into_xof_wrapper();
+/// let xof = XofAlgorithm::build().shake128().into_wrapper();
 /// let mut reader = xof.reader(b"seed", None, None)?;
 ///
 /// // Read different amounts of data

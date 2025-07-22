@@ -357,7 +357,7 @@ impl_kdf_pbkdf_algorithm!(
 ///
 /// // Create from algorithm enum (Argon2 recommended)
 /// let algorithm = KdfPasswordAlgorithm::build().argon2_default();
-/// let wrapper = algorithm.into_kdf_password_wrapper();
+/// let wrapper = algorithm.into_wrapper();
 ///
 /// // Derive key from password
 /// let password = SecretBox::new(b"user_password".to_vec().into_boxed_slice());
@@ -409,7 +409,7 @@ impl KdfPasswordAlgorithmTrait for KdfPasswordWrapper {
 
 impl From<KdfPasswordAlgorithm> for KdfPasswordWrapper {
     fn from(algorithm: KdfPasswordAlgorithm) -> Self {
-        algorithm.into_kdf_password_wrapper()
+        algorithm.into_wrapper()
     }
 }
 

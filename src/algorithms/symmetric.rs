@@ -291,13 +291,13 @@ impl SymmetricAlgorithm {
     /// use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
     ///
     /// let algorithm = SymmetricAlgorithm::build().aes256_gcm();
-    /// let cipher = algorithm.into_symmetric_wrapper();
+    /// let cipher = algorithm.into_wrapper();
     ///
     /// // Now you can use the cipher for encryption/decryption
     /// let key = cipher.generate_typed_key()?;
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn into_symmetric_wrapper(self) -> SymmetricAlgorithmWrapper {
+    pub fn into_wrapper(self) -> SymmetricAlgorithmWrapper {
         use crate::wrappers::symmetric::{
             Aes128GcmWrapper, Aes256GcmWrapper, ChaCha20Poly1305Wrapper, XChaCha20Poly1305Wrapper,
         };

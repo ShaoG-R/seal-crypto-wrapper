@@ -61,7 +61,7 @@
 //!     let algorithm = SymmetricAlgorithm::build().aes256_gcm();
 //!
 //!     // 2. Get the algorithm wrapper | 获取算法包装器
-//!     let cipher = algorithm.into_symmetric_wrapper();
+//!     let cipher = algorithm.into_wrapper();
 //!
 //!     // 3. Generate a typed key | 生成类型化密钥
 //!     let key = cipher.generate_typed_key()?;
@@ -94,7 +94,7 @@
 //!     let algorithm = AsymmetricAlgorithm::build().signature().ed25519();
 //!
 //!     // 2. Get the algorithm wrapper | 获取算法包装器
-//!     let signature_scheme = algorithm.into_signature_wrapper();
+//!     let signature_scheme = algorithm.into_wrapper();
 //!
 //!     // 3. Generate a key pair | 生成密钥对
 //!     let key_pair = signature_scheme.generate_keypair()?;

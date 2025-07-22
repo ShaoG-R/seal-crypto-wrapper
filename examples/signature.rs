@@ -9,7 +9,7 @@ fn main() -> Result<()> {
 
     // 2. Get the algorithm wrapper.
     // 2. 获取算法包装器。
-    let signature_scheme = algorithm.into_signature_wrapper();
+    let signature_scheme = algorithm.into_wrapper();
     println!("Got signature wrapper.");
 
     // 3. Generate a key pair.

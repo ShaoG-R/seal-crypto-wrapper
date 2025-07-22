@@ -10,7 +10,7 @@ fn main() -> Result<()> {
 
     // 2. Get the algorithm wrapper.
     // 2. 获取算法包装器。
-    let xof = algorithm.into_xof_wrapper();
+    let xof = algorithm.into_wrapper();
     println!("Got XOF wrapper.");
 
     // 3. Define the input keying material, salt, and info.

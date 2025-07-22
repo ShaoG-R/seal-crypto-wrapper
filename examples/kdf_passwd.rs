@@ -9,7 +9,7 @@ fn main() -> Result<()> {
 
     // 2. Get the algorithm wrapper.
     // 2. 获取算法包装器。
-    let kdf = algorithm.into_kdf_password_wrapper();
+    let kdf = algorithm.into_wrapper();
     println!("Got KDF wrapper.");
 
     // 3. Define the password and salts.

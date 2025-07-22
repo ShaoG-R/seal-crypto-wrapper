@@ -9,7 +9,7 @@ fn main() -> Result<()> {
 
     // 2. Get the algorithm wrapper.
     // 2. 获取算法包装器。
-    let key_agreement = algorithm.into_key_agreement_wrapper();
+    let key_agreement = algorithm.into_wrapper();
     println!("Got key agreement wrapper.");
 
     // 3. Generate two key pairs.

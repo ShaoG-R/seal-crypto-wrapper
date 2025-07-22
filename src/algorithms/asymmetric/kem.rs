@@ -402,7 +402,7 @@ impl KemAlgorithm {
     /// use seal_crypto_wrapper::algorithms::asymmetric::kem::KemAlgorithm;
     ///
     /// let algorithm = KemAlgorithm::build().kyber512();
-    /// let kem = algorithm.into_kem_wrapper();
+    /// let kem = algorithm.into_wrapper();
     ///
     /// // Generate key pair
     /// let keypair = kem.generate_keypair()?;
@@ -416,7 +416,7 @@ impl KemAlgorithm {
     /// assert_eq!(shared_secret, recovered_secret);
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn into_kem_wrapper(self) -> KemAlgorithmWrapper {
+    pub fn into_wrapper(self) -> KemAlgorithmWrapper {
         use crate::algorithms::HashAlgorithmEnum;
         use crate::wrappers::asymmetric::kem::{
             KemAlgorithmWrapper, Kyber512Wrapper, Kyber768Wrapper, Kyber1024Wrapper,

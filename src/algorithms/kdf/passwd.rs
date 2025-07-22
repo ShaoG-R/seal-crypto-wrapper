@@ -477,7 +477,7 @@ impl KdfPasswordAlgorithm {
     ///
     /// // Argon2 for new applications (recommended)
     /// let argon2_alg = KdfPasswordAlgorithm::build().argon2_default();
-    /// let argon2_kdf = argon2_alg.into_kdf_password_wrapper();
+    /// let argon2_kdf = argon2_alg.into_wrapper();
     ///
     /// let password = SecretBox::new(Box::from(b"my-secret-password".as_slice()));
     /// let salt = b"random_salt_16_bytes";
@@ -485,7 +485,7 @@ impl KdfPasswordAlgorithm {
     ///
     /// // PBKDF2 for compatibility
     /// let pbkdf2_alg = KdfPasswordAlgorithm::build().pbkdf2_sha256_with_params(100000);
-    /// let pbkdf2_kdf = pbkdf2_alg.into_kdf_password_wrapper();
+    /// let pbkdf2_kdf = pbkdf2_alg.into_wrapper();
     ///
     /// let key2 = pbkdf2_kdf.derive(&password, salt, 32)?;
     /// # Ok::<(), Box<dyn std::error::Error>>(())
@@ -536,7 +536,7 @@ impl KdfPasswordAlgorithm {
     /// - **Argon2**: 更高内存使用，更好安全性
     /// - **PBKDF2**: 更低内存使用，在某些平台上更快
     /// - **参数调优**: 在目标硬件上测试以获得最佳设置
-    pub fn into_kdf_password_wrapper(self) -> KdfPasswordWrapper {
+    pub fn into_wrapper(self) -> KdfPasswordWrapper {
         use crate::wrappers::kdf::passwd::{
             Argon2Wrapper, Pbkdf2Sha256Wrapper, Pbkdf2Sha384Wrapper, Pbkdf2Sha512Wrapper,
         };

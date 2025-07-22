@@ -54,7 +54,7 @@ fn main() -> Result<()> {
     let algorithm = SymmetricAlgorithm::build().aes256_gcm();
 
     // 2. 获取算法包装器。
-    let cipher = algorithm.into_symmetric_wrapper();
+    let cipher = algorithm.into_wrapper();
 
     // 3. 生成一个密钥 (密钥已绑定算法信息)。
     let key = cipher.generate_typed_key()?;
@@ -89,7 +89,7 @@ fn main() -> Result<()> {
     let algorithm = AsymmetricAlgorithm::build().signature().ed25519();
 
     // 2. 获取算法包装器。
-    let signature_scheme = algorithm.into_signature_wrapper();
+    let signature_scheme = algorithm.into_wrapper();
 
     // 3. 生成密钥对。
     let key_pair = signature_scheme.generate_keypair()?;
@@ -151,7 +151,7 @@ fn main() -> Result<()> {
     let algorithm = AsymmetricAlgorithm::build().key_agreement().ecdh_p256();
 
     // 2. 获取算法包装器。
-    let key_agreement = algorithm.into_key_agreement_wrapper();
+    let key_agreement = algorithm.into_wrapper();
 
     // 3. 参与方 1 和 2 分别生成自己的密钥对。
     let key_pair_1 = key_agreement.generate_keypair()?;
@@ -185,7 +185,7 @@ fn main() -> Result<()> {
     let algorithm = XofAlgorithm::build().shake128();
 
     // 2. 获取算法包装器。
-    let xof = algorithm.into_xof_wrapper();
+    let xof = algorithm.into_wrapper();
 
     // 3. 定义输入密钥材料、盐和信息。
     let ikm = b"input keying material";
@@ -222,7 +222,7 @@ fn main() -> Result<()> {
     let algorithm = KdfAlgorithm::build().key().hkdf_sha256();
 
     // 2. 获取算法包装器。
-    let kdf = algorithm.into_kdf_key_wrapper();
+    let kdf = algorithm.into_wrapper();
 
     // 3. 定义输入密钥材料、盐和不同的信息。
     let ikm = b"input keying material";
@@ -255,7 +255,7 @@ fn main() -> Result<()> {
     let algorithm = KdfAlgorithm::build().passwd().pbkdf2_sha256_default();
 
     // 2. 获取算法包装器。
-    let kdf = algorithm.into_kdf_password_wrapper();
+    let kdf = algorithm.into_wrapper();
 
     // 3. 定义密码和不同的盐。
     let password = SecretBox::new(Box::from(b"my-secret-password".as_slice()));

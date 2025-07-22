@@ -367,11 +367,11 @@ impl SharedSecret {
     ) -> Result<TypedSymmetricKey, Error> {
         use crate::traits::KdfKeyAlgorithmTrait;
 
-        let derived_key_bytes = kdf_algorithm.into_kdf_key_wrapper().derive(
+        let derived_key_bytes = kdf_algorithm.into_wrapper().derive(
             self.0.as_ref(),
             salt,
             info,
-            algorithm.into_symmetric_wrapper().key_size(),
+            algorithm.into_wrapper().key_size(),
         )?;
         TypedSymmetricKey::from_bytes(derived_key_bytes.as_slice(), algorithm)
     }
@@ -390,7 +390,7 @@ impl SharedSecret {
         xof_reader: &mut XofReaderWrapper,
         algorithm: SymmetricAlgorithm,
     ) -> Result<TypedSymmetricKey, Error> {
-        let mut derived_key_bytes = vec![0u8; algorithm.into_symmetric_wrapper().key_size()];
+        let mut derived_key_bytes = vec![0u8; algorithm.into_wrapper().key_size()];
         xof_reader.read(&mut derived_key_bytes);
 
         TypedSymmetricKey::from_bytes(derived_key_bytes.as_slice(), algorithm)

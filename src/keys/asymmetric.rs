@@ -76,7 +76,7 @@
 //!#[cfg(feature = "asymmetric-signature")]
 //! fn main() -> Result< (), Box < dyn std::error::Error > > {
 //!     let algorithm = AsymmetricAlgorithm::build().signature().ed25519();
-//!     let signer = algorithm.into_signature_wrapper();
+//!     let signer = algorithm.into_wrapper();
 //!     let keypair = signer.generate_keypair() ?;
 //!     
 //!     let (public_key, private_key) = keypair.into_keypair();

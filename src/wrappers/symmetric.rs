@@ -45,7 +45,7 @@
 //! use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
 //!
 //! let algorithm = SymmetricAlgorithm::build().aes256_gcm();
-//! let cipher = algorithm.into_symmetric_wrapper();
+//! let cipher = algorithm.into_wrapper();
 //! let key = cipher.generate_typed_key()?;
 //!
 //! let plaintext = b"Hello, World!";
@@ -62,7 +62,7 @@
 //! ```rust
 //! use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
 //!
-//! let cipher = SymmetricAlgorithm::build().chacha20_poly1305().into_symmetric_wrapper();
+//! let cipher = SymmetricAlgorithm::build().chacha20_poly1305().into_wrapper();
 //! let key = cipher.generate_typed_key()?;
 //!
 //! let plaintext = b"Secret message";
@@ -374,7 +374,7 @@ impl SymmetricAlgorithmWrapper {
     /// ```rust
     /// use seal_crypto_wrapper::algorithms::symmetric::SymmetricAlgorithm;
     ///
-    /// let cipher = SymmetricAlgorithm::build().aes256_gcm().into_symmetric_wrapper();
+    /// let cipher = SymmetricAlgorithm::build().aes256_gcm().into_wrapper();
     /// let key = cipher.generate_typed_key()?;
     ///
     /// // Key is bound to AES-256-GCM
@@ -637,7 +637,7 @@ mod tests {
 
         // 设置较少的迭代次数以加速测试（实际应用中应使用更多迭代）
         let deriver =
-            KdfPasswordAlgorithm::build().pbkdf2_sha256_with_params(1000).into_kdf_password_wrapper();
+            KdfPasswordAlgorithm::build().pbkdf2_sha256_with_params(1000).into_wrapper();
 
         let derived_key1 =
             TypedSymmetricKey::derive_from_password(&password, deriver.clone(), salt, symmetric_algorithm)
@@ -688,7 +688,7 @@ mod tests {
 
         let mut reader = XofAlgorithm::build()
             .shake128()
-            .into_xof_wrapper()
+            .into_wrapper()
             .reader(&seed, None, None).unwrap();
 
         let key1 = TypedSymmetricKey::derive_from_xof(&mut reader, symmetric_algo_1).unwrap();

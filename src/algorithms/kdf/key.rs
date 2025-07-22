@@ -186,7 +186,7 @@ impl KdfKeyAlgorithmBuilder {
     /// use seal_crypto_wrapper::algorithms::kdf::key::KdfKeyAlgorithm;
     ///
     /// let algorithm = KdfKeyAlgorithm::build().hkdf_sha256();
-    /// let kdf = algorithm.into_kdf_key_wrapper();
+    /// let kdf = algorithm.into_wrapper();
     ///
     /// // Derive keys from master key
     /// let master_key = b"high-entropy-master-key-material";
@@ -291,7 +291,7 @@ impl KdfKeyAlgorithm {
     /// use seal_crypto_wrapper::algorithms::kdf::key::KdfKeyAlgorithm;
     ///
     /// let algorithm = KdfKeyAlgorithm::build().hkdf_sha256();
-    /// let kdf = algorithm.into_kdf_key_wrapper();
+    /// let kdf = algorithm.into_wrapper();
     ///
     /// // Derive multiple keys from a master key
     /// let master_key = b"high-entropy-master-key-32-bytes";
@@ -343,7 +343,7 @@ impl KdfKeyAlgorithm {
     /// - **盐**: 可选但推荐用于密钥分离
     /// - **上下文**: 用于域分离的应用特定信息
     /// - **输出长度**: 算法最大值内的任何长度
-    pub fn into_kdf_key_wrapper(self) -> KdfKeyWrapper {
+    pub fn into_wrapper(self) -> KdfKeyWrapper {
         use crate::wrappers::kdf::key::{HkdfSha256Wrapper, HkdfSha384Wrapper, HkdfSha512Wrapper};
         match self {
             KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha256) => {

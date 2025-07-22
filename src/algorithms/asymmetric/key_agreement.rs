@@ -191,7 +191,7 @@ impl KeyAgreementAlgorithmBuilder {
     /// use seal_crypto_wrapper::algorithms::asymmetric::key_agreement::KeyAgreementAlgorithm;
     ///
     /// let algorithm = KeyAgreementAlgorithm::build().ecdh_p256();
-    /// let ka = algorithm.into_key_agreement_wrapper();
+    /// let ka = algorithm.into_wrapper();
     ///
     /// // Generate key pairs for Alice and Bob
     /// let alice_keypair = ka.generate_keypair()?;
@@ -247,7 +247,7 @@ impl KeyAgreementAlgorithm {
     /// use seal_crypto_wrapper::algorithms::asymmetric::key_agreement::KeyAgreementAlgorithm;
     ///
     /// let algorithm = KeyAgreementAlgorithm::build().ecdh_p256();
-    /// let ka = algorithm.into_key_agreement_wrapper();
+    /// let ka = algorithm.into_wrapper();
     ///
     /// // Generate key pairs for two parties
     /// let alice_keypair = ka.generate_keypair()?;
@@ -283,7 +283,7 @@ impl KeyAgreementAlgorithm {
     /// 2. **使用临时密钥**: 为每个会话生成新密钥
     /// 3. **适当的密钥派生**: 使用 HKDF 或类似方法派生实际密钥
     /// 4. **认证**: 结合签名进行认证密钥交换
-    pub fn into_key_agreement_wrapper(self) -> KeyAgreementAlgorithmWrapper {
+    pub fn into_wrapper(self) -> KeyAgreementAlgorithmWrapper {
         use crate::wrappers::asymmetric::key_agreement::EcdhP256Wrapper;
         match self {
             KeyAgreementAlgorithm::EcdhP256 => {

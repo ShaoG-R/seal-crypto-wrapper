@@ -59,7 +59,7 @@
 //!
 //! // Generate signature key pair
 //! let algorithm = AsymmetricAlgorithm::build().signature().ed25519();
-//! let signer = algorithm.into_signature_wrapper();
+//! let signer = algorithm.into_wrapper();
 //! let keypair = signer.generate_keypair()?;
 //!
 //! // Separate keys

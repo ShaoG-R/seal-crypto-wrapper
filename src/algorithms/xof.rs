@@ -205,7 +205,7 @@ impl XofAlgorithmBuilder {
     /// use seal_crypto_wrapper::prelude::XofAlgorithmTrait;
     ///
     /// let xof = XofAlgorithm::build().shake128();
-    /// let wrapper = xof.into_xof_wrapper();
+    /// let wrapper = xof.into_wrapper();
     ///
     /// // Generate variable-length output
     /// let mut reader = wrapper.reader(b"input data", None, None)?;
@@ -244,7 +244,7 @@ impl XofAlgorithmBuilder {
     /// use seal_crypto_wrapper::prelude::XofAlgorithmTrait;
     ///
     /// let xof = XofAlgorithm::build().shake256();
-    /// let wrapper = xof.into_xof_wrapper();
+    /// let wrapper = xof.into_wrapper();
     ///
     /// // Generate large amounts of pseudorandom data
     /// let mut reader = wrapper.reader(b"seed", Some(b"salt"), Some(b"info"))?;
@@ -293,7 +293,7 @@ impl XofAlgorithm {
     /// use seal_crypto_wrapper::prelude::XofAlgorithmTrait;
     ///
     /// let algorithm = XofAlgorithm::build().shake128();
-    /// let xof = algorithm.into_xof_wrapper();
+    /// let xof = algorithm.into_wrapper();
     ///
     /// // Create a reader with input key material
     /// let mut reader = xof.reader(
@@ -308,7 +308,7 @@ impl XofAlgorithm {
     /// let nonce = reader.read_boxed(12); // 12-byte nonce
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn into_xof_wrapper(self) -> XofWrapper {
+    pub fn into_wrapper(self) -> XofWrapper {
         use crate::wrappers::xof::{Shake128Wrapper, Shake256Wrapper};
         match self {
             XofAlgorithm::Shake(ShakeVariant::V128) => {

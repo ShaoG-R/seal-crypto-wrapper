@@ -56,7 +56,7 @@
 //!
 //! // Alice generates her key pair
 //! let algorithm = AsymmetricAlgorithm::build().key_agreement().ecdh_p256();
-//! let ka = algorithm.into_key_agreement_wrapper();
+//! let ka = algorithm.into_wrapper();
 //! let alice_keypair = ka.generate_keypair()?;
 //! let (alice_public, alice_private) = alice_keypair.into_keypair();
 //!

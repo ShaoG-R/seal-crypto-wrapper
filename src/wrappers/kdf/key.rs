@@ -177,7 +177,7 @@ impl_kdf_key_algorithm!(
 ///
 /// // Create from algorithm enum
 /// let algorithm = KdfKeyAlgorithm::build().hkdf_sha256();
-/// let wrapper = algorithm.into_kdf_key_wrapper();
+/// let wrapper = algorithm.into_wrapper();
 ///
 /// // Derive keys from master key
 /// let master_key = b"high-entropy-master-key-material";

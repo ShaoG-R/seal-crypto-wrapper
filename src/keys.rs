@@ -68,7 +68,7 @@
 //! #[cfg(feature = "symmetric")]
 //! {
 //!     let algorithm = SymmetricAlgorithm::build().aes256_gcm();
-//!     let cipher = algorithm.into_symmetric_wrapper();
+//!     let cipher = algorithm.into_wrapper();
 //!     let key = cipher.generate_typed_key()?;
 //! }
 //!
@@ -76,7 +76,7 @@
 //! #[cfg(feature = "asymmetric-signature")]
 //! {
 //!     let algorithm = AsymmetricAlgorithm::build().signature().ed25519();
-//!     let signer = algorithm.into_signature_wrapper();
+//!     let signer = algorithm.into_wrapper();
 //!     let keypair = signer.generate_keypair()?;
 //! }
 //! # Ok::<(), Box<dyn std::error::Error>>(())
@@ -90,7 +90,7 @@
 //!
 //! #[cfg(feature = "asymmetric-signature")]
 //! {
-//!     let keypair = AsymmetricAlgorithm::build().signature().ed25519().into_signature_wrapper().generate_keypair().unwrap();
+//!     let keypair = AsymmetricAlgorithm::build().signature().ed25519().into_wrapper().generate_keypair().unwrap();
 //!     // Keys can be serialized with algorithm information
 //!     let key_json = serde_json::to_string(&keypair).unwrap();
 //!     let restored_keypair: seal_crypto_wrapper::keys::asymmetric::signature::TypedSignatureKeyPair = serde_json::from_str(&key_json).unwrap();

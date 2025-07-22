@@ -66,7 +66,7 @@
 //! - **高安全性**: 使用高内存成本的 Argon2
 //! - **资源受限**: 使用高迭代次数的 PBKDF2
 
-use crate::algorithms::HashAlgorithmEnum;
+use crate::algorithms::hash::HashAlgorithm;
 use bincode::{Decode, Encode};
 
 /// Argon2 algorithm parameters for customizing security vs performance trade-offs.
@@ -180,7 +180,7 @@ pub enum KdfPasswordAlgorithm {
     /// - `hash`: 底层哈希函数（SHA-256/384/512）
     /// - `c`: 迭代次数（`Some(count)` 自定义，`None` 默认）
     Pbkdf2 {
-        hash: HashAlgorithmEnum,
+        hash: HashAlgorithm,
         c: Option<u32>,
     },
 }
@@ -288,7 +288,7 @@ impl KdfPasswordAlgorithmBuilder {
     /// - 资源受限环境
     pub fn pbkdf2_sha256_default(self) -> KdfPasswordAlgorithm {
         KdfPasswordAlgorithm::Pbkdf2 {
-            hash: HashAlgorithmEnum::Sha256,
+            hash: HashAlgorithm::Sha256,
             c: None,
         }
     }
@@ -307,7 +307,7 @@ impl KdfPasswordAlgorithmBuilder {
     /// 需要比 SHA-256 更高安全性的应用。
     pub fn pbkdf2_sha384_default(self) -> KdfPasswordAlgorithm {
         KdfPasswordAlgorithm::Pbkdf2 {
-            hash: HashAlgorithmEnum::Sha384,
+            hash: HashAlgorithm::Sha384,
             c: None,
         }
     }
@@ -326,7 +326,7 @@ impl KdfPasswordAlgorithmBuilder {
     /// 使用 PBKDF2 的最大安全性应用。
     pub fn pbkdf2_sha512_default(self) -> KdfPasswordAlgorithm {
         KdfPasswordAlgorithm::Pbkdf2 {
-            hash: HashAlgorithmEnum::Sha512,
+            hash: HashAlgorithm::Sha512,
             c: None,
         }
     }
@@ -395,7 +395,7 @@ impl KdfPasswordAlgorithmBuilder {
     /// 在目标硬件上测试以找到正确的平衡。
     pub fn pbkdf2_sha256_with_params(self, c: u32) -> KdfPasswordAlgorithm {
         KdfPasswordAlgorithm::Pbkdf2 {
-            hash: HashAlgorithmEnum::Sha256,
+            hash: HashAlgorithm::Sha256,
             c: Some(c),
         }
     }
@@ -414,7 +414,7 @@ impl KdfPasswordAlgorithmBuilder {
     /// 比 SHA-256 更高的安全级别，性能影响适中。
     pub fn pbkdf2_sha384_with_params(self, c: u32) -> KdfPasswordAlgorithm {
         KdfPasswordAlgorithm::Pbkdf2 {
-            hash: HashAlgorithmEnum::Sha384,
+            hash: HashAlgorithm::Sha384,
             c: Some(c),
         }
     }
@@ -433,7 +433,7 @@ impl KdfPasswordAlgorithmBuilder {
     /// PBKDF2 的最大安全级别，针对 64 位平台优化。
     pub fn pbkdf2_sha512_with_params(self, c: u32) -> KdfPasswordAlgorithm {
         KdfPasswordAlgorithm::Pbkdf2 {
-            hash: HashAlgorithmEnum::Sha512,
+            hash: HashAlgorithm::Sha512,
             c: Some(c),
         }
     }
@@ -548,22 +548,22 @@ impl KdfPasswordAlgorithm {
                 KdfPasswordWrapper::new(Box::new(Argon2Wrapper::default()))
             }
             KdfPasswordAlgorithm::Pbkdf2 { hash, c } => match (hash, c) {
-                (HashAlgorithmEnum::Sha256, Some(c)) => {
+                (HashAlgorithm::Sha256, Some(c)) => {
                     KdfPasswordWrapper::new(Box::new(Pbkdf2Sha256Wrapper::new(c)))
                 }
-                (HashAlgorithmEnum::Sha384, Some(c)) => {
+                (HashAlgorithm::Sha384, Some(c)) => {
                     KdfPasswordWrapper::new(Box::new(Pbkdf2Sha384Wrapper::new(c)))
                 }
-                (HashAlgorithmEnum::Sha512, Some(c)) => {
+                (HashAlgorithm::Sha512, Some(c)) => {
                     KdfPasswordWrapper::new(Box::new(Pbkdf2Sha512Wrapper::new(c)))
                 }
-                (HashAlgorithmEnum::Sha256, None) => {
+                (HashAlgorithm::Sha256, None) => {
                     KdfPasswordWrapper::new(Box::new(Pbkdf2Sha256Wrapper::default()))
                 }
-                (HashAlgorithmEnum::Sha384, None) => {
+                (HashAlgorithm::Sha384, None) => {
                     KdfPasswordWrapper::new(Box::new(Pbkdf2Sha384Wrapper::default()))
                 }
-                (HashAlgorithmEnum::Sha512, None) => {
+                (HashAlgorithm::Sha512, None) => {
                     KdfPasswordWrapper::new(Box::new(Pbkdf2Sha512Wrapper::default()))
                 }
             },

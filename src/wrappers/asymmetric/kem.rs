@@ -43,7 +43,7 @@
 //! - **后量子安全**: Kyber 变体抵抗量子攻击
 
 use crate::algorithms::{
-    HashAlgorithmEnum,
+    hash::HashAlgorithm,
     asymmetric::kem::{KemAlgorithm, KyberSecurityLevel, RsaBits},
 };
 use crate::define_wrapper;
@@ -250,22 +250,22 @@ impl KemAlgorithmWrapper {
     /// ```
     pub fn from_enum(algorithm: KemAlgorithm) -> Self {
         let algorithm: Box<dyn KemAlgorithmTrait> = match algorithm {
-            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256) => {
+            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithm::Sha256) => {
                 Box::new(Rsa2048Sha256Wrapper::new())
             }
-            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384) => {
+            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithm::Sha384) => {
                 Box::new(Rsa2048Sha384Wrapper::new())
             }
-            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512) => {
+            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithm::Sha512) => {
                 Box::new(Rsa2048Sha512Wrapper::new())
             }
-            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256) => {
+            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithm::Sha256) => {
                 Box::new(Rsa4096Sha256Wrapper::new())
             }
-            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384) => {
+            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithm::Sha384) => {
                 Box::new(Rsa4096Sha384Wrapper::new())
             }
-            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512) => {
+            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithm::Sha512) => {
                 Box::new(Rsa4096Sha512Wrapper::new())
             }
             KemAlgorithm::Kyber(KyberSecurityLevel::L512) => Box::new(Kyber512Wrapper::new()),
@@ -329,37 +329,37 @@ impl From<Box<dyn KemAlgorithmTrait>> for KemAlgorithmWrapper {
 impl_kem_algorithm!(
     Rsa2048Sha256Wrapper,
     Rsa2048<Sha256>,
-    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256)
+    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithm::Sha256)
 );
 
 impl_kem_algorithm!(
     Rsa2048Sha384Wrapper,
     Rsa2048<Sha384>,
-    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384)
+    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithm::Sha384)
 );
 
 impl_kem_algorithm!(
     Rsa2048Sha512Wrapper,
     Rsa2048<Sha512>,
-    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512)
+    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithm::Sha512)
 );
 
 impl_kem_algorithm!(
     Rsa4096Sha256Wrapper,
     Rsa4096<Sha256>,
-    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256)
+    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithm::Sha256)
 );
 
 impl_kem_algorithm!(
     Rsa4096Sha384Wrapper,
     Rsa4096<Sha384>,
-    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384)
+    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithm::Sha384)
 );
 
 impl_kem_algorithm!(
     Rsa4096Sha512Wrapper,
     Rsa4096<Sha512>,
-    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512)
+    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithm::Sha512)
 );
 
 impl_kem_algorithm!(

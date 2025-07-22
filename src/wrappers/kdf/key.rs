@@ -54,7 +54,7 @@
 //! - **前向安全**: 派生密钥的泄露不影响其他密钥
 //! - **效率**: 适用于实时使用的快速计算
 
-use crate::algorithms::HashAlgorithmEnum;
+use crate::algorithms::hash::HashAlgorithm;
 use crate::algorithms::kdf::key::KdfKeyAlgorithm;
 use crate::define_wrapper;
 use crate::error::{Error, Result};
@@ -129,19 +129,19 @@ macro_rules! impl_kdf_key_algorithm {
 impl_kdf_key_algorithm!(
     HkdfSha256Wrapper,
     HkdfSha256,
-    KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha256)
+    KdfKeyAlgorithm::Hkdf(HashAlgorithm::Sha256)
 );
 
 impl_kdf_key_algorithm!(
     HkdfSha384Wrapper,
     HkdfSha384,
-    KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha384)
+    KdfKeyAlgorithm::Hkdf(HashAlgorithm::Sha384)
 );
 
 impl_kdf_key_algorithm!(
     HkdfSha512Wrapper,
     HkdfSha512,
-    KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha512)
+    KdfKeyAlgorithm::Hkdf(HashAlgorithm::Sha512)
 );
 
 /// Universal wrapper for key-based KDF algorithms providing runtime algorithm selection.
@@ -268,13 +268,13 @@ impl KdfKeyWrapper {
     /// ```
     pub fn from_enum(algorithm: KdfKeyAlgorithm) -> Self {
         let algorithm: Box<dyn KdfKeyAlgorithmTrait> = match algorithm {
-            KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha256) => {
+            KdfKeyAlgorithm::Hkdf(HashAlgorithm::Sha256) => {
                 Box::new(HkdfSha256Wrapper::default())
             }
-            KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha384) => {
+            KdfKeyAlgorithm::Hkdf(HashAlgorithm::Sha384) => {
                 Box::new(HkdfSha384Wrapper::default())
             }
-            KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha512) => {
+            KdfKeyAlgorithm::Hkdf(HashAlgorithm::Sha512) => {
                 Box::new(HkdfSha512Wrapper::default())
             }
         };

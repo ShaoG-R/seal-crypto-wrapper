@@ -186,3 +186,6 @@ pub mod aead;
 // Extendable output function wrappers | 可扩展输出函数包装器
 #[cfg(feature = "xof")]
 pub mod xof;
+
+// Hash algorithm wrappers | 哈希算法包装器
+pub mod hash;

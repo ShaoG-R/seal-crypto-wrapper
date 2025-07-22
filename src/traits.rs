@@ -65,6 +65,7 @@
 
 #[cfg(feature = "asymmetric-key-agreement")]
 use crate::algorithms::asymmetric::key_agreement::KeyAgreementAlgorithm;
+use crate::algorithms::hash::HashAlgorithm;
 #[cfg(any(
     feature = "aead",
     feature = "asymmetric-kem",
@@ -719,4 +720,36 @@ impl_trait_for_box!(KeyAgreementAlgorithmTrait {
     ref fn clone_box(&self,) -> Box<dyn KeyAgreementAlgorithmTrait>;
     ref fn algorithm(&self,) -> KeyAgreementAlgorithm;
     self fn into_boxed(self,) -> Box<dyn KeyAgreementAlgorithmTrait>;
+}, clone_box);
+
+pub trait HashAlgorithmTrait: Send + Sync + 'static + std::fmt::Debug {
+    /// Hashes the given data.
+    ///
+    /// 哈希给定的数据。
+    fn hash(&self, data: &[u8]) -> Vec<u8>;
+
+    /// Computes the HMAC of a message using the given key.
+    ///
+    /// 使用给定的密钥计算消息的 HMAC。
+    fn hmac(&self, key: &[u8], msg: &[u8]) -> Result<Vec<u8>>;
+
+    /// Returns the algorithm enum.
+    ///
+    /// 返回算法枚举。
+    fn algorithm(&self) -> HashAlgorithm;
+
+    /// Clones the algorithm.
+    ///
+    /// 克隆算法。
+    fn clone_box(&self) -> Box<dyn HashAlgorithmTrait>;
+
+    fn into_boxed(self) -> Box<dyn HashAlgorithmTrait>;
+}
+
+impl_trait_for_box!(HashAlgorithmTrait {
+    ref fn hash(&self, data: &[u8]) -> Vec<u8>;
+    ref fn hmac(&self, key: &[u8], msg: &[u8]) -> Result<Vec<u8>>;
+    ref fn algorithm(&self,) -> HashAlgorithm;
+    ref fn clone_box(&self,) -> Box<dyn HashAlgorithmTrait>;
+    self fn into_boxed(self,) -> Box<dyn HashAlgorithmTrait>;
 }, clone_box);

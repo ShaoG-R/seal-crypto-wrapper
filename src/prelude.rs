@@ -137,6 +137,16 @@ mod xof {
 #[cfg(feature = "xof")]
 pub use xof::*;
 
+// Hash algorithm types | 哈希算法类型
+mod hash {
+    /// Hash algorithm builder | 哈希算法构建器
+    pub use crate::algorithms::hash::HashAlgorithm;
+    /// Trait for hash algorithms | 哈希算法 trait
+    pub use crate::traits::HashAlgorithmTrait;
+}
+
+pub use hash::*;
+
 // Security and memory management utilities | 安全和内存管理工具
 
 /// Zero-on-drop wrapper for sensitive data.

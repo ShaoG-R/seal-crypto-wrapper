@@ -139,7 +139,7 @@ pub mod key_agreement;
 #[macro_export(local_inner_macros)]
 macro_rules! dispatch_kem {
     ($algorithm:expr, $action:ident) => {{
-        use crate::algorithms::HashAlgorithmEnum;
+        use crate::algorithms::hash::HashAlgorithm;
         use crate::algorithms::asymmetric::kem::{KemAlgorithm, KyberSecurityLevel, RsaBits};
         use ::seal_crypto::schemes::asymmetric::post_quantum::kyber::{
             Kyber512, Kyber768, Kyber1024,
@@ -147,40 +147,40 @@ macro_rules! dispatch_kem {
         use ::seal_crypto::schemes::asymmetric::traditional::rsa::{Rsa2048, Rsa4096};
         use ::seal_crypto::schemes::hash::{Sha256, Sha384, Sha512};
         match $algorithm {
-            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256) => {
+            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithm::Sha256) => {
                 $action!(
                     Rsa2048<Sha256>,
-                    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256)
+                    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithm::Sha256)
                 )
             }
-            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384) => {
+            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithm::Sha384) => {
                 $action!(
                     Rsa2048<Sha384>,
-                    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384)
+                    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithm::Sha384)
                 )
             }
-            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512) => {
+            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithm::Sha512) => {
                 $action!(
                     Rsa2048<Sha512>,
-                    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512)
+                    KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithm::Sha512)
                 )
             }
-            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256) => {
+            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithm::Sha256) => {
                 $action!(
                     Rsa4096<Sha256>,
-                    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256)
+                    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithm::Sha256)
                 )
             }
-            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384) => {
+            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithm::Sha384) => {
                 $action!(
                     Rsa4096<Sha384>,
-                    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384)
+                    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithm::Sha384)
                 )
             }
-            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512) => {
+            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithm::Sha512) => {
                 $action!(
                     Rsa4096<Sha512>,
-                    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512)
+                    KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithm::Sha512)
                 )
             }
             KemAlgorithm::Kyber(KyberSecurityLevel::L512) => {

@@ -59,7 +59,7 @@
 //! - **上下文信息**: 包含应用特定上下文进行域分离
 //! - **输出长度**: 仅请求所需的密钥材料数量
 
-use crate::algorithms::HashAlgorithmEnum;
+use crate::algorithms::hash::HashAlgorithm;
 use bincode::{Decode, Encode};
 
 /// Key-based Key Derivation Function algorithm enumeration.
@@ -101,7 +101,7 @@ pub enum KdfKeyAlgorithm {
     /// - **上下文信息**: 应用特定的上下文数据
     /// - **可变输出**: 任何所需的输出长度
     /// - **确定性**: 相同输入总是产生相同输出
-    Hkdf(HashAlgorithmEnum),
+    Hkdf(HashAlgorithm),
 }
 
 impl KdfKeyAlgorithm {
@@ -196,7 +196,7 @@ impl KdfKeyAlgorithmBuilder {
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn hkdf_sha256(self) -> KdfKeyAlgorithm {
-        KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha256)
+        KdfKeyAlgorithm::Hkdf(HashAlgorithm::Sha256)
     }
 
     /// Selects HKDF with SHA-384 hash function.
@@ -220,7 +220,7 @@ impl KdfKeyAlgorithmBuilder {
     /// - 长期密钥派生
     /// - 政府/军事应用
     pub fn hkdf_sha384(self) -> KdfKeyAlgorithm {
-        KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha384)
+        KdfKeyAlgorithm::Hkdf(HashAlgorithm::Sha384)
     }
 
     /// Selects HKDF with SHA-512 hash function.
@@ -251,7 +251,7 @@ impl KdfKeyAlgorithmBuilder {
     /// SHA-512 针对 64 位平台优化，在 32 位系统上可能较慢。
     /// 在资源受限的设备上考虑使用 SHA-256 以获得更好的性能。
     pub fn hkdf_sha512(self) -> KdfKeyAlgorithm {
-        KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha512)
+        KdfKeyAlgorithm::Hkdf(HashAlgorithm::Sha512)
     }
 }
 
@@ -346,13 +346,13 @@ impl KdfKeyAlgorithm {
     pub fn into_wrapper(self) -> KdfKeyWrapper {
         use crate::wrappers::kdf::key::{HkdfSha256Wrapper, HkdfSha384Wrapper, HkdfSha512Wrapper};
         match self {
-            KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha256) => {
+            KdfKeyAlgorithm::Hkdf(HashAlgorithm::Sha256) => {
                 KdfKeyWrapper::new(Box::new(HkdfSha256Wrapper::default()))
             }
-            KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha384) => {
+            KdfKeyAlgorithm::Hkdf(HashAlgorithm::Sha384) => {
                 KdfKeyWrapper::new(Box::new(HkdfSha384Wrapper::default()))
             }
-            KdfKeyAlgorithm::Hkdf(HashAlgorithmEnum::Sha512) => {
+            KdfKeyAlgorithm::Hkdf(HashAlgorithm::Sha512) => {
                 KdfKeyWrapper::new(Box::new(HkdfSha512Wrapper::default()))
             }
         }

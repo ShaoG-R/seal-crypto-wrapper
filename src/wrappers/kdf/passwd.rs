@@ -46,7 +46,7 @@
 //! - **高安全性**: 使用高内存成本的 Argon2
 //! - **资源受限**: 使用高迭代次数的 PBKDF2
 
-use crate::algorithms::HashAlgorithmEnum;
+use crate::algorithms::hash::HashAlgorithm;
 use crate::algorithms::kdf::passwd::{Argon2Params, KdfPasswordAlgorithm};
 use crate::error::{Error, Result};
 use crate::traits::KdfPasswordAlgorithmTrait;
@@ -307,19 +307,19 @@ macro_rules! impl_kdf_pbkdf_algorithm {
 impl_kdf_pbkdf_algorithm!(
     Pbkdf2Sha256Wrapper,
     Pbkdf2Sha256,
-    HashAlgorithmEnum::Sha256,
+    HashAlgorithm::Sha256,
     KdfPasswordAlgorithmKind::Pbkdf2Sha256
 );
 impl_kdf_pbkdf_algorithm!(
     Pbkdf2Sha384Wrapper,
     Pbkdf2Sha384,
-    HashAlgorithmEnum::Sha384,
+    HashAlgorithm::Sha384,
     KdfPasswordAlgorithmKind::Pbkdf2Sha384
 );
 impl_kdf_pbkdf_algorithm!(
     Pbkdf2Sha512Wrapper,
     Pbkdf2Sha512,
-    HashAlgorithmEnum::Sha512,
+    HashAlgorithm::Sha512,
     KdfPasswordAlgorithmKind::Pbkdf2Sha512
 );
 

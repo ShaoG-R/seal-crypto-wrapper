@@ -33,7 +33,7 @@
 //! - **高性能**: Kyber-512 适用于大多数应用
 //! - **最大安全性**: Kyber-1024 用于长期保护
 
-use crate::algorithms::HashAlgorithmEnum;
+use crate::algorithms::hash::HashAlgorithm;
 use crate::wrappers::asymmetric::kem::KemAlgorithmWrapper;
 use bincode::{Decode, Encode};
 
@@ -61,7 +61,7 @@ pub enum KemAlgorithm {
     ///
     /// 具有可配置密钥大小和哈希函数的传统公钥密码系统。
     /// 广泛支持但易受量子攻击。
-    Rsa(RsaBits, HashAlgorithmEnum),
+    Rsa(RsaBits, HashAlgorithm),
 
     /// Kyber post-quantum Key Encapsulation Mechanism.
     ///
@@ -313,7 +313,7 @@ impl RsaBuilder {
     /// Standard choice for most RSA KEM applications.
     /// 大多数 RSA KEM 应用的标准选择。
     pub fn sha256(self) -> KemAlgorithm {
-        KemAlgorithm::Rsa(self.bits, HashAlgorithmEnum::Sha256)
+        KemAlgorithm::Rsa(self.bits, HashAlgorithm::Sha256)
     }
 
     /// Uses SHA-384 hash function with RSA KEM.
@@ -328,7 +328,7 @@ impl RsaBuilder {
     ///
     /// 使用场景：更高的安全要求
     pub fn sha384(self) -> KemAlgorithm {
-        KemAlgorithm::Rsa(self.bits, HashAlgorithmEnum::Sha384)
+        KemAlgorithm::Rsa(self.bits, HashAlgorithm::Sha384)
     }
 
     /// Uses SHA-512 hash function with RSA KEM.
@@ -343,7 +343,7 @@ impl RsaBuilder {
     ///
     /// 使用场景：最大安全性应用
     pub fn sha512(self) -> KemAlgorithm {
-        KemAlgorithm::Rsa(self.bits, HashAlgorithmEnum::Sha512)
+        KemAlgorithm::Rsa(self.bits, HashAlgorithm::Sha512)
     }
 }
 
@@ -417,29 +417,29 @@ impl KemAlgorithm {
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn into_wrapper(self) -> KemAlgorithmWrapper {
-        use crate::algorithms::HashAlgorithmEnum;
+        use crate::algorithms::hash::HashAlgorithm;
         use crate::wrappers::asymmetric::kem::{
             KemAlgorithmWrapper, Kyber512Wrapper, Kyber768Wrapper, Kyber1024Wrapper,
             Rsa2048Sha256Wrapper, Rsa2048Sha384Wrapper, Rsa2048Sha512Wrapper, Rsa4096Sha256Wrapper,
             Rsa4096Sha384Wrapper, Rsa4096Sha512Wrapper,
         };
         match self {
-            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha256) => {
+            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithm::Sha256) => {
                 KemAlgorithmWrapper::new(Box::new(Rsa2048Sha256Wrapper::default()))
             }
-            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha384) => {
+            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithm::Sha384) => {
                 KemAlgorithmWrapper::new(Box::new(Rsa2048Sha384Wrapper::default()))
             }
-            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithmEnum::Sha512) => {
+            KemAlgorithm::Rsa(RsaBits::B2048, HashAlgorithm::Sha512) => {
                 KemAlgorithmWrapper::new(Box::new(Rsa2048Sha512Wrapper::default()))
             }
-            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha256) => {
+            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithm::Sha256) => {
                 KemAlgorithmWrapper::new(Box::new(Rsa4096Sha256Wrapper::default()))
             }
-            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha384) => {
+            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithm::Sha384) => {
                 KemAlgorithmWrapper::new(Box::new(Rsa4096Sha384Wrapper::default()))
             }
-            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithmEnum::Sha512) => {
+            KemAlgorithm::Rsa(RsaBits::B4096, HashAlgorithm::Sha512) => {
                 KemAlgorithmWrapper::new(Box::new(Rsa4096Sha512Wrapper::default()))
             }
             KemAlgorithm::Kyber(KyberSecurityLevel::L512) => {

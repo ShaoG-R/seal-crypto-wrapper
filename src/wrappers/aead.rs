@@ -547,7 +547,9 @@ mod tests {
     use crate::algorithms::kdf::{key::KdfKeyAlgorithm, passwd::KdfPasswordAlgorithm};
     #[cfg(feature = "xof")]
     use crate::algorithms::xof::XofAlgorithm;
-    use crate::keys::aead::AeadKey;
+    use crate::keys::aead::{AeadKey, TypedAeadKey};
+    use crate::prelude::AeadAlgorithm;
+    use seal_crypto::secrecy::SecretBox;
 
     #[test]
     fn test_symmetric_key_generate() {

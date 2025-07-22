@@ -73,7 +73,10 @@ use crate::algorithms::asymmetric::key_agreement::KeyAgreementAlgorithm;
     feature = "asymmetric-signature",
     feature = "asymmetric-key-agreement"
 ))]
-use crate::error::Result;
+use {
+    crate::error::Result,
+    seal_crypto::{secrecy::SecretBox, zeroize::Zeroizing},
+};
 #[cfg(feature = "asymmetric-key-agreement")]
 use crate::keys::asymmetric::key_agreement::{
     TypedKeyAgreementKeyPair, TypedKeyAgreementPrivateKey, TypedKeyAgreementPublicKey,

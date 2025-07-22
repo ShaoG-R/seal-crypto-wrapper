@@ -54,6 +54,7 @@
 //! - **认证**: 验证消息发送者的身份
 
 use crate::algorithms::asymmetric::signature::{DilithiumSecurityLevel, SignatureAlgorithm};
+use crate::bincode::{Decode, Encode};
 use crate::define_wrapper;
 use crate::error::{Error, FormatError, Result};
 use crate::keys::asymmetric::signature::{
@@ -66,7 +67,6 @@ use seal_crypto::schemes::asymmetric::post_quantum::dilithium::{
     Dilithium2, Dilithium3, Dilithium5,
 };
 use seal_crypto::schemes::asymmetric::traditional::ecc::{EcdsaP256, Ed25519};
-use crate::bincode::{Decode, Encode};
 use std::ops::Deref;
 
 /// Macro for implementing signature algorithm wrappers.

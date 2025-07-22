@@ -80,7 +80,7 @@ use crate::keys::aead::{AeadKey as UntypedAeadKey, TypedAeadKey};
 use crate::traits::AeadAlgorithmTrait;
 use rand::TryRngCore;
 use rand::rngs::OsRng;
-use seal_crypto::prelude::{Key, AeadCipher, AeadDecryptor, AeadEncryptor};
+use seal_crypto::prelude::{AeadCipher, AeadDecryptor, AeadEncryptor, Key};
 use seal_crypto::schemes::aead::aes_gcm::{Aes128Gcm, Aes256Gcm};
 use seal_crypto::schemes::aead::chacha20_poly1305::{ChaCha20Poly1305, XChaCha20Poly1305};
 use std::ops::Deref;

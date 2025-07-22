@@ -179,16 +179,18 @@ impl TypedSignatureKeyPair {
             ($key_type:ty, $alg_enum:expr) => {
                 <$key_type>::generate_keypair()
                     .map_err(Error::from)
-                    .and_then(|(pk, sk)| Ok(Self {
-                        public_key: TypedSignaturePublicKey {
-                            key: AsymmetricPublicKey::new(pk.to_bytes()?),
-                            algorithm: $alg_enum,
-                        },
-                        private_key: TypedSignaturePrivateKey {
-                            key: AsymmetricPrivateKey::new(sk.to_bytes()?),
-                            algorithm: $alg_enum,
-                        },
-                    }))
+                    .and_then(|(pk, sk)| {
+                        Ok(Self {
+                            public_key: TypedSignaturePublicKey {
+                                key: AsymmetricPublicKey::new(pk.to_bytes()?),
+                                algorithm: $alg_enum,
+                            },
+                            private_key: TypedSignaturePrivateKey {
+                                key: AsymmetricPrivateKey::new(sk.to_bytes()?),
+                                algorithm: $alg_enum,
+                            },
+                        })
+                    })
             };
         }
         dispatch_signature!(algorithm, generate_keypair)
@@ -211,10 +213,7 @@ impl TypedSignatureKeyPair {
     ///
     /// 包含 `(TypedSignaturePublicKey, TypedSignaturePrivateKey)` 的元组。
     pub fn into_keypair(self) -> (TypedSignaturePublicKey, TypedSignaturePrivateKey) {
-        (
-            self.public_key,
-            self.private_key,
-        )
+        (self.public_key, self.private_key)
     }
 
     /// Returns a copy of the public key with algorithm binding.

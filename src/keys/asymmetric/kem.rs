@@ -130,7 +130,7 @@ use crate::wrappers::xof::XofReaderWrapper;
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, bincode::Encode, bincode::Decode)]
 pub struct TypedKemKeyPair {
     pub(crate) public_key: TypedKemPublicKey,
-    pub(crate) private_key: TypedKemPrivateKey
+    pub(crate) private_key: TypedKemPrivateKey,
 }
 
 impl TypedKemKeyPair {
@@ -215,10 +215,7 @@ impl TypedKemKeyPair {
     ///
     /// 包含 `(TypedKemPublicKey, TypedKemPrivateKey)` 的元组。
     pub fn into_keypair(self) -> (TypedKemPublicKey, TypedKemPrivateKey) {
-        (
-            self.public_key,
-            self.private_key,
-        )
+        (self.public_key, self.private_key)
     }
 
     /// Returns a copy of the public key with algorithm binding.
@@ -431,6 +428,12 @@ impl std::ops::Deref for SharedSecret {
     type Target = Zeroizing<Vec<u8>>;
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl std::ops::DerefMut for SharedSecret {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 

@@ -139,8 +139,8 @@ pub mod key_agreement;
 #[macro_export(local_inner_macros)]
 macro_rules! dispatch_kem {
     ($algorithm:expr, $action:ident) => {{
-        use crate::algorithms::hash::HashAlgorithm;
         use crate::algorithms::asymmetric::kem::{KemAlgorithm, KyberSecurityLevel, RsaBits};
+        use crate::algorithms::hash::HashAlgorithm;
         use ::seal_crypto::schemes::asymmetric::post_quantum::kyber::{
             Kyber512, Kyber768, Kyber1024,
         };

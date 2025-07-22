@@ -268,15 +268,9 @@ impl KdfKeyWrapper {
     /// ```
     pub fn from_enum(algorithm: KdfKeyAlgorithm) -> Self {
         let algorithm: Box<dyn KdfKeyAlgorithmTrait> = match algorithm {
-            KdfKeyAlgorithm::Hkdf(HashAlgorithm::Sha256) => {
-                Box::new(HkdfSha256Wrapper::default())
-            }
-            KdfKeyAlgorithm::Hkdf(HashAlgorithm::Sha384) => {
-                Box::new(HkdfSha384Wrapper::default())
-            }
-            KdfKeyAlgorithm::Hkdf(HashAlgorithm::Sha512) => {
-                Box::new(HkdfSha512Wrapper::default())
-            }
+            KdfKeyAlgorithm::Hkdf(HashAlgorithm::Sha256) => Box::new(HkdfSha256Wrapper::default()),
+            KdfKeyAlgorithm::Hkdf(HashAlgorithm::Sha384) => Box::new(HkdfSha384Wrapper::default()),
+            KdfKeyAlgorithm::Hkdf(HashAlgorithm::Sha512) => Box::new(HkdfSha512Wrapper::default()),
         };
         Self::new(algorithm)
     }

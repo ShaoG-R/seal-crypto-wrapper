@@ -66,18 +66,6 @@
 #[cfg(feature = "asymmetric-key-agreement")]
 use crate::algorithms::asymmetric::key_agreement::KeyAgreementAlgorithm;
 use crate::algorithms::hash::HashAlgorithm;
-#[cfg(any(
-    feature = "aead",
-    feature = "asymmetric-kem",
-    feature = "kdf",
-    feature = "xof",
-    feature = "asymmetric-signature",
-    feature = "asymmetric-key-agreement"
-))]
-use {
-    crate::error::Result,
-    seal_crypto::{secrecy::SecretBox, zeroize::Zeroizing},
-};
 #[cfg(feature = "asymmetric-key-agreement")]
 use crate::keys::asymmetric::key_agreement::{
     TypedKeyAgreementKeyPair, TypedKeyAgreementPrivateKey, TypedKeyAgreementPublicKey,
@@ -110,6 +98,18 @@ use {
 };
 #[cfg(feature = "xof")]
 use {crate::algorithms::xof::XofAlgorithm, crate::wrappers::xof::XofReaderWrapper};
+#[cfg(any(
+    feature = "aead",
+    feature = "asymmetric-kem",
+    feature = "kdf",
+    feature = "xof",
+    feature = "asymmetric-signature",
+    feature = "asymmetric-key-agreement"
+))]
+use {
+    crate::error::Result,
+    seal_crypto::{secrecy::SecretBox, zeroize::Zeroizing},
+};
 
 /// Macro for automatically implementing traits for `Box<dyn Trait>` types.
 ///

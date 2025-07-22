@@ -179,10 +179,7 @@ pub enum KdfPasswordAlgorithm {
     ///
     /// - `hash`: 底层哈希函数（SHA-256/384/512）
     /// - `c`: 迭代次数（`Some(count)` 自定义，`None` 默认）
-    Pbkdf2 {
-        hash: HashAlgorithm,
-        c: Option<u32>,
-    },
+    Pbkdf2 { hash: HashAlgorithm, c: Option<u32> },
 }
 
 impl KdfPasswordAlgorithm {

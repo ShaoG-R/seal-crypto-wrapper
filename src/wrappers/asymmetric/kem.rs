@@ -43,8 +43,8 @@
 //! - **后量子安全**: Kyber 变体抵抗量子攻击
 
 use crate::algorithms::{
-    hash::HashAlgorithm,
     asymmetric::kem::{KemAlgorithm, KyberSecurityLevel, RsaBits},
+    hash::HashAlgorithm,
 };
 use crate::define_wrapper;
 use crate::error::{Error, FormatError, Result};

@@ -345,13 +345,13 @@ macro_rules! dispatch_key_agreement {
 /// }
 /// ```
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct AsymmetricPrivateKey(pub zeroize::Zeroizing<Vec<u8>>);
+pub struct AsymmetricPrivateKey(pub Zeroizing<Vec<u8>>);
 
 impl bincode::Encode for AsymmetricPrivateKey {
     fn encode<E: bincode::enc::Encoder>(
         &self,
         encoder: &mut E,
-    ) -> core::result::Result<(), bincode::error::EncodeError> {
+    ) -> Result<(), bincode::error::EncodeError> {
         let bytes = self.0.as_slice();
         bincode::Encode::encode(bytes, encoder)?;
         Ok(())
@@ -361,7 +361,7 @@ impl bincode::Encode for AsymmetricPrivateKey {
 impl<Context> bincode::Decode<Context> for AsymmetricPrivateKey {
     fn decode<D: bincode::de::Decoder<Context = Context>>(
         decoder: &mut D,
-    ) -> core::result::Result<Self, bincode::error::DecodeError> {
+    ) -> Result<Self, bincode::error::DecodeError> {
         let bytes = bincode::Decode::decode(decoder)?;
         Ok(Self(Zeroizing::new(bytes)))
     }
@@ -369,7 +369,7 @@ impl<Context> bincode::Decode<Context> for AsymmetricPrivateKey {
 impl<'de, Context> bincode::BorrowDecode<'de, Context> for AsymmetricPrivateKey {
     fn borrow_decode<D: bincode::de::BorrowDecoder<'de, Context = Context>>(
         decoder: &mut D,
-    ) -> core::result::Result<Self, bincode::error::DecodeError> {
+    ) -> Result<Self, bincode::error::DecodeError> {
         let bytes = bincode::BorrowDecode::borrow_decode(decoder)?;
         Ok(Self(Zeroizing::new(bytes)))
     }

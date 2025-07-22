@@ -74,6 +74,7 @@ use crate::keys::asymmetric::TypedAsymmetricKeyTrait;
 use crate::keys::asymmetric::{AsymmetricPrivateKey, AsymmetricPublicKey};
 use seal_crypto::prelude::{Key, KeyGenerator};
 use seal_crypto::zeroize::Zeroizing;
+use serde::{Deserialize, Serialize};
 
 #[cfg(all(feature = "kdf", feature = "aead"))]
 use crate::{
@@ -336,8 +337,36 @@ impl_typed_asymmetric_private_key!(TypedKemPrivateKey, KemAlgorithm);
 ///
 /// 共享密钥应立即用于密钥派生或加密，不应长期存储。
 /// 使用适当的密钥派生函数从此材料派生实际的加密密钥。
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SharedSecret(pub Zeroizing<Vec<u8>>);
+
+impl bincode::Encode for SharedSecret {
+    fn encode<E: bincode::enc::Encoder>(
+        &self,
+        encoder: &mut E,
+    ) -> Result<(), bincode::error::EncodeError> {
+        let bytes = self.0.as_slice();
+        bincode::Encode::encode(bytes, encoder)?;
+        Ok(())
+    }
+}
+
+impl<Context> bincode::Decode<Context> for SharedSecret {
+    fn decode<D: bincode::de::Decoder<Context = Context>>(
+        decoder: &mut D,
+    ) -> Result<Self, bincode::error::DecodeError> {
+        let bytes = bincode::Decode::decode(decoder)?;
+        Ok(Self(Zeroizing::new(bytes)))
+    }
+}
+impl<'de, Context> bincode::BorrowDecode<'de, Context> for SharedSecret {
+    fn borrow_decode<D: bincode::de::BorrowDecoder<'de, Context = Context>>(
+        decoder: &mut D,
+    ) -> Result<Self, bincode::error::DecodeError> {
+        let bytes = bincode::BorrowDecode::borrow_decode(decoder)?;
+        Ok(Self(Zeroizing::new(bytes)))
+    }
+}
 
 impl SharedSecret {
     /// Derives a aead key from the shared secret using a KDF algorithm.

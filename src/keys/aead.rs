@@ -33,7 +33,7 @@
 //! ### Direct Key Generation | 直接密钥生成
 //!
 //! ```rust
-//! use seal_crypto_wrapper::keys::symmetric::TypedAeadKey;
+//! use seal_crypto_wrapper::keys::aead::TypedAeadKey;
 //! use seal_crypto_wrapper::algorithms::aead::AeadAlgorithm;
 //!
 //! // Generate algorithm-specific key
@@ -47,7 +47,7 @@
 //! ```rust
 //! # #[cfg(feature = "kdf")]
 //! # {
-//! use seal_crypto_wrapper::keys::symmetric::AeadKey;
+//! use seal_crypto_wrapper::keys::aead::AeadKey;
 //! use seal_crypto_wrapper::algorithms::kdf::key::KdfKeyAlgorithm;
 //!
 //! // Derive key from master key

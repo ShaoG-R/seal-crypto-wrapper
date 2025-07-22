@@ -124,9 +124,8 @@ use seal_crypto::prelude::{Key, KeyGenerator};
 /// ```
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, bincode::Encode, bincode::Decode)]
 pub struct TypedKeyAgreementKeyPair {
-    public_key: AsymmetricPublicKey,
-    private_key: AsymmetricPrivateKey,
-    algorithm: KeyAgreementAlgorithm,
+    public_key: TypedKeyAgreementPublicKey,
+    private_key: TypedKeyAgreementPrivateKey,
 }
 
 impl TypedKeyAgreementKeyPair {
@@ -173,9 +172,14 @@ impl TypedKeyAgreementKeyPair {
                 <$key_type>::generate_keypair()
                     .map_err(Error::from)
                     .and_then(|(pk, sk)| Ok(Self {
-                        public_key: AsymmetricPublicKey::new(pk.to_bytes()?),
-                        private_key: AsymmetricPrivateKey::new(sk.to_bytes()?),
-                        algorithm: $alg_enum,
+                        public_key: TypedKeyAgreementPublicKey {
+                            key: AsymmetricPublicKey::new(pk.to_bytes()?),
+                            algorithm: $alg_enum,
+                        },
+                        private_key: TypedKeyAgreementPrivateKey {
+                            key: AsymmetricPrivateKey::new(sk.to_bytes()?),
+                            algorithm: $alg_enum,
+                        },
                     }))
             };
         }
@@ -200,14 +204,8 @@ impl TypedKeyAgreementKeyPair {
     /// 包含 `(TypedKeyAgreementPublicKey, TypedKeyAgreementPrivateKey)` 的元组。
     pub fn into_keypair(self) -> (TypedKeyAgreementPublicKey, TypedKeyAgreementPrivateKey) {
         (
-            TypedKeyAgreementPublicKey {
-                key: self.public_key,
-                algorithm: self.algorithm,
-            },
-            TypedKeyAgreementPrivateKey {
-                key: self.private_key,
-                algorithm: self.algorithm,
-            },
+            self.public_key,
+            self.private_key,
         )
     }
 
@@ -221,11 +219,8 @@ impl TypedKeyAgreementKeyPair {
     ///
     /// 此方法允许您在不消费密钥对的情况下访问公钥，
     /// 这对密钥分发或与不同方的多次密钥协商操作等操作很有用。
-    pub fn public_key(&self) -> TypedKeyAgreementPublicKey {
-        TypedKeyAgreementPublicKey {
-            key: self.public_key.clone(),
-            algorithm: self.algorithm,
-        }
+    pub fn public_key(&self) -> &TypedKeyAgreementPublicKey {
+        &self.public_key
     }
 
     /// Returns a copy of the private key with algorithm binding.
@@ -238,11 +233,8 @@ impl TypedKeyAgreementKeyPair {
     /// handling and cleanup of all copies to maintain security.
     ///
     /// 这会创建私钥材料的副本。确保所有副本的正确处理和清理以保持安全性。
-    pub fn private_key(&self) -> TypedKeyAgreementPrivateKey {
-        TypedKeyAgreementPrivateKey {
-            key: self.private_key.clone(),
-            algorithm: self.algorithm,
-        }
+    pub fn private_key(&self) -> &TypedKeyAgreementPrivateKey {
+        &self.private_key
     }
 
     /// Returns the key agreement algorithm this key pair is bound to.
@@ -254,7 +246,7 @@ impl TypedKeyAgreementKeyPair {
     ///
     /// 此信息用于运行时验证，确保密钥仅与其预期算法一起使用。
     pub fn get_algorithm(&self) -> KeyAgreementAlgorithm {
-        self.algorithm
+        self.public_key.algorithm
     }
 }
 

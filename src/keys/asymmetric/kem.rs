@@ -129,9 +129,8 @@ use crate::wrappers::xof::XofReaderWrapper;
 /// ```
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, bincode::Encode, bincode::Decode)]
 pub struct TypedKemKeyPair {
-    pub(crate) public_key: AsymmetricPublicKey,
-    pub(crate) private_key: AsymmetricPrivateKey,
-    pub(crate) algorithm: KemAlgorithm,
+    pub(crate) public_key: TypedKemPublicKey,
+    pub(crate) private_key: TypedKemPrivateKey
 }
 
 impl TypedKemKeyPair {
@@ -184,9 +183,14 @@ impl TypedKemKeyPair {
                     .map_err(Error::from)
                     .and_then(|(pk, sk)| {
                         Ok(Self {
-                            public_key: AsymmetricPublicKey::new(pk.to_bytes()?),
-                            private_key: AsymmetricPrivateKey::new(sk.to_bytes()?),
-                            algorithm: $alg_enum,
+                            public_key: TypedKemPublicKey {
+                                key: AsymmetricPublicKey::new(pk.to_bytes()?),
+                                algorithm: $alg_enum,
+                            },
+                            private_key: TypedKemPrivateKey {
+                                key: AsymmetricPrivateKey::new(sk.to_bytes()?),
+                                algorithm: $alg_enum,
+                            },
                         })
                     })
             };
@@ -212,14 +216,8 @@ impl TypedKemKeyPair {
     /// 包含 `(TypedKemPublicKey, TypedKemPrivateKey)` 的元组。
     pub fn into_keypair(self) -> (TypedKemPublicKey, TypedKemPrivateKey) {
         (
-            TypedKemPublicKey {
-                key: self.public_key,
-                algorithm: self.algorithm,
-            },
-            TypedKemPrivateKey {
-                key: self.private_key,
-                algorithm: self.algorithm,
-            },
+            self.public_key,
+            self.private_key,
         )
     }
 
@@ -233,11 +231,8 @@ impl TypedKemKeyPair {
     ///
     /// 此方法允许您在不消费密钥对的情况下访问公钥，
     /// 这对密钥分发或多次封装操作等操作很有用。
-    pub fn public_key(&self) -> TypedKemPublicKey {
-        TypedKemPublicKey {
-            key: self.public_key.clone(),
-            algorithm: self.algorithm,
-        }
+    pub fn public_key(&self) -> &TypedKemPublicKey {
+        &self.public_key
     }
 
     /// Returns a copy of the private key with algorithm binding.
@@ -250,11 +245,8 @@ impl TypedKemKeyPair {
     /// handling and cleanup of all copies to maintain security.
     ///
     /// 这会创建私钥材料的副本。确保所有副本的正确处理和清理以保持安全性。
-    pub fn private_key(&self) -> TypedKemPrivateKey {
-        TypedKemPrivateKey {
-            key: self.private_key.clone(),
-            algorithm: self.algorithm,
-        }
+    pub fn private_key(&self) -> &TypedKemPrivateKey {
+        &self.private_key
     }
 
     /// Returns the KEM algorithm this key pair is bound to.
@@ -266,7 +258,7 @@ impl TypedKemKeyPair {
     ///
     /// 此信息用于运行时验证，确保密钥仅与其预期算法一起使用。
     pub fn algorithm(&self) -> KemAlgorithm {
-        self.algorithm
+        self.public_key.algorithm
     }
 }
 

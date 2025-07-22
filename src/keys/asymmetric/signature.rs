@@ -127,9 +127,8 @@ use seal_crypto::prelude::{Key, KeyGenerator};
 /// ```
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, bincode::Encode, bincode::Decode)]
 pub struct TypedSignatureKeyPair {
-    public_key: AsymmetricPublicKey,
-    private_key: AsymmetricPrivateKey,
-    algorithm: SignatureAlgorithm,
+    public_key: TypedSignaturePublicKey,
+    private_key: TypedSignaturePrivateKey,
 }
 
 impl TypedSignatureKeyPair {
@@ -181,9 +180,14 @@ impl TypedSignatureKeyPair {
                 <$key_type>::generate_keypair()
                     .map_err(Error::from)
                     .and_then(|(pk, sk)| Ok(Self {
-                        public_key: AsymmetricPublicKey::new(pk.to_bytes()?),
-                        private_key: AsymmetricPrivateKey::new(sk.to_bytes()?),
-                        algorithm: $alg_enum,
+                        public_key: TypedSignaturePublicKey {
+                            key: AsymmetricPublicKey::new(pk.to_bytes()?),
+                            algorithm: $alg_enum,
+                        },
+                        private_key: TypedSignaturePrivateKey {
+                            key: AsymmetricPrivateKey::new(sk.to_bytes()?),
+                            algorithm: $alg_enum,
+                        },
                     }))
             };
         }
@@ -208,14 +212,8 @@ impl TypedSignatureKeyPair {
     /// 包含 `(TypedSignaturePublicKey, TypedSignaturePrivateKey)` 的元组。
     pub fn into_keypair(self) -> (TypedSignaturePublicKey, TypedSignaturePrivateKey) {
         (
-            TypedSignaturePublicKey {
-                key: self.public_key,
-                algorithm: self.algorithm,
-            },
-            TypedSignaturePrivateKey {
-                key: self.private_key,
-                algorithm: self.algorithm,
-            },
+            self.public_key,
+            self.private_key,
         )
     }
 
@@ -229,11 +227,8 @@ impl TypedSignatureKeyPair {
     ///
     /// 此方法允许您在不消费密钥对的情况下访问公钥，
     /// 这对密钥分发或多次签名验证操作等操作很有用。
-    pub fn public_key(&self) -> TypedSignaturePublicKey {
-        TypedSignaturePublicKey {
-            key: self.public_key.clone(),
-            algorithm: self.algorithm,
-        }
+    pub fn public_key(&self) -> &TypedSignaturePublicKey {
+        &self.public_key
     }
 
     /// Returns a copy of the private key with algorithm binding.
@@ -246,11 +241,8 @@ impl TypedSignatureKeyPair {
     /// handling and cleanup of all copies to maintain security.
     ///
     /// 这会创建私钥材料的副本。确保所有副本的正确处理和清理以保持安全性。
-    pub fn private_key(&self) -> TypedSignaturePrivateKey {
-        TypedSignaturePrivateKey {
-            key: self.private_key.clone(),
-            algorithm: self.algorithm,
-        }
+    pub fn private_key(&self) -> &TypedSignaturePrivateKey {
+        &self.private_key
     }
 
     /// Returns the signature algorithm this key pair is bound to.
@@ -262,7 +254,7 @@ impl TypedSignatureKeyPair {
     ///
     /// 此信息用于运行时验证，确保密钥仅与其预期算法一起使用。
     pub fn get_algorithm(&self) -> SignatureAlgorithm {
-        self.algorithm
+        self.public_key.algorithm
     }
 }
 

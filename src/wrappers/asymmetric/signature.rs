@@ -116,7 +116,7 @@ macro_rules! impl_signature_algorithm {
                 type KT = $algo;
                 let sk = <KT as AsymmetricKeySet>::PrivateKey::from_bytes(&key.to_bytes())?;
                 let sig = KT::sign(&sk, message)?;
-                Ok(SignatureWrapper::new(sig))
+                Ok(SignatureWrapper::new(sig, $algo_enum))
             }
 
             fn verify(
@@ -125,7 +125,7 @@ macro_rules! impl_signature_algorithm {
                 key: &TypedSignaturePublicKey,
                 signature: &SignatureWrapper,
             ) -> Result<()> {
-                if key.algorithm != $algo_enum {
+                if key.algorithm != $algo_enum || signature.algorithm() != $algo_enum {
                     return Err(Error::FormatError(FormatError::InvalidKeyType));
                 }
                 type KT = $algo;
@@ -343,15 +343,23 @@ impl_signature_algorithm!(EcdsaP256Wrapper, EcdsaP256, SignatureAlgorithm::Ecdsa
 #[derive(Clone, Debug, PartialEq, Eq, Decode, Encode, serde::Serialize, serde::Deserialize)]
 pub struct SignatureWrapper {
     signature: Signature,
+    algorithm: SignatureAlgorithm,
 }
 
 impl SignatureWrapper {
-    pub(crate) fn new(signature: Signature) -> Self {
-        Self { signature }
+    pub(crate) fn new(signature: Signature, algorithm: SignatureAlgorithm) -> Self {
+        Self {
+            signature,
+            algorithm,
+        }
     }
 
     pub fn into_signature(self) -> Signature {
         self.signature
+    }
+
+    pub fn algorithm(&self) -> SignatureAlgorithm {
+        self.algorithm
     }
 }
 

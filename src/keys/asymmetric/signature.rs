@@ -252,7 +252,7 @@ impl TypedSignatureKeyPair {
     /// are only used with their intended algorithm.
     ///
     /// 此信息用于运行时验证，确保密钥仅与其预期算法一起使用。
-    pub fn get_algorithm(&self) -> SignatureAlgorithm {
+    pub fn algorithm(&self) -> SignatureAlgorithm {
         self.public_key.algorithm
     }
 }

@@ -53,7 +53,7 @@ fn main() -> Result<()> {
     // 1. 选择一个对称加密算法。
     let algorithm = AeadAlgorithm::build().aes256_gcm();
 
-    // 2. 获取算法包装器。
+    // 2. 获取算法包装器。  
     let cipher = algorithm.into_wrapper();
 
     // 3. 生成一个密钥 (密钥已绑定算法信息)。
@@ -120,7 +120,7 @@ fn main() -> Result<()> {
     let algorithm = AsymmetricAlgorithm::build().kem().kyber512();
 
     // 2. 获取算法包装器。
-    let kem = algorithm.into_asymmetric_wrapper();
+    let kem = algorithm.into_wrapper();
 
     // 3. 生成密钥对。
     let key_pair = kem.generate_keypair()?;

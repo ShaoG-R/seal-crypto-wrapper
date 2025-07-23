@@ -123,7 +123,7 @@ fn main() -> Result<()> {
     let algorithm = AsymmetricAlgorithm::build().kem().kyber512();
 
     // 2. Get the algorithm wrapper.
-    let kem = algorithm.into_asymmetric_wrapper();
+    let kem = algorithm.into_wrapper();
 
     // 3. Generate a key pair.
     let key_pair = kem.generate_keypair()?;

@@ -69,3 +69,6 @@ required-features = ["xof"]
 [[example]]
 name = "aead"
 required-features = ["aead"]
+
+[[example]]
+name = "hash"

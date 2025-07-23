@@ -43,24 +43,24 @@
 //! ```
 //!
 //! ### Key Derivation | 密钥派生
-//!
 //! ```rust
-//! # #[cfg(feature = "kdf")]
-//! # {
-//! use seal_crypto_wrapper::keys::aead::AeadKey;
+//! use seal_crypto_wrapper::keys::aead::TypedAeadKey;
 //! use seal_crypto_wrapper::algorithms::kdf::key::KdfKeyAlgorithm;
-//!
-//! // Derive key from master key
-//! let master_key = AeadKey::generate(32)?;
-//! let kdf = KdfKeyAlgorithm::build().hkdf_sha256();
-//! let derived_key = master_key.derive_key(
-//!     kdf,
-//!     Some(b"salt"),
-//!     Some(b"context"),
-//!     32
-//! )?;
-//! # Ok::<(), Box<dyn std::error::Error>>(())
-//! # }
+//! use seal_crypto_wrapper::prelude::AeadAlgorithm;
+//! #[cfg(feature = "kdf")]
+//! fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     // Derive key from master key
+//!     let master_key = TypedAeadKey::generate(AeadAlgorithm::build().aes256_gcm())?;
+//!     let kdf = KdfKeyAlgorithm::build().hkdf_sha256();
+//!     let derived_key = TypedAeadKey::derive_from_kdf(
+//!         &master_key.as_bytes(),
+//!         kdf,
+//!         Some(b"salt"),
+//!         Some(b"info"),
+//!         AeadAlgorithm::build().aes256_gcm()
+//!     )?;
+//!     Ok(())
+//! }
 //! ```
 
 use crate::algorithms::aead::{AeadAlgorithm, AesKeySize};

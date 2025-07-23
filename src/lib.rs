@@ -105,7 +105,7 @@
 //!     let signature = signature_scheme.sign(message, &private_key)?;
 //!
 //!     // 5. Verify the signature | 验证签名
-//!     signature_scheme.verify(message, &public_key, signature)?;
+//!     signature_scheme.verify(message, &public_key, &signature)?;
 //!
 //!     Ok(())
 //! }

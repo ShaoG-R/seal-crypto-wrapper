@@ -1,3 +1,7 @@
+[![Crates.io](https://img.shields.io/crates/v/seal-crypto-wrapper.svg)](https://crates.io/crates/seal-crypto-wrapper)
+[![Docs.rs](https://docs.rs/seal-crypto-wrapper/badge.svg)](https://docs.rs/seal-crypto-wrapper)
+[![License](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](./LICENSE)
+
 # Seal Crypto Wrapper
 
 This library is a high-level Rust wrapper for the underlying cryptographic library [seal-crypto](https://github.com/ShaoG-R/seal-crypto). Its core goal is to provide a safer and more user-friendly API by tightly binding algorithm information with the keys themselves, reducing common cryptographic misuse.

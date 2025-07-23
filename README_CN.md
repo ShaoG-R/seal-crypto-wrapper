@@ -1,3 +1,7 @@
+[![Crates.io](https://img.shields.io/crates/v/seal-crypto-wrapper.svg)](https://crates.io/crates/seal-crypto-wrapper)
+[![Docs.rs](https://docs.rs/seal-crypto-wrapper/badge.svg)](https://docs.rs/seal-crypto-wrapper)
+[![License](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](./LICENSE)
+
 # Seal Crypto Wrapper
 
 本库是底层加密库 [seal-crypto](https://github.com/seal-io/seal-crypto) 的一个高级 Rust 包装。它的核心目标是提供一个更安全、更易于使用的 API，通过将算法信息与密钥本身紧密绑定，来减少常见的加密误用。

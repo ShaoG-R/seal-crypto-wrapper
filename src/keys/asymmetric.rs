@@ -61,12 +61,13 @@
 //! #[cfg(feature = "asymmetric-kem")]
 //! fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!     let algorithm = AsymmetricAlgorithm::build().kem().kyber512();
-//!     let kem = algorithm.into_asymmetric_wrapper();
+//!     let kem = algorithm.into_wrapper();
 //!     let keypair = kem.generate_keypair()?;
 //!
 //!     let (public_key, private_key) = keypair.into_keypair();
 //!     let (shared_secret, ciphertext) = kem.encapsulate_key(&public_key)?;
 //!     let recovered_secret = kem.decapsulate_key(&private_key, &ciphertext)?;
+//!     Ok(())
 //! }
 //! ```
 //!
@@ -82,7 +83,7 @@
 //!     let (public_key, private_key) = keypair.into_keypair();
 //!     let message = b"Hello, World!";
 //!     let signature = signer.sign(message, & private_key) ?;
-//!     signer.verify(message, & public_key, signature) ?;
+//!     signer.verify(message, & public_key, &signature) ?;
 //!     Ok::< (), Box < dyn std::error::Error > > (())
 //! }
 //! ```
@@ -330,7 +331,7 @@ macro_rules! dispatch_key_agreement {
 ///     // Generate a valid key pair first
 ///     use seal_crypto_wrapper::prelude::TypedAsymmetricPrivateKeyTrait;
 ///     let algorithm = AsymmetricAlgorithm::build().kem().kyber512();
-///     let kem = algorithm.into_asymmetric_wrapper();
+///     let kem = algorithm.into_wrapper();
 ///     let keypair = kem.generate_keypair()?;
 ///     let (public_key, private_key) = keypair.into_keypair();
 ///
@@ -483,7 +484,7 @@ impl AsymmetricPrivateKey {
     ///     // Generate a valid key pair first
     ///     use seal_crypto_wrapper::prelude::TypedAsymmetricPrivateKeyTrait;
     ///     let algorithm = AsymmetricAlgorithm::build().kem().kyber512();
-    ///     let kem = algorithm.into_asymmetric_wrapper();
+    ///     let kem = algorithm.into_wrapper();
     ///     let keypair = kem.generate_keypair()?;
     ///     let (public_key, private_key) = keypair.into_keypair();
     ///

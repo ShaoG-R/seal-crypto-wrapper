@@ -190,7 +190,7 @@ macro_rules! impl_signature_algorithm {
 ///
 /// let message = b"Hello, World!";
 /// let signature = wrapper.sign(message, &private_key)?;
-/// wrapper.verify(message, &public_key, signature)?;
+/// wrapper.verify(message, &public_key, &signature)?;
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[derive(Clone, Debug)]

@@ -416,7 +416,7 @@ impl SignatureAlgorithm {
     /// let signature = signer.sign(message, &private_key)?;
     ///
     /// // Verify the signature
-    /// signer.verify(message, &public_key, signature)?;
+    /// signer.verify(message, &public_key, &signature)?;
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     ///

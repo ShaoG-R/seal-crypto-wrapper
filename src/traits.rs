@@ -95,21 +95,16 @@ use {
 use {
     crate::algorithms::kdf::key::KdfKeyAlgorithm,
     crate::algorithms::kdf::passwd::KdfPasswordAlgorithm,
+    seal_crypto::secrecy::SecretBox,
 };
 #[cfg(feature = "xof")]
 use {crate::algorithms::xof::XofAlgorithm, crate::wrappers::xof::XofReaderWrapper};
 #[cfg(any(
-    feature = "aead",
-    feature = "asymmetric-kem",
     feature = "kdf",
-    feature = "xof",
-    feature = "asymmetric-signature",
     feature = "asymmetric-key-agreement"
 ))]
-use {
-    crate::error::Result,
-    seal_crypto::{secrecy::SecretBox, zeroize::Zeroizing},
-};
+use seal_crypto::zeroize::Zeroizing;
+use crate::error::Result;
 
 /// Macro for automatically implementing traits for `Box<dyn Trait>` types.
 ///

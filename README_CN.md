@@ -29,6 +29,8 @@
   - **基于密码 (Password-based)**: PBKDF2, Argon2
 - **可扩展输出函数 (XOF)**：
   - SHAKE (128, 256)
+- **哈希函数与 HMAC**:
+  - SHA-256, SHA-384, SHA-512
 
 ## 安装
 
@@ -271,6 +273,37 @@ fn main() -> Result<()> {
     // 6. 验证派生的密钥是不同的。
     assert_ne!(key1, key2);
     println!("Password-based KDF successful, derived keys are different!");
+    
+    Ok(())
+}
+``` 
+
+### 哈希与 HMAC
+
+```rust
+use seal_crypto_wrapper::prelude::*;
+use seal_crypto_wrapper::error::Result;
+
+fn main() -> Result<()> {
+    // 1. 选择一个哈希算法。
+    let algorithm = HashAlgorithm::build().sha256();
+    let hasher = algorithm.into_wrapper();
+
+    // 2. 哈希数据。
+    let data = b"some data to hash";
+    let digest = hasher.hash(data);
+    
+    assert_eq!(digest.len(), 32);
+
+    // 3. 计算 HMAC。
+    let key = b"my secret key";
+    let message = b"a message to authenticate";
+    let hmac_tag = hasher.hmac(key, message)?;
+
+    // 4. 验证 HMAC。
+    let expected_tag = hasher.hmac(key, message)?;
+    assert_eq!(hmac_tag, expected_tag);
+    println!("Hashing and HMAC successful!");
     
     Ok(())
 }

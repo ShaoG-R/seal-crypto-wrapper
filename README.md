@@ -32,6 +32,8 @@ This library wraps the core functionalities of `seal-crypto`, including:
   - **Password-based**: PBKDF2, Argon2
 - **eXtendable-Output Functions (XOF)**:
   - SHAKE (128, 256)
+- **Hash Functions and HMAC**:
+  - SHA-256, SHA-384, SHA-512
 
 ## Installation
 
@@ -274,6 +276,37 @@ fn main() -> Result<()> {
     // 6. Verify that the derived keys are different.
     assert_ne!(key1, key2);
     println!("Password-based KDF successful, derived keys are different!");
+    
+    Ok(())
+}
+```
+
+### Hashing and HMAC
+
+```rust
+use seal_crypto_wrapper::prelude::*;
+use seal_crypto_wrapper::error::Result;
+
+fn main() -> Result<()> {
+    // 1. Select a hash algorithm.
+    let algorithm = HashAlgorithm::build().sha256();
+    let hasher = algorithm.into_wrapper();
+
+    // 2. Hash the data.
+    let data = b"some data to hash";
+    let digest = hasher.hash(data);
+    
+    assert_eq!(digest.len(), 32);
+
+    // 3. Compute an HMAC.
+    let key = b"my secret key";
+    let message = b"a message to authenticate";
+    let hmac_tag = hasher.hmac(key, message)?;
+
+    // 4. Verify the HMAC.
+    let expected_tag = hasher.hmac(key, message)?;
+    assert_eq!(hmac_tag, expected_tag);
+    println!("Hashing and HMAC successful!");
     
     Ok(())
 }
